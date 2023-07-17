@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_JD2LST" Id="{68884bef-d0e2-4eed-a1f5-245e99cdbd31}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_JD2LST EXTENDS TcUnit.FB_TestSuite
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	loc0: S_EarthLocation := (longitude := 0, latitude := 0, height := 0);
+	loc1: S_EarthLocation := (longitude := 10, latitude := 52, height := 0);
+
+	jd1: LREAL := 2451557.5;
+	lst1: LREAL;
+	exp1: LREAL := 112.7812104487;
+	lst2: LREAL;
+	exp2: LREAL := 122.7812104487;	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TEST('loc0');
+lst1 := JD2LST(JD := jd1, loc := loc0);
+AssertEquals_LREAL(Expected := exp1, Actual := lst1, Delta := 1E-5, Message := 'Wrong LST.');
+
+TEST('loc1');
+lst2 := JD2LST(JD := jd1, loc := loc1);
+AssertEquals_LREAL(Expected := exp2, Actual := lst2, Delta := 1E-5, Message := 'Wrong LST.');
+
+TEST_FINISHED();
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_JD2LST">
+      <LineId Id="101" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="133" Count="3" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="79" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -5,6 +5,7 @@
 VAR
 	fbDateTime2JB : FB_DateTime2JD_Test;
 	fbEq2Hor_Test : FB_Eq2Hor_Test;
+	fbJD2LST_Test : FB_JD2LST;
 END_VAR
 ]]></Declaration>
     <Implementation>

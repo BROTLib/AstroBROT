@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="JD2LST" Id="{2ca40348-e5d3-4dfb-88de-8ef6d66387b0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION JD2LST : LREAL
+VAR_INPUT
+	JD: 	LREAL;
+	loc:	S_EarthLocation;
+END_VAR
+VAR
+	T: 		LREAL;
+	theta0: LREAL;
+	gmst:	LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// following https://squarewidget.com/astronomical-calculations-sidereal-time/
+T := ((JD - 2451545.0) / 36525.0);
+theta0 := 280.46061837 + 360.98564736629 * (JD - 2451545.0) + (0.000387933 * T * T) - (T * T * T / 38710000.0); // (12.4)
+gmst := MODABS(theta0, 360.0);
+JD2LST := gmst + loc.longitude; // LST in degrees]]></ST>
+    </Implementation>
+    <LineIds Name="JD2LST">
+      <LineId Id="21" Count="0" />
+      <LineId Id="13" Count="2" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

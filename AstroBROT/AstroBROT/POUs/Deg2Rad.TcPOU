@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
-  <POU Name="POU" Id="{fb12fcb4-55f7-4d9f-9751-eaa4648ce7c7}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION POU : eq2hor
+  <POU Name="Deg2Rad" Id="{7b4aefb2-ead3-46ce-9e4e-ecd304a53f87}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Deg2Rad : LREAL
 VAR_INPUT
+	deg: LREAL;
 END_VAR
 VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[Deg2Rad := deg / 180.0 * PI;]]></ST>
     </Implementation>
-    <LineIds Name="POU">
+    <LineIds Name="Deg2Rad">
       <LineId Id="7" Count="0" />
     </LineIds>
   </POU>

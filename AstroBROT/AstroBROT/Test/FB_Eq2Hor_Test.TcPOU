@@ -15,24 +15,19 @@ VAR
 	out_coord1: S_SkyCoordHorizontal;
 	exp_coord1: S_SkyCoordHorizontal := (alt := -9.9678, az := 270.0);
 	
-	in_coord2: S_SkyCoordEquatorial := (ra := 10, dec := 30);
+	in_coord2: S_SkyCoordEquatorial := (ra := 10.0 * 15.0, dec := 30);
 	out_coord2: S_SkyCoordHorizontal;
 	exp_coord2: S_SkyCoordHorizontal := (alt := 33.8001277, az := 53.0084778);
 	
-	// exp_coord2: S_SkyCoordHorizontal := (alt := 53.3456083, az := 111.0780528);
+	in_coord3: S_SkyCoordEquatorial := (ra := 10.0 * 15.0, dec := 30);
+	out_coord3: S_SkyCoordHorizontal;
+	exp_coord3: S_SkyCoordHorizontal := (alt := 53.3456083, az := 111.0780528);
 	
 	eq2hor: FB_Eq2Hor;
-	eq2hor2: FB_EQ2HOR2;
-	alt, az: LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[TEST('OriginalSTELLA');
-eq2hor2(alpha:=in_coord2.ra, delta:=in_coord2.dec, lon:=loc0.longitude, lat:=loc0.latitude, JD:=jd, alt=>alt, az=>az);
-AssertEquals_LREAL(Expected := exp_coord2.alt, Actual := alt, Delta := 1E-5, Message := 'Alt conversion failed.');
-AssertEquals_LREAL(Expected := exp_coord2.az, Actual := az, Delta := 1E-5, Message := 'Az conversion failed.');
-
-TEST('0RaDec2AltAzAtLoc0');
+      <ST><![CDATA[TEST('0RaDec2AltAzAtLoc0');
 eq2hor(in_coord:=in_coord1, JD:=jd, location:=loc0, out_coord=>out_coord1);
 AssertEquals_LREAL(Expected := exp_coord1.alt, Actual := out_coord1.alt, Delta := 1E-5, Message := 'Alt conversion failed.');
 AssertEquals_LREAL(Expected := exp_coord1.az, Actual := out_coord1.az, Delta := 1E-5, Message := 'Az conversion failed.');
@@ -42,15 +37,15 @@ eq2hor(in_coord:=in_coord2, JD:=jd, location:=loc0, out_coord=>out_coord2);
 AssertEquals_LREAL(Expected := exp_coord2.alt, Actual := out_coord2.alt, Delta := 1E-5, Message := 'Alt conversion failed.');
 AssertEquals_LREAL(Expected := exp_coord2.az, Actual := out_coord2.az, Delta := 1E-5, Message := 'Az conversion failed.');
 
+TEST('RaDec2AltAzAtLoc1');
+eq2hor(in_coord:=in_coord3, JD:=jd, location:=loc1, out_coord=>out_coord3);
+AssertEquals_LREAL(Expected := exp_coord3.alt, Actual := out_coord3.alt, Delta := 1E-5, Message := 'Alt conversion failed.');
+AssertEquals_LREAL(Expected := exp_coord3.az, Actual := out_coord3.az, Delta := 1E-5, Message := 'Az conversion failed.');
 
 TEST_FINISHED();
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_Eq2Hor_Test">
-      <LineId Id="101" Count="0" />
-      <LineId Id="103" Count="1" />
-      <LineId Id="102" Count="0" />
-      <LineId Id="100" Count="0" />
       <LineId Id="66" Count="0" />
       <LineId Id="34" Count="0" />
       <LineId Id="60" Count="0" />
@@ -58,8 +53,8 @@ TEST_FINISHED();
       <LineId Id="82" Count="0" />
       <LineId Id="88" Count="2" />
       <LineId Id="73" Count="0" />
+      <LineId Id="108" Count="4" />
       <LineId Id="39" Count="0" />
-      <LineId Id="97" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="79" Count="0" />
     </LineIds>

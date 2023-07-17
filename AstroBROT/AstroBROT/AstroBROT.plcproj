@@ -35,19 +35,28 @@
     <Compile Include="POUs\DateTime2JD.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\Deg2Rad.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Rad2Deg.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_Eq2Hor.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FB_EQ2HOR2.TcPOU">
+    <Compile Include="POUs\MAIN.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\MAIN.TcPOU">
+    <Compile Include="POUs\JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Test\FB_DateTime2JD_Test.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Test\FB_Eq2Hor_Test.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Test\FB_JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
