@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Eq2Hor" Id="{3d32db47-3b6f-4f2d-ba61-d870bf99ca5f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Eq2Hor
+VAR_INPUT
+	in_coord:	S_SkyCoordEquatorial;
+	JD:         LREAL;
+	location:   S_EarthLocation;
+END_VAR
+VAR_OUTPUT
+	out_coord:	S_SkyCoordHorizontal;
+END_VAR
+VAR
+	lst:		LREAL;
+	T:			LREAL;
+	theta0:		LREAL;
+	gmst:		LREAL;
+	ha:         LREAL;
+	// helper variables
+	sinalt, sinaz, cosaz, cosalt, az1, az2, az3, length,
+	// in radians
+	phi_r, tau_r, alpha_r, delta_r: LREAL;
+	//quadrant: UINT;
+END_VAR
+VAR CONSTANT
+	d2r:	LREAL := PI/180.0;
+	r2d:	LREAL := 180.0/PI;
+	//h2r:	LREAL := PI/12.0;
+	//h2d:	LREAL := 15.0;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* 
+source: http://star-www.st-and.ac.uk/~fv/webnotes/chapter7.htm
+https://squarewidget.com/astronomical-calculations-sidereal-time/
+
+*)
+//lst := ct2lst(lon, jd);
+T := ((JD - 2451545.0) / 36525.0);
+theta0 := 280.46061837 + 360.98564736629 * (JD - 2451545.0) + (0.000387933 * T * T) - (T * T * T / 38710000.0); // (12.4)
+gmst := MODABS(theta0, 360.0);
+lst := gmst + location.longitude; // LST in degrees
+// ha := MODABS(lst*15.0 - alpha, 360.0);
+ha := MODABS(lst - in_coord.ra, 360.0);
+
+alpha_r := in_coord.ra * d2r;
+delta_r := in_coord.dec * d2r;
+tau_r := lst*d2r - alpha_r;
+//tau_r := MODABS(lst*d2r - alpha_r, 2.0*PI);
+phi_r := location.latitude*d2r;
+
+//sinalt := (SIN(delta*d2r)*SIN(lat*d2r)) + (COS(delta*d2r)*COS(lat*d2r)*COS(ha*d2r));
+sinalt := SIN(phi_r)*SIN(delta_r) + COS(phi_r)*COS(delta_r)*COS(tau_r);
+out_coord.alt := ASIN(sinalt) * r2d;
+cosalt := COS(out_coord.alt*d2r);
+
+IF ABS(cosalt) > 0.0 THEN
+	sinaz := -SIN(tau_r)*COS(delta_r)/cosalt;
+ELSE
+	sinaz := 0.0;
+END_IF
+
+IF ABS(cosalt*COS(phi_r)) > 0.0 THEN
+	cosaz := (SIN(delta_r) - SIN(phi_r)*sinalt)
+			/(cosalt*COS(phi_r));
+ELSE
+	cosaz := 0.0;
+END_IF
+
+length := sinaz*sinaz + cosaz*cosaz;
+
+az1 := ASIN(LIMIT(-1.0, sinaz, 1.0)) * r2d;
+
+az2 := ACOS(LIMIT(-1.0, cosaz, 1.0)) * r2d;
+
+az3 := ATAN2(SIN(phi_r)*COS(tau_r) - COS(phi_r)*TAN(delta_r), SIN(tau_r)) * r2d;
+
+IF sinaz >= 0.0 AND cosaz >=0.0 THEN // Q I
+	out_coord.az := az1;
+ELSIF sinaz < 0.0 AND cosaz >= 0.0 THEN // Q II
+	out_coord.az := MODABS(-az2, 360.0);
+ELSIF sinaz < 0.0 AND cosaz < 0.0 THEN // Q III
+	out_coord.az := 180 - az1;
+ELSIF sinaz >= 0.0 AND cosaz < 0.0 THEN // Q IV
+	out_coord.az := az2;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Eq2Hor">
+      <LineId Id="10" Count="52" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
