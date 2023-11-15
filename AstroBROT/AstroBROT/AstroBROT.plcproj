@@ -26,6 +26,9 @@
     <Compile Include="DUTs\S_SkyCoordHorizontal.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DUTs\test_state.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>

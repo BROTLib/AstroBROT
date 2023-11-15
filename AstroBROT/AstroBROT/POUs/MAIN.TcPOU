@@ -3,15 +3,30 @@
   <POU Name="MAIN" Id="{9edd3dc7-464a-45b7-b5f9-e2076842766b}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-	fbDateTime2JB : FB_DateTime2JD_Test;
-	fbEq2Hor_Test : FB_Eq2Hor_Test;
-	fbJD2LST_Test : FB_JD2LST;
+	estate : test_state := test_state.IDLE;
+	loc0 : S_EarthLocation;
+	lat: LREAL;
+	lon: LREAL;
+	height: LREAL;
+	jd1: LREAL;
+	lst1: LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[TcUnit.RUN();]]></ST>
+      <ST><![CDATA[CASE estate OF
+	test_state.IDLE:
+		estate := test_state.IDLE;
+	test_state.JD2LST:
+		loc0.longitude := lon;
+		loc0.latitude := lat;
+		loc0.height := height; 
+		lst1 := JD2LST(JD := jd1, loc := loc0);
+		estate := test_state.IDLE;
+	
+END_CASE]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
+      <LineId Id="9" Count="9" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
