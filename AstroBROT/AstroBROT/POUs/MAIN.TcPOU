@@ -3,30 +3,85 @@
   <POU Name="MAIN" Id="{9edd3dc7-464a-45b7-b5f9-e2076842766b}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-	estate : test_state := test_state.IDLE;
-	loc0 : S_EarthLocation;
-	lat: LREAL;
-	lon: LREAL;
-	height: LREAL;
-	jd1: LREAL;
-	lst1: LREAL;
+	estate : test_state := test_state.IDLE; // different test states for the functions
+	loc0 : S_EarthLocation;					// location for observer
+	in_coord_eq :	S_SkyCoordEquatorial;	// input coord eq
+	out_coord_hor :	S_SkyCoordHorizontal;	// output coord hor
+	eq2hor	:	FB_Eq2Hor;
+	
+	// help variables for ADS communication
+	ra		:	LREAL;
+	dec		:	LREAL;
+	alt		:	LREAL;
+	az		:	LREAL;
+	lat		:	LREAL;
+	lon		:	LREAL;
+	height	: 	LREAL;
+	lst1	: 	LREAL;
+	jd1		:	LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[CASE estate OF
 	test_state.IDLE:
 		estate := test_state.IDLE;
+		
+		
 	test_state.JD2LST:
+		// initilize ADS variables
 		loc0.longitude := lon;
 		loc0.latitude := lat;
-		loc0.height := height; 
+		loc0.height := height;
+		// transform time
 		lst1 := JD2LST(JD := jd1, loc := loc0);
+		// return to IDLE
 		estate := test_state.IDLE;
+		
+		
+	test_state.EQ2HOR:
+		// initilize ADS variables
+		loc0.longitude := lon;
+		loc0.latitude := lat;
+		loc0.height := height;
+		in_coord_eq.ra := ra;
+		in_coord_eq.dec := dec;
+		// transform coordinates
+		eq2hor(in_coord:= in_coord_eq, JD:= jd1, location:=loc0);
+		// safe them, so they can be accesd by ADS
+		alt := eq2hor.out_coord.alt;
+		az := eq2hor.out_coord.az;
+		// return to IDLE
+		estate := test_state.IDLE;
+		
 	
 END_CASE]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
-      <LineId Id="9" Count="9" />
+      <LineId Id="9" Count="2" />
+      <LineId Id="58" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="13" Count="2" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="56" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="39" Count="1" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="18" Count="0" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
