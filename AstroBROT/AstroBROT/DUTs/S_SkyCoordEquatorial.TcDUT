@@ -3,8 +3,8 @@
   <DUT Name="S_SkyCoordEquatorial" Id="{0bc8efab-a9cb-4bbf-ac60-1625272729f1}">
     <Declaration><![CDATA[TYPE S_SkyCoordEquatorial :
 STRUCT
-	ra:		LREAL;
-	dec:	LREAL;
+	ra:		LREAL;	// Right Ascension of object  (J2000) in degrees (FK5)
+	dec:	LREAL;	// Declination of object (J2000) in degrees (FK5)
 END_STRUCT
 END_TYPE
 ]]></Declaration>

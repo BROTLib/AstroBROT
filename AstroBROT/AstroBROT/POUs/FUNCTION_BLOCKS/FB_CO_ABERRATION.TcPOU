@@ -3,17 +3,18 @@
   <POU Name="FB_CO_ABERRATION" Id="{78e5ea52-4364-45d1-8d65-73fef4dd6397}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_ABERRATION
 VAR_INPUT
-	jd, 				// Julian Date
-	ra, dec: LREAL; 	//ra and dec in degrees
+	jd: LREAL;				// Julian Date
+	EQ_COORD_IN: S_SkyCoordEquatorial;
 	eps : LREAL := 0.0;
 END_VAR
 VAR_OUTPUT
-	d_ra, d_dec: LREAL;
+	EQ_COORD_DIFF: S_SkyCoordEquatorial; // Return changes in ra and dec
 END_VAR
 VAR
 	sunpos: FB_SUNPOS;
 	nutate: FB_NUTATE;
-	sunra, sundec, sunlon,
+	sun_eq : S_SkyCoordEquatorial;
+	sunlon,
 	d_psi, d_epsilon, eps0,
 	t, e, peri, cd, sd, ce, te, cp, sp, cs, ss, ca, sa, term1, term2, term3, term4: LREAL;
 END_VAR
@@ -35,28 +36,18 @@ END_VAR]]></Declaration>
 ;      co_aberration, jd, ra, dec, d_ra, d_dec, [EPS = ]
 ; INPUTS
 ;       jd      : Julian Date [scalar or vector]
-;       ra, dec : Arrays (or scalars) of the ra  and dec's in degrees
-;   Note: if jd is a vector, then ra and dec must either be scalars, or 
-;                vectors of the same length.
+;       ra, dec : ra  and dec's in degrees
 ;
 ; OUTPUTS
 ;       d_ra, d_dec: the corrections to ra and dec due to aberration in 
-;                    arcseconds.  (These values can be added to the true RA 
+;                    degrees.  (These values can be added to the true RA 
 ;                    and dec to get the apparent position).   Note that d_ra
 ;                     is *not* multiplied by cos(dec), so that 
-;                     apparent_ra = ra + d_ra/3600. 
+;                     apparent_ra = ra + d_ra. 
 ; OPTIONAL INPUT KEYWORD:
 ;       eps : set this to the true obliquity of the ecliptic (in radians), or
 ;         it will be set for you if you don't know it (in that case, set it to
 ;                 an empty variable).
-; EXAMPLE:
-;   Compute the change in RA and Dec of Theta Persei (RA = 2h46m,11.331s, Dec =
-;   49d20',54.54") due to aberration on 2028 Nov 13.19 TD
-;
-;      IDL> jdcnv,2028,11,13,.19*24,jd      ;Get Julian date
-;      IDL> co_aberration,jd,ten(2,46,11.331)*15,ten(49,20,54.54),d_ra,d_dec
-;
-;      ==> d_ra = 30.045" (=2.003s)    d_dec = 6.697"
 ; NOTES:
 ;  These formula are from Meeus, Chapters 23.  Accuracy is much better than 1 
 ;   arcsecond.
@@ -70,7 +61,8 @@ END_VAR]]></Declaration>
 ;   June 2009 update fixed case where JD was scalar but RA,Dec were vectors, but 
 ;     broke the case when both JD and RA,Dec were vectors Aug 2012 W. Landsman
 ;   Further fix when JD is 1 element vector  W. Landsman
-;-
+;
+;	UPDATE: HAS BEEN REWORKED FOR THE COORD STRUCTURE -> OUTPUT IS IN DEGREES
 *)
 
 T := (jd -2451545.0)/36525.0; // julian centuries from J2000 of jd.
@@ -83,7 +75,7 @@ IF EPS = 0.0 THEN
 	eps := (eps0 + d_epsilon)/3600.0*d2r; 	
 END_IF
 
-sunpos( JD := jd, RA => sunra, Dec => sundec, longmed => sunlon);
+sunpos( JD := jd, sun_eq => sun_eq, longmed => sunlon);
 
 // Earth's orbital eccentricity
 e := 0.016708634 - 0.000042037*T - 0.0000001267*EXPT(T, 2);
@@ -91,23 +83,27 @@ e := 0.016708634 - 0.000042037*T - 0.0000001267*EXPT(T, 2);
 peri := 102.93735 + 1.71946*T + 0.00046*EXPT(T, 2);
 
 //Useful Trig Functions
-cd := COS(dec*d2r);		sd := SIN(dec*d2r);
+cd := COS(EQ_COORD_IN.dec*d2r);		sd := SIN(EQ_COORD_IN.dec*d2r);
 ce := COS(eps); 		te := TAN(eps);
 cp := COS(peri*d2r);	sp := SIN(peri*d2r);
 cs := COS(sunlon*d2r);	ss := SIN(sunlon*d2r);
-ca := COS(ra*d2r);		sa := SIN(ra*d2r);
+ca := COS(EQ_COORD_IN.ra*d2r);		sa := SIN(EQ_COORD_IN.ra*d2r);
 
 term1 := (ca*cs*ce + sa*ss)/cd;
 term2 := (ca*cp*ce + sa*sp)/cd;
 term3 := (cs*ce*(te*cd - sa*sd) + ca*sd*ss);
 term4 := (cp*ce*(te*cd - sa*sd) + ca*sd*sp);
 
-d_ra := -k * term1 + e*k * term2;
-d_dec := -k * term3 + e*k * term4;
+EQ_COORD_DIFF.ra := (-k * term1 + e*k * term2)/3600;
+EQ_COORD_DIFF.dec := (-k * term3 + e*k * term4)/3600;
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_CO_ABERRATION">
-      <LineId Id="3" Count="80" />
+      <LineId Id="3" Count="12" />
+      <LineId Id="18" Count="10" />
+      <LineId Id="37" Count="12" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="50" Count="33" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

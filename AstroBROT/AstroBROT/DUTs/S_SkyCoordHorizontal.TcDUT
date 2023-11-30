@@ -3,8 +3,8 @@
   <DUT Name="S_SkyCoordHorizontal" Id="{bc934920-5c3a-495a-b2a3-4fcfc22f927a}">
     <Declaration><![CDATA[TYPE S_SkyCoordHorizontal :
 STRUCT
-	alt:	LREAL;
-	az:		LREAL;
+	alt:	LREAL; // altitude (in degrees)
+	az:		LREAL; // azimuth angle (in degrees, measured EAST FROM NORTH)
 END_STRUCT
 END_TYPE
 ]]></Declaration>

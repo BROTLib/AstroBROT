@@ -3,15 +3,12 @@
   <POU Name="FB_PRECESS" Id="{879c3673-6766-4546-9283-3aa893f2e05f}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PRECESS
 VAR_INPUT
-	ra, 
-	dec,
+	EQ_COORD_IN: S_SkyCoordEquatorial;
 	equinox1,
 	equinox2: LREAL;
-	RADIAN:	BOOL := FALSE;
 END_VAR
 VAR_OUTPUT
-	ra_precessed,
-	dec_precessed:	LREAL;
+	EQ_COORD_precessed:	S_SkyCoordEquatorial;
 END_VAR
 VAR
 	ra_rad, dec_rad: LREAL;
@@ -22,19 +19,17 @@ VAR
 	sina, sinb, sinc, cosa,cosb,cosc: LREAL;
 END_VAR
 VAR CONSTANT
-	deg_to_rad : LREAL := PI/180.0;
-	sec_to_rad : LREAL := deg_to_rad/3600.0;
+	d2r : LREAL := PI/180.0;
+	sec_to_rad : LREAL := d2r/3600.0;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF NOT RADIAN THEN
-	ra_rad := ra*deg_to_rad;
-	dec_rad := dec*deg_to_rad;
-ELSE
-    //Convert TO double precision IF NOT already
-	ra_rad := ra;
-	dec_rad := dec;
-END_IF
+      <ST><![CDATA[// STELLA CODE
+
+// deg 2 radian
+ra_rad := EQ_COORD_IN.ra*d2r;
+dec_rad := EQ_COORD_IN.dec*d2r;
+
 
 a := COS( dec_rad );
 x[0] := a*COS(ra_rad); x[1] := a*SIN(ra_rad); x[2] := SIN(dec_rad);
@@ -63,19 +58,16 @@ x2[2] := rot[0,2]*x[0] + rot[1,2]*x[1] + rot[2,2]*x[2];
 ra_rad := atan2(x2[1],x2[0]);
 dec_rad := ASIN(x2[2]);
 
-IF NOT RADIAN THEN
-	ra_precessed := ra_rad/deg_to_rad;
-	ra_precessed := MODABS(ra_precessed, 360.0);            //RA between 0 AND 360 degrees
-	dec_precessed := dec_rad/deg_to_rad;
-ELSE
-	ra_precessed := ra_rad; 
-	dec_precessed := dec_rad;
-	ra_precessed := MODABS(ra_rad, 2.0*PI);
-END_IF]]></ST>
+EQ_COORD_precessed.ra := ra_rad/d2r;
+EQ_COORD_precessed.ra := MODABS(EQ_COORD_precessed.ra, 360.0);            //RA between 0 AND 360 degrees
+EQ_COORD_precessed.dec := dec_rad/d2r;]]></ST>
     </Implementation>
     <LineIds Name="FB_PRECESS">
-      <LineId Id="3" Count="43" />
-      <LineId Id="2" Count="0" />
+      <LineId Id="79" Count="2" />
+      <LineId Id="72" Count="1" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="11" Count="28" />
+      <LineId Id="41" Count="1" />
     </LineIds>
   </POU>
 </TcPlcObject>

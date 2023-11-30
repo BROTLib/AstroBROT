@@ -15,7 +15,7 @@ VAR
 	I: INT;
 END_VAR
 VAR CONSTANT
-	dtor:	LREAL := PI/180.0;
+	d2r:	LREAL := PI/180.0;
 	coeff1:	ARRAY[0..3] OF LREAL := [297.85036, 445267.111480, -0.0019142,  1.0/189474];
 	coeff2:	ARRAY[0..3] OF LREAL := [357.52772,  35999.050340, -0.0001603, -1.0/3E5]; 
 	coeff3:	ARRAY[0..3] OF LREAL := [134.96298, 477198.867398,  0.0086972,  1.0/5.625E4]; 
@@ -39,28 +39,28 @@ t := (jd - 2451545.0)/36525.0;
 
 // Mean elongation of the Moon
 
-d := poly(T, coeff1)*dtor;
+d := poly(T, coeff1)*d2r;
 d := MODABS(d, 2.0*PI);
 
 // Sun's mean anomaly
 
-M := poly(T,coeff2)*dtor;
+M := poly(T,coeff2)*d2r;
 M := MODABS(M, 2.0*PI);
 
 // Moon's mean anomaly
 
-Mprime := poly(T,coeff3)*dtor;
+Mprime := poly(T,coeff3)*d2r;
 Mprime := MODABS(Mprime, 2.0*PI);
 
 // Moon's argument of latitude
 
-F := poly(T, coeff4 )*dtor;
+F := poly(T, coeff4 )*d2r;
 F := MODABS(F, 2.0*PI);
 
 // Longitude OF the ascending node OF the Moon's mean orbit on the ecliptic,
 //  measured from the mean equinox of the date
 
-omega := poly(T, coeff5)*dtor;
+omega := poly(T, coeff5)*d2r;
 omega := MODABS(omega, 2.0*PI);
 
 

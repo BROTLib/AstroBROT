@@ -3,9 +3,9 @@
   <DUT Name="S_EarthLocation" Id="{c646be09-86a1-491f-9a2a-dfc1fcbfa2e0}">
     <Declaration><![CDATA[TYPE S_EarthLocation :
 STRUCT
-	longitude:	LREAL;
-	latitude:	LREAL;
-	height:		LREAL;
+	longitude:	LREAL;			// NORTH geodetic latitude of location in degrees
+	latitude:	LREAL;			// EAST longitude of location in degrees (Specify west longitude with a negative sign.)
+	height:		LREAL:= 0.0;	// The altitude of the observing location, in meters. [default=0].
 END_STRUCT
 END_TYPE
 ]]></Declaration>

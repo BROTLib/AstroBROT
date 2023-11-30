@@ -38,9 +38,6 @@
     <Compile Include="POUs\FUNCTIONS\CO_REFRACT_FORWARD.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTIONS\CT2LST.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FUNCTIONS\DateTime2JD.TcPOU">
       <SubType>Code</SubType>
     </Compile>

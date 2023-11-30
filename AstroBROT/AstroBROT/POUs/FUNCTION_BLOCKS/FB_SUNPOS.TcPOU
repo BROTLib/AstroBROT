@@ -5,14 +5,9 @@
 VAR_INPUT
 	// Julian Date
 	JD:		LREAL;
-	// output in Radians instead of Degrees
-	RADIAN:	BOOL:= FALSE;
 END_VAR
 VAR_OUTPUT
-	// right ascension
-	RA,
-	// declination of the sun
-	Dec,
+	sun_eq: S_SkyCoordEquatorial; 
 	// longitude
 	longmed,
 	// True Obliquity
@@ -31,7 +26,7 @@ mj, jupcorr,
 d, longterm, mooncorr,  omega:	LREAL;
 END_VAR
 VAR CONSTANT
-	dtor: LREAL := PI/180.0; // Pi/180
+	d2r: LREAL := PI/180.0; // Pi/180
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* source: https://idlastro.gsfc.nasa.gov/ftp/pro/astro/sunpos.pro *)
@@ -44,39 +39,39 @@ l := (279.696678+LMOD(36000.768925*t, 360.0))*3600.0;
 
 //  allow for ellipticity of the orbit (equation of centre) using the Earth's mean anomaly ME
 me := 358.475844 + LMOD(35999.049750*t, 360.0);
-ellcor  := (6910.1 - 17.2*t)*SIN(me*dtor) + 72.3*SIN(2.0*me*dtor);
+ellcor  := (6910.1 - 17.2*t)*SIN(me*d2r) + 72.3*SIN(2.0*me*d2r);
 l := l + ellcor;
  
 // allow FOR the Venus perturbations using the mean anomaly OF Venus MV
 mv := 212.603219 + LMOD(58517.803875*t, 360.0);
-vencorr := 4.8 * COS((299.1017 + mv - me)*dtor) + 
-          5.5 * COS((148.3133 +  2.0 * mv  -  2.0 * me )*dtor) + 
-          2.5 * COS((315.9433 +  2.0 * mv  -  3.0 * me )*dtor) + 
-          1.6 * COS((345.2533 +  3.0 * mv  -  4.0 * me )*dtor) + 
-          1.0 * COS((318.15   +  3.0 * mv  -  5.0 * me )*dtor);
+vencorr := 4.8 * COS((299.1017 + mv - me)*d2r) + 
+          5.5 * COS((148.3133 +  2.0 * mv  -  2.0 * me )*d2r) + 
+          2.5 * COS((315.9433 +  2.0 * mv  -  3.0 * me )*d2r) + 
+          1.6 * COS((345.2533 +  3.0 * mv  -  4.0 * me )*d2r) + 
+          1.0 * COS((318.15   +  3.0 * mv  -  5.0 * me )*d2r);
 l := l + vencorr;
 
 //  Allow FOR the Mars perturbations using the mean anomaly OF Mars MM
 mm := 319.529425  +  LMOD( 19139.858500 * t,  360.0 );
-marscorr := 2.0 * COS((343.8883 -  2.0 * mm  +  2.0 * me)*dtor ) + 
-            1.8 * COS((200.4017 -  2.0 * mm  + me) * dtor);
+marscorr := 2.0 * COS((343.8883 -  2.0 * mm  +  2.0 * me)*d2r ) + 
+            1.8 * COS((200.4017 -  2.0 * mm  + me) * d2r);
 l := l + marscorr;
 
 // Allow FOR the Jupiter perturbations using the mean anomaly OF Jupiter MJ
 mj := 225.328328  +  LMOD( 3034.6920239 * t,  360.0 );
-jupcorr := 7.2 * COS(( 179.5317 - mj + me )*dtor) + 
-          2.6 * COS((263.2167  -  MJ ) *dtor) + 
-          2.7 * COS(( 87.1450  -  2.0 * mj  +  2.0 * me ) *dtor) + 
-          1.6 * COS((109.4933  -  2.0 * mj  +  me ) *dtor);
+jupcorr := 7.2 * COS(( 179.5317 - mj + me )*d2r) + 
+          2.6 * COS((263.2167  -  MJ ) *d2r) + 
+          2.7 * COS(( 87.1450  -  2.0 * mj  +  2.0 * me ) *d2r) + 
+          1.6 * COS((109.4933  -  2.0 * mj  +  me ) *d2r);
 l := l + jupcorr;
 
 // Allow FOR the Moons perturbations using the mean elongation OF the Moon from the Sun D
 d := 350.7376814  + LMOD( 445267.11422 * t,  360.0 );
-mooncorr  := 6.5 * SIN(d*dtor);
+mooncorr  := 6.5 * SIN(d*d2r);
 l := l + mooncorr;
 
 // Allow for long period terms
-longterm := 6.4 * SIN(( 231.19  +  20.20 * t )*dtor);
+longterm := 6.4 * SIN(( 231.19  +  20.20 * t )*d2r);
 l :=  l + longterm;
 l :=  LMOD( l + 2592000.0,  1296000.0); 
 longmed := l/3600.0;
@@ -86,27 +81,28 @@ l :=  l - 20.5;
 
 // Allow for Nutation using the longitude of the Moons mean node OMEGA
 omega := 259.183275 - LMOD( 1934.142008 * t, 360.0);
-l :=  l - 17.2 * SIN(omega*dtor);
+l :=  l - 17.2 * SIN(omega*d2r);
 
 // Form the True Obliquity
-oblt := 23.452294 - 0.0130125*t + (9.2*COS(omega*dtor))/3600.0;
+oblt := 23.452294 - 0.0130125*t + (9.2*COS(omega*d2r))/3600.0;
 
 // Form Right Ascension AND Declination
 l := l/3600.0;
-ra := ATAN2( SIN(l*dtor) * COS(oblt*dtor), COS(l*dtor));
-//ra := MODABS(ra, 360.0);
-dec := ASIN(SIN(l*dtor) * SIN(oblt*dtor));
+sun_eq.ra := ATAN2( SIN(l*d2r) * COS(oblt*d2r), COS(l*d2r));
+
+sun_eq.dec := ASIN(SIN(l*d2r) * SIN(oblt*d2r));
  
-IF RADIAN THEN
-	oblt := oblt*dtor; 
-	longmed := longmed*dtor;
-ELSE
-	ra := ra/dtor;
-    dec := dec/dtor;
-END_IF]]></ST>
+
+sun_eq.ra := sun_eq.ra/d2r;
+sun_eq.ra := MODABS(sun_eq.ra, 360.0);
+sun_eq.dec := sun_eq.dec/d2r;
+]]></ST>
     </Implementation>
     <LineIds Name="FB_SUNPOS">
-      <LineId Id="3" Count="68" />
+      <LineId Id="3" Count="62" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="71" Count="0" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

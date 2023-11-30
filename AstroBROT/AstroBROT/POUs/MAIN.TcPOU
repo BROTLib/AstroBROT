@@ -6,12 +6,11 @@ VAR
 	estate 			: 	test_state := test_state.IDLE;	// different test states for the functions
 	loc0 			: 	S_EarthLocation;				// location for observer
 	in_coord_eq 	:	S_SkyCoordEquatorial;			// input coord eq
-	out_coord_hor	:	S_SkyCoordHorizontal;			// output coord hor
-	eq2hor_s		:	FB_Eq2Hor_simple;				// equatorial to horizontal transform function block (simple)
-	eq2hor			:	FB_EQ2HOR;						// equatorial to horizontal transform function block (Stella1)
+	out_coord_hor_s	:	S_SkyCoordHorizontal;			// output coord hor simple
+	out_coord_hor	:	S_SkyCoordHorizontal;			// output coord hor STELLA
+	eq2hor_s		:	FB_Eq2Hor_simple;				// equatorial to horizontal transform function block (simple) (J2000) in degrees (FK5)
+	eq2hor			:	FB_EQ2HOR;						// equatorial to horizontal transform function block (Stella1) (J2000) in degrees (FK5)
 	
-	alt		:	LREAL;
-	az		:	LREAL;
 	lst1	: 	LREAL;
 	jd1		:	LREAL;
 END_VAR
@@ -31,8 +30,8 @@ END_VAR
 		
 	test_state.EQ2HOR:
 		// transform coordinates
-		eq2hor_s(in_coord:= in_coord_eq, JD:= jd1, location:=loc0, out_coord => out_coord_hor);
-		eq2hor(RA:=in_coord_eq.ra, DEC:=in_coord_eq.dec, JD:=jd1, LAT:=loc0.latitude, LON:=loc0.longitude, ALTITUDE:=loc0.height, REFRACT:=FALSE, alt => alt, az=> az);
+		eq2hor_s(in_coord:= in_coord_eq, JD:= jd1, location:=loc0, out_coord => out_coord_hor_s);
+		eq2hor(EQ_COORD:=in_coord_eq, JD:=jd1, LOCATION:=loc0, REFRACT:=FALSE, HOR_COORD => out_coord_hor);
 		// return to IDLE
 		estate := test_state.IDLE;
 		
