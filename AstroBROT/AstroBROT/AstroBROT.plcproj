@@ -35,6 +35,12 @@
     <Compile Include="POUs\FUNCTIONS\ATAN2.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FUNCTIONS\CO_REFRACT_FORWARD.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\CT2LST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FUNCTIONS\DateTime2JD.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -44,10 +50,40 @@
     <Compile Include="POUs\FUNCTIONS\JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FUNCTIONS\POLY.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FUNCTIONS\Rad2Deg.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTION_BLOCKS\FB_Eq2Hor.TcPOU">
+    <Compile Include="POUs\FUNCTIONS\TEN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_CO_ABERRATION.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_CO_REFRACT.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_CO_NUTATE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_EQ2HOR.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_Eq2Hor_simple.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_HADEC2ALTAZ.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_NUTATE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_PRECESS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_SUNPOS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\MAIN.TcPOU">

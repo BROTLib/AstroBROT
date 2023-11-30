@@ -23,7 +23,7 @@ VAR
 	out_coord3: S_SkyCoordHorizontal;
 	exp_coord3: S_SkyCoordHorizontal := (alt := 53.3456083, az := 111.0780528);
 	
-	eq2hor: FB_Eq2Hor;
+	eq2hor: FB_Eq2Hor_simple;
 END_VAR
 ]]></Declaration>
     <Implementation>

@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Eq2Hor_simple" Id="{3d32db47-3b6f-4f2d-ba61-d870bf99ca5f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Eq2Hor_simple
+VAR_INPUT
+	in_coord:	S_SkyCoordEquatorial;
+	JD:         LREAL;
+	location:   S_EarthLocation;
+END_VAR
+VAR_OUTPUT
+	out_coord:	S_SkyCoordHorizontal;
+END_VAR
+VAR
+	lst:		LREAL;
+	ha:			LREAL;
+	_dec: 		LREAL;
+	_lat:		LREAL;
+	_ha:		LREAL;
+	_alt:		LREAL;
+	_az:		LREAL;
+END_VAR
+VAR CONSTANT
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// following "Practical astronomy with your calculator" by Peter Duffett-Smith
+// simple form, has up to 1800 arcsec difference to astropy/horizons
+
+// calculate hour angle in degrees
+lst := JD2LST(JD := JD, loc := location);
+ha := lst - in_coord.ra;
+
+// to rad
+_dec := Deg2Rad(in_coord.dec);
+_lat := Deg2Rad(location.latitude);
+_ha  := Deg2Rad(ha);
+
+// find alt
+_alt := ASIN(SIN(_dec) * SIN(_lat) + COS(_dec) * COS(_lat) * COS(_ha));
+out_coord.alt := Rad2Deg(_alt);
+
+// find az
+_az := ACOS((SIN(_dec) - SIN(_lat) * SIN(_alt)) / (COS(_lat) * COS(_alt)));
+out_coord.az := Rad2Deg(_az);
+
+// if sin(ha) is positive, calculate true azimuth
+IF SIN(_ha) > 0 THEN
+	out_coord.az := 360.0 - out_coord.az;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Eq2Hor_simple">
+      <LineId Id="113" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="98" Count="2" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="120" Count="2" />
+      <LineId Id="116" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
