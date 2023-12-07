@@ -4,11 +4,11 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_ABERRATION
 VAR_INPUT
 	jd: LREAL;				// Julian Date
-	EQ_COORD_IN: S_SkyCoordEquatorial;
+	eq_coord_in: S_SkyCoordEquatorial;
 	eps : LREAL := 0.0;
 END_VAR
 VAR_OUTPUT
-	EQ_COORD_DIFF: S_SkyCoordEquatorial; // Return changes in ra and dec
+	eq_coord_diff: S_SkyCoordEquatorial; // Return changes in ra and dec
 END_VAR
 VAR
 	sunpos: FB_SUNPOS;
@@ -67,7 +67,7 @@ END_VAR]]></Declaration>
 
 T := (jd -2451545.0)/36525.0; // julian centuries from J2000 of jd.
 
-IF EPS = 0.0 THEN
+IF eps = 0.0 THEN
 	// must calculate obliquity of ecliptic
 	nutate(jd := jd, nut_long => d_psi, nut_obliq => d_epsilon); //d_psi and d_epsilon in degrees
 	eps0 := ten(23,26,21.448)*3600.0 - 46.8150*T - 0.00059*EXPT(T, 2) +  0.001813*EXPT(T, 3);
@@ -75,7 +75,7 @@ IF EPS = 0.0 THEN
 	eps := (eps0 + d_epsilon)/3600.0*d2r; 	
 END_IF
 
-sunpos( JD := jd, sun_eq => sun_eq, longmed => sunlon);
+sunpos( jd := jd, sun_eq => sun_eq, longmed => sunlon);
 
 // Earth's orbital eccentricity
 e := 0.016708634 - 0.000042037*T - 0.0000001267*EXPT(T, 2);
@@ -83,19 +83,19 @@ e := 0.016708634 - 0.000042037*T - 0.0000001267*EXPT(T, 2);
 peri := 102.93735 + 1.71946*T + 0.00046*EXPT(T, 2);
 
 //Useful Trig Functions
-cd := COS(EQ_COORD_IN.dec*d2r);		sd := SIN(EQ_COORD_IN.dec*d2r);
+cd := COS(eq_coord_in.dec*d2r);		sd := SIN(eq_coord_in.dec*d2r);
 ce := COS(eps); 		te := TAN(eps);
 cp := COS(peri*d2r);	sp := SIN(peri*d2r);
 cs := COS(sunlon*d2r);	ss := SIN(sunlon*d2r);
-ca := COS(EQ_COORD_IN.ra*d2r);		sa := SIN(EQ_COORD_IN.ra*d2r);
+ca := COS(eq_coord_in.ra*d2r);		sa := SIN(eq_coord_in.ra*d2r);
 
 term1 := (ca*cs*ce + sa*ss)/cd;
 term2 := (ca*cp*ce + sa*sp)/cd;
 term3 := (cs*ce*(te*cd - sa*sd) + ca*sd*ss);
 term4 := (cp*ce*(te*cd - sa*sd) + ca*sd*sp);
 
-EQ_COORD_DIFF.ra := (-k * term1 + e*k * term2)/3600;
-EQ_COORD_DIFF.dec := (-k * term3 + e*k * term4)/3600;
+eq_coord_diff.ra := (-k * term1 + e*k * term2)/3600;
+eq_coord_diff.dec := (-k * term3 + e*k * term4)/3600;
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_CO_ABERRATION">

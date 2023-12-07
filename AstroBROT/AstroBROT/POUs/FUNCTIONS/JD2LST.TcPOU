@@ -3,13 +3,12 @@
   <POU Name="JD2LST" Id="{2ca40348-e5d3-4dfb-88de-8ef6d66387b0}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION JD2LST : LREAL
 VAR_INPUT
-	JD: 	LREAL;
+	jd: 	LREAL;
 	loc:	S_EarthLocation;
 END_VAR
 VAR
 	T: 		LREAL;
 	theta0: LREAL;
-	gmst:	LREAL;
 END_VAR
 VAR CONSTANT
 	jd2000: LREAL := 2451545.0;
@@ -17,7 +16,7 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[// following https://squarewidget.com/astronomical-calculations-sidereal-time/
-T := ((JD - jd2000) / 36525.0);
+T := ((jd - jd2000) / 36525.0);
 theta0 := 280.46061837 + 360.98564736629 * (JD - jd2000) + (0.000387933 * T * T) - (T * T * T / 38710000.0); // (12.4)
 
 // LST is only defined from 0 to 360
