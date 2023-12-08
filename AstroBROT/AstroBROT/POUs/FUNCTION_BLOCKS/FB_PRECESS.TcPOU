@@ -24,7 +24,18 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// STELLA CODE
+      <ST><![CDATA[// https://idlastro.gsfc.nasa.gov/ftp/pro/astro/precess.pro
+
+(*
+; RESTRICTIONS:
+;       Accuracy of precession decreases for declination values near 90 
+;       degrees.  PRECESS should not be used more than 2.5 centuries from
+;       2000 on the FK5 system (1950.0 on the FK4 system).
+; PROCEDURE:
+;       Algorithm from Computational Spherical Astronomy by Taff (1983), 
+;       p. 24. (FK4). FK5 constants from "Astronomical Almanac Explanatory
+;       Supplement 1992, page 104 Table 3.211.1.
+*)
 
 // deg 2 radian
 ra_rad := eq_coord_in.ra*d2r;
@@ -63,7 +74,15 @@ eq_coord_precessed.ra := MODABS(eq_coord_precessed.ra, 360.0);            //RA b
 eq_coord_precessed.dec := dec_rad/d2r;]]></ST>
     </Implementation>
     <LineIds Name="FB_PRECESS">
-      <LineId Id="79" Count="2" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="104" Count="1" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="106" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="131" Count="2" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="80" Count="1" />
       <LineId Id="72" Count="1" />
       <LineId Id="78" Count="0" />
       <LineId Id="11" Count="28" />

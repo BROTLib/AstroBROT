@@ -24,7 +24,14 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// Julian centuries FROM J2000 OF jd.
+      <ST><![CDATA[// https://idlastro.gsfc.nasa.gov/ftp/pro/astro/co_nutate.pro
+(*EXPLANATION:
+;     Calculates necessary changes to ra and dec due to
+;     the nutation of the Earth's rotation axis, as described in Meeus, Chap 23.
+;     Uses formulae from Astronomical Almanac, 1984, and does the calculations
+;     in equatorial rectangular coordinates to avoid singularities at the
+;     celestial poles.*)
+// Julian centuries FROM J2000 OF jd.
 T := (jd -2451545.0)/36525.0; 
 
 // must calculate obliquity OF ecliptic
@@ -83,6 +90,9 @@ EQ_COORD_DIFF.dec := (dec2 - EQ_COORD_IN.dec);
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_CO_NUTATE">
+      <LineId Id="80" Count="0" />
+      <LineId Id="82" Count="4" />
+      <LineId Id="81" Count="0" />
       <LineId Id="3" Count="55" />
       <LineId Id="2" Count="0" />
     </LineIds>

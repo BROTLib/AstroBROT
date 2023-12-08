@@ -29,7 +29,17 @@ VAR CONSTANT
 	d2r: LREAL := PI/180.0; // Pi/180
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* source: https://idlastro.gsfc.nasa.gov/ftp/pro/astro/sunpos.pro *)
+      <ST><![CDATA[(* NOTES:
+;       Patrick Wallace (Rutherford Appleton Laboratory, UK) has tested the
+;       accuracy of a C adaptation of the sunpos.pro code and found the 
+;       following results.   From 1900-2100 SUNPOS  gave 7.3 arcsec maximum 
+;       error, 2.6 arcsec RMS.  Over the shorter interval 1950-2050 the figures
+;       were 6.4 arcsec max, 2.2 arcsec RMS.  
+;
+;       The returned RA and Dec are in the given date's equinox.
+;
+;       Procedure was extensively revised in May 1996, and the new calling
+;       sequence is incompatible with the old one.source: https://idlastro.gsfc.nasa.gov/ftp/pro/astro/sunpos.pro *)
 
 //  form TIME in Julian centuries FROM 1900.0
 t := (jd - 2415020.0)/36525.0;
@@ -99,6 +109,7 @@ sun_eq.dec := sun_eq.dec/d2r;
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_SUNPOS">
+      <LineId Id="130" Count="9" />
       <LineId Id="3" Count="62" />
       <LineId Id="69" Count="1" />
       <LineId Id="103" Count="0" />

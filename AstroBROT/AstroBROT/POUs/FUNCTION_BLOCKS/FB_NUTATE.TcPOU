@@ -33,7 +33,13 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[//  form time in Julian centuries from 1900.0
+      <ST><![CDATA[// https://idlastro.gsfc.nasa.gov/ftp/pro/astro/nutate.pro
+(*METHOD:
+;       Uses the formula in Chapter 22 of ``Astronomical Algorithms'' by Jean 
+;       Meeus (1998, 2nd ed.) which is based on the 1980 IAU Theory of Nutation
+;       and includes all terms larger than 0.0003".*)
+
+//  form time in Julian centuries from 1900.0
 
 t := (jd - 2451545.0)/36525.0;
 
@@ -81,6 +87,10 @@ END_FOR
  ]]></ST>
     </Implementation>
     <LineIds Name="FB_NUTATE">
+      <LineId Id="78" Count="0" />
+      <LineId Id="80" Count="2" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="83" Count="0" />
       <LineId Id="3" Count="44" />
       <LineId Id="2" Count="0" />
     </LineIds>
