@@ -10,7 +10,7 @@
 		</System>
 		<Plc>
 			<Project GUID="{A82DCABE-5047-4D82-B1CC-AE7926D1B190}" Name="AstroBROT" PrjFilePath="AstroBROT\AstroBROT.plcproj" TmcFilePath="AstroBROT\AstroBROT.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="AstroBROT\AstroBROT.tmc" TmcHash="{1DAFEE44-474E-35F3-57CD-8E80CA601F30}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="AstroBROT\AstroBROT.tmc" TmcHash="{7FAC9D57-0D4C-6A11-FA0E-B5824B733FA7}">
 					<Name>AstroBROT Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>

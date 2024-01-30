@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_HOR2EQ" Id="{a0256175-d56a-4186-a182-fc276b1c60fe}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_HOR2EQ
+VAR_INPUT
+	hor_coord:	S_SkyCoordHorizontal;	// INPUT COORD ALT/AZ in degrees
+	jd: 		LREAL;					// Julian Date
+	location:	S_EarthLocation;		// LOCATION of observer
+	ws:			BOOL := FALSE; 			// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
+	precess:	BOOL := TRUE; 			// Set this to 1 to force precession [default], 0 for no precession correction
+	nutate:		BOOL := TRUE; 			// Set this to 1 to force nutation [default], 0 for no nutation correction.
+	aberration:	BOOL := TRUE; 			// Set this to 1 to force aberration correction [default], 0 for no correction.
+	refract:	BOOL := TRUE; 			// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
+END_VAR
+VAR_OUTPUT
+	eq_coord:	S_SkyCoordEquatorial;	// OUTPUT COORD RA/DEC (J2000) in degrees (FK5)
+	ha:			LREAL;					// hour angle (in degrees) (optional)
+END_VAR
+VAR
+	lmst,
+	J_now: LREAL;
+	co_nutate: 		FB_CO_NUTATE;
+	co_aberration: 	FB_CO_ABERRATION;
+	co_refract:		FB_CO_REFRACT;
+	fbprecess:		FB_PRECESS;
+	altaz2hadec:	FB_ALTAZ2HADEC;
+	eq_coord_diff_nut:	S_SkyCoordEquatorial	:=  (ra:= 0.0, dec:= 0.0); // difference due to nutation
+	eq_coord_diff_abr:	S_SkyCoordEquatorial	:=  (ra:= 0.0, dec:= 0.0); // difference due to aberration
+	time_coord:			S_SkyCoordEquatorial 	:=  (ra:= 45.0, dec:= 45.0); // used for LOCAL APPARENT SIDEREAL TIME (45deg,45dec)
+	last: LREAL;
+	eps: LREAL;
+	d_psi: LREAL;
+END_VAR
+VAR CONSTANT
+	// easier then functions
+	d2r:	LREAL := PI/180.0;
+	h2d:	LREAL := 15.0;
+	jd2000: LREAL := 2451545.0;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF WS THEN 
+	hor_coord.az := hor_coord.az - 180.0;
+END_IF
+
+(********************************************************************************************
+ Make Correction for ATMOSPHERIC REFRACTION
+ (use this for visible and radio wavelengths; author is unsure about other wavelengths.
+  See the comments in CO_REFRACT for more details.) *)
+IF refract THEN 
+	co_refract(	old_alt := hor_coord.alt, 
+				altitude := location.altitude, 
+				to_observed := TRUE, 
+				new_alt => hor_coord.alt);
+END_IF
+
+
+//******************************************************************************
+//Calculate LOCAL APPARENT SIDEREAL TIME
+// Nutation for d_psi and eps
+co_nutate(	jd := jd, 
+				eq_coord_in := time_coord, 
+				eps=>eps, 
+				d_psi=>d_psi);
+// first get local mean sidereal time (lmst)
+// get LST (in hours) - note:this is indep of tzone since giving jd
+// Calculate LOCAL MEAN SIDEREAL TIME *)
+lmst := jd2lst(JD:= jd, loc:= location);
+// calculate local APPARENT sidereal time
+last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
+
+
+//****************************************************************************
+// Now do the spherical trig to get APPARENT Hour Angle [degrees], and
+// declination [degrees].
+altaz2hadec( hor_coord:= hor_coord, lat := location.latitude, ha => ha, dec => eq_coord.dec);
+
+// Find Right Ascension (in degrees, from 0 to 360.)
+eq_coord.ra := MODABS(last - ha + 360.0, 360.0);
+
+
+//*****************************************************************************
+// calculate NUTATION and ABERRATION Corrections to Ra-Dec
+IF nutate THEN
+	co_nutate(	jd := jd, 
+				eq_coord_in := eq_coord, 
+				eq_coord_diff => eq_coord_diff_nut, 
+				eps=>eps, 
+				d_psi=>d_psi);
+END_IF
+IF ABERRATION THEN	
+	co_aberration(	jd := jd, 
+					eq_coord_in := EQ_COORD,
+					eq_coord_diff => eq_coord_diff_abr, 
+					eps := eps);
+END_IF
+eq_coord.ra := eq_coord.ra - (eq_coord_diff_abr.ra + eq_coord_diff_nut.ra);
+eq_coord.dec := eq_coord.dec - (eq_coord_diff_abr.dec + eq_coord_diff_nut.dec);
+
+(* ******************************************************************************
+ PRECESS coordinates to current date
+ (uses astro lib procedure PRECESS.pro)
+*)
+J_now := (JD - jd2000)/365.25 + 2000.0; // compute current equinox
+IF precess THEN
+	fbprecess( eq_coord_in := eq_coord, 
+	equinox1 := 2000.0, equinox2 := J_now, 
+	eq_coord_precessed => eq_coord);
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_HOR2EQ">
+      <LineId Id="261" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="252" Count="8" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="57" Count="2" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="303" Count="1" />
+      <LineId Id="306" Count="0" />
+      <LineId Id="296" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="264" Count="3" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="68" Count="8" />
+      <LineId Id="80" Count="2" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="309" Count="3" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="278" Count="4" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="316" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="337" Count="9" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

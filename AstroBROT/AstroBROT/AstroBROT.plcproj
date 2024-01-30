@@ -56,6 +56,9 @@
     <Compile Include="POUs\FUNCTIONS\TEN.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_ALTAZ2HADEC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_CO_ABERRATION.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -72,6 +75,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_HADEC2ALTAZ.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_HOR2EQ.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_NUTATE.TcPOU">

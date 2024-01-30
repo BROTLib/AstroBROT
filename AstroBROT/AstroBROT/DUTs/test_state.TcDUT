@@ -6,10 +6,9 @@
 TYPE test_state :
 (
 	IDLE,
-	DATETIME2JD,
 	EQ2HOR,
-	DEG2RAD,
-	RAD2DEG,
+	HOR2EQ,
+	EQ2EQ,
 	JD2LST,
 	ERROR
 );

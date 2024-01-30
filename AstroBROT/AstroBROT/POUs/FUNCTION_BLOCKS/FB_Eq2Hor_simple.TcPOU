@@ -23,7 +23,8 @@ VAR CONSTANT
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// following "Practical astronomy with your calculator" by Peter Duffett-Smith
-// simple form, has up to 1800 arcsec difference to astropy/horizons
+// DO NOT USE FOR ACCURATE TRANSFORMATIONS!!!!!
+// simple form, has up to 1800 arcsec difference to astropy
 
 // calculate hour angle in degrees
 lst := JD2LST(JD := JD, loc := location);
@@ -50,6 +51,7 @@ END_IF
     </Implementation>
     <LineIds Name="FB_Eq2Hor_simple">
       <LineId Id="113" Count="0" />
+      <LineId Id="162" Count="0" />
       <LineId Id="142" Count="0" />
       <LineId Id="114" Count="0" />
       <LineId Id="9" Count="0" />
