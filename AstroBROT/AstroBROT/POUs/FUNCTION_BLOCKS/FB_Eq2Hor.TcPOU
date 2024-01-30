@@ -18,14 +18,12 @@ VAR_OUTPUT
 END_VAR
 VAR
 	tstart, J_now:		LREAL;
-	s_now: 				STRING;
 	lmst:				LREAL;
 	last:				LREAL;
 	d_psi:				LREAL;
 	eps:				LREAL;
-	eq_coord_diff_nut:	S_SkyCoordEquatorial; // difference due to nutation
-	eq_coord_diff_abr:	S_SkyCoordEquatorial; // difference due to aberration
-	ddec1, ddec2:		LREAL;
+	eq_coord_diff_nut:	S_SkyCoordEquatorial	:=  (ra:= 0.0, dec:= 0.0); // difference due to nutation
+	eq_coord_diff_abr:	S_SkyCoordEquatorial	:=  (ra:= 0.0, dec:= 0.0); // difference due to aberration
 	fbprecess: 			FB_PRECESS;
 	hadec2altaz:		FB_HADEC2ALTAZ;
 	co_nutate: 			FB_CO_NUTATE;
@@ -37,7 +35,6 @@ VAR CONSTANT
 	// easier then functions
 	d2r:	LREAL := PI/180.0;
 	h2r:	LREAL := PI/12.0;
-	
 	jd2000: LREAL := 2451545.0;
 END_VAR
 ]]></Declaration>
@@ -78,24 +75,21 @@ IF nutate THEN
 				eq_coord_diff => eq_coord_diff_nut, 
 				eps=>eps, 
 				d_psi=>d_psi);
-	eq_coord.ra := eq_coord.ra + eq_coord_diff_nut.ra;
-	eq_coord.dec := eq_coord.dec + eq_coord_diff_nut.dec;
 END_IF
 
 IF ABERRATION THEN	
 	co_aberration(	jd := jd, 
 					eq_coord_in := EQ_COORD,
 					eq_coord_diff => eq_coord_diff_abr, 
-					eps := eps);
-	eq_coord.ra := eq_coord.ra + eq_coord_diff_abr.ra;
-	eq_coord.dec := eq_coord.dec + eq_coord_diff_abr.dec;
+					eps := eps);	
 END_IF
-
+eq_coord.ra := eq_coord.ra + eq_coord_diff_abr.ra + eq_coord_diff_nut.ra;
+eq_coord.dec := eq_coord.dec + eq_coord_diff_abr.dec + eq_coord_diff_nut.dec;
 (***************************************************************************************
 Calculate LOCAL MEAN SIDEREAL TIME *)
 lmst := jd2lst(JD:= jd, loc:= location);
 // calculate local APPARENT sidereal time
-last := lmst + d_psi *COS(eps*d2r)/3600.0 ; //add correction in degrees
+last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 
 (******************************************************************************
  Find hour angle (in DEGREES) *)
@@ -107,8 +101,7 @@ ha := MODABS(ha, 360.0);
 hadec2altaz(	ha := ha, 
 				dec := eq_coord.dec, 
 				lat := location.latitude, 
-				alt => hor_coord.alt, 
-				az => hor_coord.az, 
+				hor_coord => hor_coord, 
 				WS := WS);
 
 (********************************************************************************************
@@ -128,10 +121,15 @@ END_IF
       <LineId Id="16" Count="2" />
       <LineId Id="21" Count="20" />
       <LineId Id="43" Count="0" />
-      <LineId Id="45" Count="8" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="49" Count="4" />
       <LineId Id="55" Count="0" />
-      <LineId Id="57" Count="7" />
-      <LineId Id="66" Count="26" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="61" Count="3" />
+      <LineId Id="66" Count="13" />
+      <LineId Id="81" Count="11" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
