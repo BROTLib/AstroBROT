@@ -16,11 +16,11 @@ VAR
 	alt_r:	LREAL;
 	az_r:	LREAL;
 	lat_r:	LREAL;
-	sindec: LREAL;
+	sindec:	LREAL;
 END_VAR
 VAR CONSTANT
 	d2r:	LREAL := PI/180.0;
-	//r2d:	LREAL := 180.0/PI;
+	r2d:	LREAL := 180.0/PI;
 	//h2r:	LREAL := PI/12.0;
 	//h2d:	LREAL := 15.0;
 END_VAR]]></Declaration>
@@ -67,16 +67,15 @@ END_VAR]]></Declaration>
                  Declination = 19.1824
 
  REVISION HISTORY:
-    Written  Chris O'Dell Univ. of Wisconsin-Madison May 2002
-*)
+    Written  Chris O'Dell Univ. of Wisconsin-Madison May 2002*)
+
 alt_r  := hor_coord.alt*d2r;
 az_r := hor_coord.az*d2r;
 lat_r := lat*d2r;
 
 //******************************************************************************
 // find local HOUR ANGLE (in degrees, from 0. to 360.)
-ha := atan2( -SIN(az_r)*COS(alt_r), 
-           -COS(az_r)*SIN(lat_r)*COS(alt_r)+SIN(alt_r)*COS(lat_r));
+ha := atan2( (-SIN(az_r)*COS(alt_r)), (-COS(az_r)*SIN(lat_r)*COS(alt_r)+SIN(alt_r)*COS(lat_r)));
 ha := ha / d2r;
 IF ha < 0.0 THEN 
 	ha := ha + 360.0;
@@ -93,7 +92,8 @@ dec := ASIN(sindec)/d2r;
       <LineId Id="9" Count="0" />
       <LineId Id="12" Count="41" />
       <LineId Id="10" Count="0" />
-      <LineId Id="66" Count="9" />
+      <LineId Id="66" Count="6" />
+      <LineId Id="74" Count="1" />
       <LineId Id="86" Count="1" />
       <LineId Id="77" Count="3" />
       <LineId Id="89" Count="0" />

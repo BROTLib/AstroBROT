@@ -5,8 +5,8 @@
 VAR
 	estate 			: 	test_state := test_state.IDLE;	// different test states for the functions
 	loc0 			: 	S_EarthLocation;				// location for observer
-	coord_eq 		:	S_SkyCoordEquatorial;			// input coord eq
-	coord_hor		:	S_SkyCoordHorizontal;			// output coord hor STELLA
+	coord_eq 		:	S_SkyCoordEquatorial;			// coord eq
+	coord_hor		:	S_SkyCoordHorizontal;			// coord hor
 	eq2hor			:	FB_EQ2HOR;						// equatorial to horizontal transform function block (Stella1) (J2000) in degrees (FK5)
 	hor2eq			:	FB_HOR2EQ;						// horizontal to equatorial transform function block (Stella1) (J2000) in degrees (FK5)
 	
@@ -39,11 +39,11 @@ END_VAR
 		// transform to ALT AZ
 		eq2hor(EQ_COORD:=coord_eq, JD:=jd1, LOCATION:=loc0, REFRACT:=FALSE, HOR_COORD => coord_hor);
 		// transform back :)
-		hor2eq(hor_coord:=coord_hor, jd:=jd1,location:=loc0, refract:=FALSE, eq_coord => coord_eq);
+		hor2eq(hor_coord:=coord_hor, jd:=jd1,location:=loc0, REFRACT:=FALSE, eq_coord => coord_eq);
 		estate := test_state.IDLE;
 	test_state.HOR2EQ:
 		// transform :)
-		hor2eq(hor_coord:=coord_hor, jd:=jd1,location:=loc0, refract:=FALSE, eq_coord => coord_eq);
+		hor2eq(hor_coord:=coord_hor, jd:=jd1 ,location:=loc0, refract:=FALSE, eq_coord => coord_eq);
 		estate := test_state.IDLE;
 	
 END_CASE]]></ST>

@@ -13,7 +13,7 @@ VAR_INPUT
 	refract:	BOOL := TRUE; 			// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
 END_VAR
 VAR_OUTPUT
-	eq_coord:	S_SkyCoordEquatorial;	// OUTPUT COORD RA/DEC (J2000) in degrees (FK5)
+	eq_coord:	S_SkyCoordEquatorial :=  (ra:= 0.0, dec:= 0.0);;	// OUTPUT COORD RA/DEC (J2000) in degrees (FK5)
 	ha:			LREAL;					// hour angle (in degrees) (optional)
 END_VAR
 VAR
@@ -26,7 +26,7 @@ VAR
 	altaz2hadec:	FB_ALTAZ2HADEC;
 	eq_coord_diff_nut:	S_SkyCoordEquatorial	:=  (ra:= 0.0, dec:= 0.0); // difference due to nutation
 	eq_coord_diff_abr:	S_SkyCoordEquatorial	:=  (ra:= 0.0, dec:= 0.0); // difference due to aberration
-	time_coord:			S_SkyCoordEquatorial 	:=  (ra:= 45.0, dec:= 45.0); // used for LOCAL APPARENT SIDEREAL TIME (45deg,45dec)
+	time_coord:			S_SkyCoordEquatorial 	:=  (ra:= 45.0, dec:= 45.0); // used for LOCAL APPARENT SIDEREAL TIME (180deg,0dec)
 	last: LREAL;
 	eps: LREAL;
 	d_psi: LREAL;
@@ -38,7 +38,54 @@ VAR CONSTANT
 	jd2000: LREAL := 2451545.0;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF WS THEN 
+      <ST><![CDATA[(* https://github.com/wlandsman/IDLAstro/blob/master/pro/hor2eq.pro
+; NAME:
+;   HOR2EQ
+;
+; PURPOSE:
+;    Converts local horizon coords (alt-az) of something to equatorial (ra-dec).
+;
+; EXPLANATION:
+;     This is a nice code to calculate equatorial (ra,dec) coordinates from
+;     horizon (alt,az) coords.    It is typically accurate to about 1 arcsecond
+;     or better (I have checked the output against the publicly available XEPHEM
+;     software). It performs precession, nutation, aberration, and refraction
+;     corrections.  The perhaps best thing about it is that it can take arrays
+;     as inputs, in all variables and keywords EXCEPT Lat, lon, and Altitude
+;    (the code assumes these aren't changing), and uses vector arithmetic in
+;     every calculation except when calculating the precession matrices.
+;
+; DEPENDENCIES:
+;       NUTATE, PRECESS, SUNPOS,
+;       CO_NUTATE, CO_ABERRATION, CO_REFRACT, HADEC2ALTAZ
+;CORRECTIONS I DO NOT MAKE:
+;   *  Deflection of Light by the sun due to GR. (typically milliarcseconds,
+;        can be arcseconds within one degree of the sun)
+;   *  The Effect of Annual Parallax (typically < 1 arcsecond)
+;   *  and more (see below)
+;
+; TO DO
+;    * Better Refraction Correction.  Need to put in wavelength dependence,
+;       and integrate through the atmosphere.
+;    * Topocentric Parallax Correction (will take into account elevation of
+;          the observatory)
+;    * Proper Motion (but this will require crazy lookup tables or something).
+;    * Difference between UTC and UT1 in determining LAST -- is this important?
+;    * Effect of Annual Parallax (is this the same as topocentric Parallax?)
+;    * Polar Motion
+;    * Better connection to Julian Date Calculator.
+;
+; AUTHOR:
+;   Chris O'Dell
+;   Assistant Professor of Atmospheric Science
+;   Colorado State University
+;   Email: odell@atmos.colostate.edu
+; REVISION HISTORY:
+;     Made all integers type LONG  W. Landsman   September 2007
+;     Fixed for case of scalar Julian date but vector positions W L June 2009
+;-*)
+
+IF WS THEN 
 	hor_coord.az := hor_coord.az - 180.0;
 END_IF
 
@@ -57,13 +104,13 @@ END_IF
 //******************************************************************************
 //Calculate LOCAL APPARENT SIDEREAL TIME
 // Nutation for d_psi and eps
-co_nutate(	jd := jd, 
+co_nutate(jd := jd, 
 				eq_coord_in := time_coord, 
 				eps=>eps, 
 				d_psi=>d_psi);
 // first get local mean sidereal time (lmst)
 // get LST (in hours) - note:this is indep of tzone since giving jd
-// Calculate LOCAL MEAN SIDEREAL TIME *)
+// Calculate LOCAL MEAN SIDEREAL TIME 
 lmst := jd2lst(JD:= jd, loc:= location);
 // calculate local APPARENT sidereal time
 last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
@@ -77,7 +124,6 @@ altaz2hadec( hor_coord:= hor_coord, lat := location.latitude, ha => ha, dec => e
 // Find Right Ascension (in degrees, from 0 to 360.)
 eq_coord.ra := MODABS(last - ha + 360.0, 360.0);
 
-
 //*****************************************************************************
 // calculate NUTATION and ABERRATION Corrections to Ra-Dec
 IF nutate THEN
@@ -89,26 +135,35 @@ IF nutate THEN
 END_IF
 IF ABERRATION THEN	
 	co_aberration(	jd := jd, 
-					eq_coord_in := EQ_COORD,
+					eq_coord_in := eq_coord,
 					eq_coord_diff => eq_coord_diff_abr, 
 					eps := eps);
 END_IF
 eq_coord.ra := eq_coord.ra - (eq_coord_diff_abr.ra + eq_coord_diff_nut.ra);
 eq_coord.dec := eq_coord.dec - (eq_coord_diff_abr.dec + eq_coord_diff_nut.dec);
+ 
+
 
 (* ******************************************************************************
  PRECESS coordinates to current date
  (uses astro lib procedure PRECESS.pro)
 *)
-J_now := (JD - jd2000)/365.25 + 2000.0; // compute current equinox
+J_now := (jd - jd2000)/365.25 + 2000.0; // compute current equinox
 IF precess THEN
 	fbprecess( eq_coord_in := eq_coord, 
-	equinox1 := 2000.0, equinox2 := J_now, 
+	equinox1 := J_now, equinox2 := 2000.0, 
 	eq_coord_precessed => eq_coord);
 END_IF
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_HOR2EQ">
+      <LineId Id="454" Count="0" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="455" Count="14" />
+      <LineId Id="519" Count="2" />
+      <LineId Id="533" Count="16" />
+      <LineId Id="579" Count="7" />
+      <LineId Id="452" Count="1" />
       <LineId Id="261" Count="1" />
       <LineId Id="47" Count="0" />
       <LineId Id="263" Count="0" />
@@ -121,17 +176,13 @@ END_IF
       <LineId Id="306" Count="0" />
       <LineId Id="296" Count="0" />
       <LineId Id="60" Count="1" />
-      <LineId Id="264" Count="3" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="265" Count="2" />
       <LineId Id="65" Count="0" />
       <LineId Id="68" Count="8" />
-      <LineId Id="80" Count="2" />
-      <LineId Id="268" Count="0" />
-      <LineId Id="309" Count="3" />
-      <LineId Id="308" Count="0" />
-      <LineId Id="169" Count="0" />
-      <LineId Id="278" Count="4" />
-      <LineId Id="172" Count="0" />
-      <LineId Id="316" Count="0" />
+      <LineId Id="436" Count="15" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="384" Count="0" />
       <LineId Id="89" Count="0" />
       <LineId Id="115" Count="0" />
       <LineId Id="337" Count="9" />
