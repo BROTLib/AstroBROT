@@ -20,7 +20,8 @@ VAR CONSTANT
 	alpha : LREAL := 0.0065; //temp lapse rate [deg C per meter]
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF temperature = 0.0 THEN
+      <ST><![CDATA[// https://idlastro.gsfc.nasa.gov/ftp/pro/astro/co_refract.pro
+IF temperature = 0.0 THEN
 	IF altitude > 11000.0 THEN 
 		temperature := 211.5; 
 	ELSE 
@@ -55,6 +56,7 @@ new_alt := aout;
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_CO_REFRACT">
+      <LineId Id="52" Count="0" />
       <LineId Id="3" Count="31" />
       <LineId Id="2" Count="0" />
     </LineIds>

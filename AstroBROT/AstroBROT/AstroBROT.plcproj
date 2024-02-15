@@ -44,7 +44,25 @@
     <Compile Include="POUs\FUNCTIONS\Deg2Rad.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FUNCTIONS\F_Azimuthvelocity.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\F_DerotatorPosition2.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\F_Derotatorvelocity.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\F_Elevationvelocity.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FUNCTIONS\JD2LST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\PointingModelAzimuth.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\PointingModelElevation.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTIONS\POLY.TcPOU">
