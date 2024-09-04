@@ -9,7 +9,8 @@ VAR_INPUT
 	WS:	BOOL := FALSE;
 END_VAR
 VAR_OUTPUT
-	hor_coord:	S_SkyCoordHorizontal;	// OUTPUT COORD ALT/AZ
+	alt,
+	az:	LREAL;
 END_VAR
 VAR
 	sh,sd,sl, ch,cd,cl,	x, y, z, radius:	LREAL;
@@ -76,15 +77,15 @@ z := ch * cd * cl + sd * sl;
 radius := SQRT(x*x + y*y);
 
 // now get Alt, Az
-hor_coord.az := ATAN2(y, x) /d2r;	// was ATAN(y, x)
-hor_coord.alt := ATAN2(z, radius) / d2r;
+az := ATAN2(y, x) /d2r;	// was ATAN(y, x)
+alt := ATAN2(z, radius) / d2r;
 
 // correct for negative AZ
-hor_coord.az := MODABS(hor_coord.az, 360.0);
+az := MODABS(az, 360.0);
 
 // convert AZ to West from South, if desired
 IF WS THEN 
-	hor_coord.az := MODABS(hor_coord.az + 180.0, 360);
+	az := MODABS(az + 180.0, 360);
 END_IF
 ]]></ST>
     </Implementation>

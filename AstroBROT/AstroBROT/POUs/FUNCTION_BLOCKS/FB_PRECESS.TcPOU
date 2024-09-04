@@ -3,12 +3,14 @@
   <POU Name="FB_PRECESS" Id="{879c3673-6766-4546-9283-3aa893f2e05f}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PRECESS
 VAR_INPUT
-	eq_coord_in: S_SkyCoordEquatorial;
+	ra, 
+	dec,
 	equinox1,
 	equinox2: LREAL;
 END_VAR
 VAR_OUTPUT
-	eq_coord_precessed:	S_SkyCoordEquatorial;
+	ra_precessed,
+	dec_precessed:	LREAL;
 END_VAR
 VAR
 	ra_rad, dec_rad: LREAL;
@@ -38,8 +40,8 @@ END_VAR
 *)
 
 // deg 2 radian
-ra_rad := eq_coord_in.ra*d2r;
-dec_rad := eq_coord_in.dec*d2r;
+ra_rad := ra*d2r;
+dec_rad := dec*d2r;
 
 
 a := COS( dec_rad );
@@ -69,9 +71,9 @@ x2[2] := rot[0,2]*x[0] + rot[1,2]*x[1] + rot[2,2]*x[2];
 ra_rad := atan2(x2[1],x2[0]);
 dec_rad := ASIN(x2[2]);
 
-eq_coord_precessed.ra := ra_rad/d2r;
-eq_coord_precessed.ra := MODABS(eq_coord_precessed.ra, 360.0);            //RA between 0 AND 360 degrees
-eq_coord_precessed.dec := dec_rad/d2r;]]></ST>
+ra_precessed := ra_rad/d2r;
+ra_precessed := MODABS(ra_precessed, 360.0);            //RA between 0 AND 360 degrees
+dec_precessed := dec_rad/d2r;]]></ST>
     </Implementation>
     <LineIds Name="FB_PRECESS">
       <LineId Id="79" Count="0" />

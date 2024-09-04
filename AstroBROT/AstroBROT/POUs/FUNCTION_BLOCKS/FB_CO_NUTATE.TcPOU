@@ -3,11 +3,13 @@
   <POU Name="FB_CO_NUTATE" Id="{1eae2c23-d186-449f-a296-fa0bbdbdf4fc}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_NUTATE
 VAR_INPUT
-	jd:	LREAL;
-	EQ_COORD_IN: S_SkyCoordEquatorial;
+	jd,
+	ra,
+	dec:	LREAL;
 END_VAR
 VAR_OUTPUT
-	EQ_COORD_DIFF: S_SkyCoordEquatorial; // Return changes in ra and dec
+	d_ra,
+	d_dec,
 	eps,			// TRUE obliquity OF the ecliptic in radians
 	d_psi,			// in arcsec
 	d_eps:	LREAL;
@@ -47,9 +49,9 @@ ce := COS(eps);
 se := SIN(eps);
 
 // convert ra-dec to equatorial rectangular coordinates
-x := COS(EQ_COORD_IN.ra*d2r) * COS(EQ_COORD_IN.dec*d2r);
-y := SIN(EQ_COORD_IN.ra*d2r) * COS(EQ_COORD_IN.dec*d2r);
-z := SIN(EQ_COORD_IN.dec*d2r);
+x := COS(ra*d2r) * COS(dec*d2r);
+y := SIN(ra*d2r) * COS(dec*d2r);
+z := SIN(dec*d2r);
 
 // apply corrections to each rectangular coordinate
 x2 := x - (y*ce + z*se)*d_psi * d2as;
@@ -85,8 +87,8 @@ ra2 := MODABS(ra2, 360.0);
 
 
 // Return changes in ra and dec
-EQ_COORD_DIFF.ra := (ra2 - EQ_COORD_IN.ra);
-EQ_COORD_DIFF.dec := (dec2 - EQ_COORD_IN.dec);
+d_ra := (ra2 - ra);
+d_dec := (dec2 - dec);
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_CO_NUTATE">

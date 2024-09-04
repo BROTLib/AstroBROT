@@ -4,7 +4,8 @@
     <Declaration><![CDATA[FUNCTION JD2LST : LREAL
 VAR_INPUT
 	jd: 	LREAL;
-	loc:	S_EarthLocation;
+	// longitude in degrees
+	lon: LREAL;
 END_VAR
 VAR
 	T: 		LREAL;
@@ -20,7 +21,7 @@ T := ((jd - jd2000) / 36525.0);
 theta0 := 280.46061837 + 360.98564736629 * (JD - jd2000) + (0.000387933 * T * T) - (T * T * T / 38710000.0); // (12.4)
 
 // LST is only defined from 0 to 360
-JD2LST := MODABS(theta0 + loc.longitude, 360.0); // LST in degrees]]></ST>
+JD2LST := MODABS(theta0 + lon, 360.0); // LST in degrees]]></ST>
     </Implementation>
     <LineIds Name="JD2LST">
       <LineId Id="21" Count="0" />

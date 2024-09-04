@@ -110,22 +110,12 @@
     <Compile Include="POUs\MAIN.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Test\FB_DateTime2JD_Test.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Test\FB_Eq2Hor_Test.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Test\FB_JD2LST.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DUTs" />
     <Folder Include="GVLs" />
     <Folder Include="POUs\FUNCTION_BLOCKS" />
     <Folder Include="POUs\FUNCTIONS" />
-    <Folder Include="Test" />
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
   </ItemGroup>

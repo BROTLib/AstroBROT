@@ -3,8 +3,12 @@
   <POU Name="FB_ALTAZ2HADEC" Id="{c9e9fae4-f444-4bfc-a187-9c746df0d157}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ALTAZ2HADEC
 VAR_INPUT
-	hor_coord:	S_SkyCoordHorizontal;
-	lat: 		LREAL;		// the local geodetic latitude, in DEGREES
+	// the local apparent altitude, in DEGREES
+	alt:	LREAL;
+	// the local apparent azimuth, in DEGREES
+	az:		LREAL;
+	// the local geodetic latitude, in DEGREES
+	lat: 	LREAL;
 END_VAR
 VAR_OUTPUT
 	// the local apparent hour angle, in DEGREES
@@ -69,8 +73,8 @@ END_VAR]]></Declaration>
  REVISION HISTORY:
     Written  Chris O'Dell Univ. of Wisconsin-Madison May 2002*)
 
-alt_r  := hor_coord.alt*d2r;
-az_r := hor_coord.az*d2r;
+alt_r  := alt*d2r;
+az_r := az*d2r;
 lat_r := lat*d2r;
 
 //******************************************************************************

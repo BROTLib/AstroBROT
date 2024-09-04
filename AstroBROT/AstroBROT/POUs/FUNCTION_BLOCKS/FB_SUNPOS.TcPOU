@@ -7,7 +7,10 @@ VAR_INPUT
 	JD:		LREAL;
 END_VAR
 VAR_OUTPUT
-	sun_eq: S_SkyCoordEquatorial; 
+	// right ascension
+	RA,
+	// declination of the sun
+	Dec,
 	// longitude
 	longmed,
 	// True Obliquity
@@ -98,14 +101,14 @@ oblt := 23.452294 - 0.0130125*t + (9.2*COS(omega*d2r))/3600.0;
 
 // Form Right Ascension AND Declination
 l := l/3600.0;
-sun_eq.ra := ATAN2( SIN(l*d2r) * COS(oblt*d2r), COS(l*d2r));
+RA := ATAN2( SIN(l*d2r) * COS(oblt*d2r), COS(l*d2r));
 
-sun_eq.dec := ASIN(SIN(l*d2r) * SIN(oblt*d2r));
+Dec := ASIN(SIN(l*d2r) * SIN(oblt*d2r));
  
 
-sun_eq.ra := sun_eq.ra/d2r;
-sun_eq.ra := MODABS(sun_eq.ra, 360.0);
-sun_eq.dec := sun_eq.dec/d2r;
+RA := RA/d2r;
+RA := MODABS(RA, 360.0);
+Dec := Dec/d2r;
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_SUNPOS">
