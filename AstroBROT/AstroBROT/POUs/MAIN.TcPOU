@@ -4,9 +4,9 @@
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
 	estate 			: 	test_state := test_state.IDLE;	// different test states for the functions
-	loc0 			: 	S_EarthLocation;				// location for observer
-	coord_eq 		:	S_SkyCoordEquatorial;			// coord eq
-	coord_hor		:	S_SkyCoordHorizontal;			// coord hor
+	lat, lon        :   LREAL;							// location for observer						
+	ra, dec			:   LREAL;							// coord eq
+	alt, az			:   LREAL;							// coord eq
 	eq2hor			:	FB_EQ2HOR;						// equatorial to horizontal transform function block (Stella1) (J2000) in degrees (FK5)
 	hor2eq			:	FB_HOR2EQ;						// horizontal to equatorial transform function block (Stella1) (J2000) in degrees (FK5)
 	
@@ -23,7 +23,7 @@ END_VAR
 		
 	test_state.JD2LST:
 		// transform time
-		lst1 := JD2LST(jd := jd1, loc := loc0);
+		lst1 := JD2LST(jd := jd1, lon := lon);
 		// return to IDLE
 		cycle_time := UDINT_TO_LREAL(_TaskInfo[GETCURTASKINDEXEX()].CycleTime) / 10_000_000;
 		estate := test_state.IDLE;
@@ -31,21 +31,20 @@ END_VAR
 		
 	test_state.EQ2HOR:
 		// transform coordinates
-		eq2hor(EQ_COORD:=coord_eq, JD:=jd1, LOCATION:=loc0, REFRACT:=FALSE, HOR_COORD => coord_hor);
+		eq2hor(alpha:=ra, delta:=dec, jd:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
 		// return to IDLE
 		cycle_time := UDINT_TO_LREAL(_TaskInfo[GETCURTASKINDEXEX()].CycleTime) / 10_000_000;
 		estate := test_state.IDLE;
 	test_state.EQ2EQ:
 		// transform to ALT AZ
-		eq2hor(EQ_COORD:=coord_eq, JD:=jd1, LOCATION:=loc0, REFRACT:=FALSE, HOR_COORD => coord_hor);
+		eq2hor(alpha:=ra, delta:=dec, JD:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
 		// transform back :)
-		hor2eq(hor_coord:=coord_hor, jd:=jd1,location:=loc0, REFRACT:=FALSE, eq_coord => coord_eq);
+		hor2eq(alt:=alt, az:=az, jd:=jd1,lon:=lon, lat:=lat, refract:=FALSE, ra=>ra, dec=>dec);
 		estate := test_state.IDLE;
 	test_state.HOR2EQ:
 		// transform :)
-		hor2eq(hor_coord:=coord_hor, jd:=jd1 ,location:=loc0, refract:=FALSE, eq_coord => coord_eq);
+		hor2eq(alt:=alt, az:=az, jd:=jd1 , lon:=lon, lat:=lat, refract:=FALSE, ra=>ra, dec=>dec);
 		estate := test_state.IDLE;
-	
 END_CASE]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
@@ -68,7 +67,6 @@ END_CASE]]></ST>
       <LineId Id="42" Count="0" />
       <LineId Id="120" Count="2" />
       <LineId Id="124" Count="0" />
-      <LineId Id="18" Count="0" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
