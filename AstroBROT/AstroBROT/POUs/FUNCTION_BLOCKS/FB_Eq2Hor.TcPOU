@@ -76,7 +76,11 @@ IF precess THEN
 		dec := delta, 
 		equinox1 := tstart, 
 		equinox2 := J_now, 
-		ra_precessed => alpha1, dec_precessed => delta1);
+		ra_precessed => alpha1, 
+		dec_precessed => delta1);
+ELSE
+	alpha1 := alpha;
+	delta1 := delta;
 END_IF
 
 (******************************************************************************
@@ -86,8 +90,8 @@ END_IF
 IF nutate THEN
 	co_nutate(	
 		jd := jd, 
-		ra := alpha, 
-		dec := delta, 
+		ra := alpha1, 
+		dec := delta1, 
 		d_ra => d_ra_nut, 
 		d_dec => d_dec_nut,
 		eps=>eps, 
@@ -97,8 +101,8 @@ END_IF
 IF ABERRATION THEN	
 	co_aberration(	
 		jd := jd, 
-		ra := alpha, 
-		dec := delta, 
+		ra := alpha1, 
+		dec := delta1, 
 		d_ra => d_ra_abr, 
 		d_dec => d_dec_nut,
 		eps := eps);	
@@ -147,7 +151,9 @@ END_IF
       <LineId Id="177" Count="1" />
       <LineId Id="31" Count="0" />
       <LineId Id="179" Count="0" />
-      <LineId Id="32" Count="8" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="251" Count="3" />
+      <LineId Id="33" Count="7" />
       <LineId Id="182" Count="0" />
       <LineId Id="41" Count="0" />
       <LineId Id="184" Count="2" />
