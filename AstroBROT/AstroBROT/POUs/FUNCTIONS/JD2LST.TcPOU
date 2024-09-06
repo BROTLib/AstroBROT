@@ -3,16 +3,15 @@
   <POU Name="JD2LST" Id="{2ca40348-e5d3-4dfb-88de-8ef6d66387b0}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION JD2LST : LREAL
 VAR_INPUT
-	jd: 	LREAL;
-	// longitude in degrees
-	lon: LREAL;
+	jd			: LREAL;	// Julian date
+	lon			: LREAL;	// longitude in degrees
 END_VAR
 VAR
-	T: 		LREAL;
-	theta0: LREAL;
+	T			: LREAL;
+	theta0		: LREAL;
 END_VAR
 VAR CONSTANT
-	jd2000: LREAL := 2451545.0;
+	jd2000		: LREAL := 2451545.0;
 END_VAR
 ]]></Declaration>
     <Implementation>

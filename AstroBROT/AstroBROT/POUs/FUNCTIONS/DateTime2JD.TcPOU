@@ -3,10 +3,10 @@
   <POU Name="DateTime2JD" Id="{99729b85-ef51-43f9-be01-c7ed25524dd9}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION DateTime2JD : LREAL
 VAR_INPUT
-	epoch: TIMESTRUCT;
+	epoch			: TIMESTRUCT;
 END_VAR
 VAR
-	a,y,m,d,jdn: LREAL;
+	a, y, m, d, jdn	: LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>

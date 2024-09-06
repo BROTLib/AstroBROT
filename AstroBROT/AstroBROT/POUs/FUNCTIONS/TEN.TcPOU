@@ -3,7 +3,7 @@
   <POU Name="TEN" Id="{48a4167d-326b-4179-a49a-d85a103bff69}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION TEN : LREAL
 VAR_INPUT
-	dd,mm,ss: LREAL;
+	dd, mm, ss	: LREAL;
 END_VAR
 VAR
 END_VAR

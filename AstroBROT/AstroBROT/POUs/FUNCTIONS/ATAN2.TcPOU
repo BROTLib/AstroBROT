@@ -3,7 +3,8 @@
   <POU Name="ATAN2" Id="{dba69bd6-0eda-4092-a354-7cdf0084c954}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION ATAN2 : LREAL
 VAR_INPUT
-	y, x: LREAL;
+	y		: LREAL;
+	x		: LREAL;
 END_VAR
 VAR
 END_VAR

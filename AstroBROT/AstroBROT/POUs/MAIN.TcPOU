@@ -31,13 +31,13 @@ END_VAR
 		
 	E_TestState.EQ2HOR:
 		// transform coordinates
-		eq2hor(alpha:=ra, delta:=dec, jd:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
+		eq2hor(ra:=ra, dec:=dec, jd:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
 		// return to IDLE
 		cycle_time := UDINT_TO_LREAL(_TaskInfo[GETCURTASKINDEXEX()].CycleTime) / 10_000_000;
 		estate := E_TestState.IDLE;
 	E_TestState.EQ2EQ:
 		// transform to ALT AZ
-		eq2hor(alpha:=ra, delta:=dec, JD:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
+		eq2hor(ra:=ra, dec:=dec, JD:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
 		// transform back :)
 		hor2eq(alt:=alt, az:=az, jd:=jd1,lon:=lon, lat:=lat, refract:=FALSE, ra=>ra, dec=>dec);
 		estate := E_TestState.IDLE;

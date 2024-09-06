@@ -15,18 +15,13 @@
     <Implicit_KindOfTask>{2fc3c824-111a-43d1-b252-ee748a4f2f8c}</Implicit_KindOfTask>
     <Implicit_Jitter_Distribution>{51fbfe90-a096-4b2a-b6ff-f949a83c84e5}</Implicit_Jitter_Distribution>
     <LibraryReferences>{7e178948-12c0-464c-821e-fe5044b57d25}</LibraryReferences>
+    <Company>BROT</Company>
+    <Released>false</Released>
+    <Title>AstroBROT</Title>
+    <ProjectVersion>0.2.0</ProjectVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DUTs\S_EarthLocation.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DUTs\S_SkyCoordEquatorial.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DUTs\S_SkyCoordHorizontal.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DUTs\test_state.TcDUT">
+    <Compile Include="DUTs\E_TestState.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">
@@ -41,34 +36,10 @@
     <Compile Include="POUs\FUNCTIONS\DateTime2JD.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTIONS\Deg2Rad.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTIONS\F_Azimuthvelocity.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTIONS\F_DerotatorPosition2.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTIONS\F_Derotatorvelocity.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTIONS\F_Elevationvelocity.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FUNCTIONS\JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTIONS\PointingModelAzimuth.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTIONS\PointingModelElevation.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FUNCTIONS\POLY.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTIONS\Rad2Deg.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTIONS\TEN.TcPOU">
@@ -87,9 +58,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_EQ2HOR.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTION_BLOCKS\FB_Eq2Hor_simple.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_HADEC2ALTAZ.TcPOU">
@@ -140,11 +108,6 @@
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_Module</Namespace>
     </PlaceholderReference>
-  </ItemGroup>
-  <ItemGroup>
-    <LibraryReference Include="TcUnit,1.2.0.0,www.tcunit.org">
-      <Namespace>TcUnit</Namespace>
-    </LibraryReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="AstroBROT.tmc">

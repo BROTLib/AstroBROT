@@ -35,7 +35,7 @@ VAR
 	d_ra_abr		: LREAL;		// Difference in RA due to aberration
 	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
 	d_ra_nut		: LREAL;		// Difference in RA due to nutation
-	 d_dec_nut		: LREAL;		// Difference in Dec due to nutation
+	d_dec_nut		: LREAL;		// Difference in Dec due to nutation
 END_VAR
 VAR CONSTANT
 	// easier then functions

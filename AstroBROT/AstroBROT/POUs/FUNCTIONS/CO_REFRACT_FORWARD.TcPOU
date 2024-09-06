@@ -3,18 +3,16 @@
   <POU Name="CO_REFRACT_FORWARD" Id="{9e2a6c66-b60a-451a-a6f4-0d24b94a8b52}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION CO_REFRACT_FORWARD : LREAL
 VAR_INPUT
-	// The observed (apparent) altitude, in DEGREES.
-	a: LREAL;
-	// Pressure [in millibars]. Default is 1010 millibars.
-	P: LREAL := 1010.0;
-	// Ground Temp [in Celsius].  Default is 0 Celsius.
-	T: LREAL := 0.0;
+	a			: LREAL; 			// The observed (apparent) altitude, in DEGREES.
+	P			: LREAL := 1010.0;	// Pressure [in millibars]. Default is 1010 millibars.
+	T			: LREAL := 0.0;		// Ground Temp [in Celsius].  Default is 0 Celsius.
 END_VAR
 VAR
-	Ref, tpcor: LREAL;
+	ref			: LREAL;
+	tpcor		: LREAL;
 END_VAR
 VAR CONSTANT
-	d2r : LREAL := PI/180.0;
+	d2r 		: LREAL := PI/180.0;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -23,12 +21,12 @@ P := LIMIT(600.0, P, 1200.0);
 T := LIMIT(-40.0, T, 40.0);
 
 IF a >= 15.0 THEN
-	Ref := 1.0 / TAN((a + 7.31/(a+4.4))*d2r);
+	ref := 1.0 / TAN((a + 7.31 / (a + 4.4)) * d2r);
 ELSE
-	Ref := 3.569*(0.1594 + 0.0196*a + 0.00002*EXPT(a, 2))/(1.0+0.505*a + 0.0845*EXPT(a, 2));
+	ref := 3.569 * (0.1594 + 0.0196 * a + 0.00002 * EXPT(a, 2)) / (1.0 + 0.505 * a + 0.0845 * EXPT(a, 2));
 END_IF
 tpcor := P * 283.15 / (1010.0 * (273.15 + T));
-CO_REFRACT_FORWARD := tpcor * Ref;
+CO_REFRACT_FORWARD := tpcor * ref;
 ]]></ST>
     </Implementation>
     <LineIds Name="CO_REFRACT_FORWARD">
