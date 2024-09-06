@@ -3,33 +3,32 @@
   <POU Name="FB_SUNPOS" Id="{0dff82b7-3e2e-4cb4-82b3-58dc17eb6623}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SUNPOS
 VAR_INPUT
-	// Julian Date
-	JD:		LREAL;
+	JD				: LREAL;		// Julian Date
 END_VAR
 VAR_OUTPUT
-	// right ascension
-	RA,
-	// declination of the sun
-	Dec,
-	// longitude
-	longmed,
-	// True Obliquity
-	oblt:	LREAL;
+	RA				: LREAL;		// right ascension
+	Dec				: LREAL;		// declination of the sun 
+	longmed			: LREAL;		// longitude
+	oblt			: LREAL;		// True Obliquity
 END_VAR
 VAR
-	t, //  Julian centuries FROM 1900.0
-	l, //  sun's mean longitude
-	me, // Earth's mean anomaly
-	ellcor, // ellipticity of the orbit
-	mv, // mean anomaly of Venus
-	vencorr,
-	mm, 
-	marscorr,
-mj, jupcorr,
-d, longterm, mooncorr,  omega:	LREAL;
+	t				: LREAL;		//  Julian centuries FROM 1900.0
+	l				: LREAL;		//  sun's mean longitude
+	me				: LREAL;		// Earth's mean anomaly
+	ellcor			: LREAL;		// ellipticity of the orbit
+	mv				: LREAL;		// mean anomaly of Venus
+	vencorr			: LREAL;		
+	mm				: LREAL;		
+	marscorr		: LREAL;		
+	mj				: LREAL;		
+	jupcorr			: LREAL;		
+	d				: LREAL;		
+	longterm		: LREAL;		
+	mooncorr		: LREAL;		
+	omega			: LREAL;
 END_VAR
 VAR CONSTANT
-	d2r: LREAL := PI/180.0; // Pi/180
+	d2r				: LREAL := PI/180.0; // Pi/180
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* NOTES:

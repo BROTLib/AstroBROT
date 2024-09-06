@@ -3,20 +3,20 @@
   <POU Name="FB_HADEC2ALTAZ" Id="{adbe57d9-9a23-42f1-9b45-6a2172b8ec42}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_HADEC2ALTAZ
 VAR_INPUT
-	ha,
-	dec,
-	lat:	LREAL;
-	WS:	BOOL := FALSE;
+	ha				: LREAL;		// Hour angle in degrees
+	dec				: LREAL;		// Declination in degrees
+	lat				: LREAL;		// Latitude in degrees
+	WS				: BOOL := FALSE;
 END_VAR
 VAR_OUTPUT
-	alt,
-	az:	LREAL;
+	alt				: LREAL;		// altitude in degrees
+	az				: LREAL;		// azimuth in degrees
 END_VAR
 VAR
-	sh,sd,sl, ch,cd,cl,	x, y, z, radius:	LREAL;
+	sh,sd,sl, ch,cd,cl,	x, y, z, radius: LREAL;
 END_VAR
 VAR CONSTANT
-	d2r :	LREAL := PI/180.0;
+	d2r 			: LREAL := PI/180.0;
 END_VAR
 ]]></Declaration>
     <Implementation>

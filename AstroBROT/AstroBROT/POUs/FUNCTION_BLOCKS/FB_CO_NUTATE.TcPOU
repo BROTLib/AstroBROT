@@ -3,25 +3,24 @@
   <POU Name="FB_CO_NUTATE" Id="{1eae2c23-d186-449f-a296-fa0bbdbdf4fc}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_NUTATE
 VAR_INPUT
-	jd,
-	ra,
-	dec:	LREAL;
+	jd			: LREAL;		// Julian date
+	ra			: LREAL;		// RA in degrees
+	dec			: LREAL;		// Dec in degrees
 END_VAR
 VAR_OUTPUT
-	d_ra,
-	d_dec,
-	eps,			// TRUE obliquity OF the ecliptic in radians
-	d_psi,			// in arcsec
-	d_eps:	LREAL;
+	d_ra		: LREAL;		// RA diff in degrees
+	d_dec		: LREAL;		// Dec diff in degrees
+	eps			: LREAL;		// TRUE obliquity OF the ecliptic in radians
+	d_psi		: LREAL;		// in arcsec
+	d_eps		: LREAL;
 END_VAR
 VAR
-	T, 
-	eps0, ce, se,x,y,z,x2,y2,z2,rad,xyproj,ra2,dec2: LREAL;
-	nutate:	FB_NUTATE;
+	T, eps0, ce, se,x,y,z,x2,y2,z2,rad,xyproj,ra2,dec2: LREAL;
+	nutate		: FB_NUTATE;
 END_VAR
 VAR CONSTANT
-	d2r:	LREAL := PI/180.0;
-	d2as:	LREAL := PI/(180.0*3600.0);
+	d2r			: LREAL := PI/180.0;
+	d2as		: LREAL := PI/(180.0*3600.0);
 END_VAR
 ]]></Declaration>
     <Implementation>

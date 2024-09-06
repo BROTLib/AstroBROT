@@ -3,26 +3,27 @@
   <POU Name="FB_PRECESS" Id="{879c3673-6766-4546-9283-3aa893f2e05f}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PRECESS
 VAR_INPUT
-	ra, 
-	dec,
-	equinox1,
-	equinox2: LREAL;
+	ra				: LREAL;		// RA in degrees
+	dec				: LREAL;		// Dec in degrees
+	equinox1		: LREAL;
+	equinox2		: LREAL;
 END_VAR
 VAR_OUTPUT
-	ra_precessed,
-	dec_precessed:	LREAL;
+	ra_precessed	: LREAL;
+	dec_precessed	: LREAL;
 END_VAR
 VAR
-	ra_rad, dec_rad: LREAL;
-	a,b,c,t: LREAL;
-	x, x2: ARRAY[0..2] OF LREAL;
-	st1: LREAL;
-	rot: ARRAY[0..2,0..2] OF LREAL;
+	ra_rad			: LREAL;		// RA in rad
+	dec_rad			: LREAL;		// Dec in rad
+	a, b, c, t		: LREAL;
+	x, x2			: ARRAY[0..2] OF LREAL;
+	st1				: LREAL;
+	rot				: ARRAY[0..2,0..2] OF LREAL;
 	sina, sinb, sinc, cosa,cosb,cosc: LREAL;
 END_VAR
 VAR CONSTANT
-	d2r : LREAL := PI/180.0;
-	sec_to_rad : LREAL := d2r/3600.0;
+	d2r 			: LREAL := PI/180.0;
+	sec_to_rad 		: LREAL := d2r/3600.0;
 END_VAR
 ]]></Declaration>
     <Implementation>

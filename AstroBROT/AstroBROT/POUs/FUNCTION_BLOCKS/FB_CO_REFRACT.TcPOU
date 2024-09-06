@@ -3,21 +3,21 @@
   <POU Name="FB_CO_REFRACT" Id="{3da273e0-5aa9-4438-ae19-b4f0ec632a24}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_REFRACT
 VAR_INPUT
-	old_alt: LREAL;
-	altitude: LREAL := 0.0;
-	pressure: LREAL := 0.0;
-	temperature: LREAL := 0.0;
-	epsilon: LREAL := 0.25; //accuracy of iteration for observed=TRUE case, in arcseconds
-	TO_OBSERVED: BOOL;
+	old_alt			: LREAL;			// old alt in degrees
+	altitude		: LREAL := 0.0;		// altitude of observatory
+	pressure		: LREAL := 0.0;		// pressure
+	temperature		: LREAL := 0.0;		// temperature
+	epsilon			: LREAL := 0.25; 	//accuracy of iteration for observed=TRUE case, in arcseconds
+	TO_OBSERVED		: BOOL;
 END_VAR
 VAR_OUTPUT
-	new_alt: LREAL;
+	new_alt			: LREAL;
 END_VAR
 VAR
 	aout, P, T, dr, cur, last : LREAL;
 END_VAR
 VAR CONSTANT
-	alpha : LREAL := 0.0065; //temp lapse rate [deg C per meter]
+	alpha 			: LREAL := 0.0065; 	//temp lapse rate [deg C per meter]
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// https://idlastro.gsfc.nasa.gov/ftp/pro/astro/co_refract.pro

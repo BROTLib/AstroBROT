@@ -20,26 +20,28 @@ VAR_OUTPUT
 	ha				: LREAL;		// hour angle in degreesss
 END_VAR
 VAR
-	tstart, J_now:		LREAL;
-	lmst:				LREAL;
-	last:				LREAL;
-	d_psi:				LREAL;
-	eps:				LREAL;
-	fbprecess: 			FB_PRECESS;
-	hadec2altaz:		FB_HADEC2ALTAZ;
-	co_nutate: 			FB_CO_NUTATE;
-	co_aberration:		FB_CO_ABERRATION;
-	co_refract:			FB_CO_REFRACT;
-	//precessed coordinates
-	alpha1, delta1:	LREAL;	
-	d_ra_abr, d_dec_abr: LREAL;
-	d_ra_nut, d_dec_nut: LREAL;
+	tstart, J_now	: LREAL;
+	lmst			: LREAL;
+	last			: LREAL;
+	d_psi			: LREAL;
+	eps				: LREAL;
+	fbprecess		: FB_PRECESS;
+	hadec2altaz		: FB_HADEC2ALTAZ;
+	co_nutate		: FB_CO_NUTATE;
+	co_aberration	: FB_CO_ABERRATION;
+	co_refract		: FB_CO_REFRACT;
+	ra_pre			: LREAL;		// Precessed RA in degrees
+	dec_pre			: LREAL;		// Precessed Dec in degrees
+	d_ra_abr		: LREAL;		// Difference in RA due to aberration
+	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
+	d_ra_nut		: LREAL;		// Difference in RA due to nutation
+	 d_dec_nut		: LREAL;		// Difference in Dec due to nutation
 END_VAR
 VAR CONSTANT
 	// easier then functions
-	d2r:	LREAL := PI/180.0;
-	h2r:	LREAL := PI/12.0;
-	jd2000: LREAL := 2451545.0;
+	d2r				: LREAL := PI/180.0;
+	h2r				: LREAL := PI/12.0;
+	jd2000			: LREAL := 2451545.0;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -69,11 +71,11 @@ IF precess THEN
 		dec := dec, 
 		equinox1 := tstart, 
 		equinox2 := J_now, 
-		ra_precessed => alpha1, 
-		dec_precessed => delta1);
+		ra_precessed => ra_pre, 
+		dec_precessed => dec_pre);
 ELSE
-	alpha1 := ra;
-	delta1 := dec;
+	ra_pre := ra;
+	dec_pre := dec;
 END_IF
 
 (******************************************************************************
@@ -83,8 +85,8 @@ END_IF
 IF nutate THEN
 	co_nutate(	
 		jd := jd, 
-		ra := alpha1, 
-		dec := delta1, 
+		ra := ra_pre, 
+		dec := dec_pre, 
 		d_ra => d_ra_nut, 
 		d_dec => d_dec_nut,
 		eps=>eps, 
@@ -94,8 +96,8 @@ END_IF
 IF ABERRATION THEN	
 	co_aberration(	
 		jd := jd, 
-		ra := alpha1, 
-		dec := delta1, 
+		ra := ra_pre, 
+		dec := dec_pre, 
 		d_ra => d_ra_abr, 
 		d_dec => d_dec_nut,
 		eps := eps);	
@@ -138,7 +140,7 @@ END_IF
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_EQ2HOR">
-      <LineId Id="488" Count="91" />
+      <LineId Id="752" Count="91" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

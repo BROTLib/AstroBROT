@@ -3,50 +3,46 @@
   <POU Name="FB_HOR2EQ" Id="{a0256175-d56a-4186-a182-fc276b1c60fe}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_HOR2EQ
 VAR_INPUT
-	//altitude (in degrees)
-	alt: 		LREAL;  
-	//azimuth angle (in degrees, measured EAST from NORTH, but see keyword WS below.) [scalar or vector]
-	az:			LREAL;
-	jd: 		LREAL;					// Julian Date
-	// observers latitude (degrees)
-	lat:		LREAL;
-	// observers longitude (degrees)
-	lon:		LREAL;
-	ws:			BOOL := FALSE; 			// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
-	precess:	BOOL := TRUE; 			// Set this to 1 to force precession [default], 0 for no precession correction
-	nutate:		BOOL := TRUE; 			// Set this to 1 to force nutation [default], 0 for no nutation correction.
-	aberration:	BOOL := TRUE; 			// Set this to 1 to force aberration correction [default], 0 for no correction.
-	refract:	BOOL := TRUE; 			// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
-	altitude:	LREAL := 0.0;
+	alt				: LREAL;			//altitude (in degrees)  
+	az				: LREAL;			//azimuth angle (in degrees, measured EAST from NORTH, but see keyword WS below.) [scalar or vector]
+	jd				: LREAL;			// Julian Date
+	lat				: LREAL;			// observers latitude (degrees)
+	lon				: LREAL;			// observers longitude (degrees)
+	ws				: BOOL := FALSE; 	// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
+	precess			: BOOL := TRUE; 	// Set this to 1 to force precession [default], 0 for no precession correction
+	nutate			: BOOL := TRUE; 	// Set this to 1 to force nutation [default], 0 for no nutation correction.
+	aberration		: BOOL := TRUE; 	// Set this to 1 to force aberration correction [default], 0 for no correction.
+	refract			: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
+	altitude		: LREAL := 0.0;
 END_VAR
 VAR_OUTPUT
-	// Right Ascension of object  (J2000) in degrees (FK5)
-	ra: 	LREAL;
-	// Declination of object (J2000) in degrees (FK5)
-	dec:	LREAL;
-	// hour angle (in degrees) (optional)
-	ha:		LREAL;
+	ra				: LREAL;			// Right Ascension of object  (J2000) in degrees (FK5)
+	dec				: LREAL;			// Declination of object (J2000) in degrees (FK5)
+	ha				: LREAL;			// hour angle (in degrees) (optional)
 END_VAR
 VAR
-	lmst,
-	J_now: LREAL;
-	co_nutate: 		FB_CO_NUTATE;
-	co_aberration: 	FB_CO_ABERRATION;
-	co_refract:		FB_CO_REFRACT;
-	fbprecess:		FB_PRECESS;
-	altaz2hadec:	FB_ALTAZ2HADEC;
-	last: LREAL;
-	eps: LREAL;
-	d_psi: LREAL;
-	d_ra_nut, d_dec_nut: LREAL;
-	d_ra_ref, d_dec_ref: LREAL;
-	d_ra_abr, d_dec_abr: LREAL;
+	lmst			: LREAL;
+	J_now			: LREAL;
+	co_nutate		: FB_CO_NUTATE;
+	co_aberration	: FB_CO_ABERRATION;
+	co_refract		: FB_CO_REFRACT;
+	fbprecess		: FB_PRECESS;
+	altaz2hadec		: FB_ALTAZ2HADEC;
+	last			: LREAL;
+	eps				: LREAL;
+	d_psi			: LREAL;
+	d_ra_abr		: LREAL;		// Difference in RA due to aberration
+	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
+	d_ra_nut		: LREAL;		// Difference in RA due to nutation
+	d_dec_nut		: LREAL;		// Difference in Dec due to nutation
+	d_ra_ref		: LREAL;		// time reference
+	d_dec_ref		: LREAL;		// time reference
 END_VAR
 VAR CONSTANT
 	// easier then functions
-	d2r:	LREAL := PI/180.0;
-	h2d:	LREAL := 15.0;
-	jd2000: LREAL := 2451545.0;
+	d2r				: LREAL := PI/180.0;
+	h2d				: LREAL := 15.0;
+	jd2000			: LREAL := 2451545.0;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* https://github.com/wlandsman/IDLAstro/blob/master/pro/hor2eq.pro

@@ -3,28 +3,23 @@
   <POU Name="FB_ALTAZ2HADEC" Id="{c9e9fae4-f444-4bfc-a187-9c746df0d157}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ALTAZ2HADEC
 VAR_INPUT
-	// the local apparent altitude, in DEGREES
-	alt:	LREAL;
-	// the local apparent azimuth, in DEGREES
-	az:		LREAL;
-	// the local geodetic latitude, in DEGREES
-	lat: 	LREAL;
+	alt			: LREAL;	// the local apparent altitude, in DEGREES
+	az			: LREAL;	// the local apparent azimuth, in DEGREES
+	lat			: LREAL;	// the local geodetic latitude, in DEGREES
 END_VAR
 VAR_OUTPUT
-	// the local apparent hour angle, in DEGREES
-	ha:		LREAL;
-	// the local apparent declination, in DEGREES
-	dec:	LREAL;
+	ha			: LREAL;	// the local apparent hour angle, in DEGREES
+	dec			: LREAL;	// the local apparent declination, in DEGREES
 END_VAR
 VAR
-	alt_r:	LREAL;
-	az_r:	LREAL;
-	lat_r:	LREAL;
-	sindec:	LREAL;
+	alt_r		: LREAL;
+	az_r		: LREAL;
+	lat_r		: LREAL;
+	sindec		: LREAL;
 END_VAR
 VAR CONSTANT
-	d2r:	LREAL := PI/180.0;
-	r2d:	LREAL := 180.0/PI;
+	d2r			: LREAL := PI/180.0;
+	r2d			: LREAL := 180.0/PI;
 	//h2r:	LREAL := PI/12.0;
 	//h2d:	LREAL := 15.0;
 END_VAR]]></Declaration>

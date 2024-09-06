@@ -3,23 +3,29 @@
   <POU Name="FB_CO_ABERRATION" Id="{78e5ea52-4364-45d1-8d65-73fef4dd6397}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_ABERRATION
 VAR_INPUT
-	jd: LREAL;				// Julian Date
-	ra, dec: LREAL; 	//ra and dec in degrees
-	eps : LREAL := 0.0;
+	jd			: LREAL;		// Julian Date
+	ra			: LREAL;		// RA in degrees
+	dec			: LREAL; 		// Dec in degrees
+	eps 		: LREAL := 0.0;
 END_VAR
 VAR_OUTPUT
-	d_ra, d_dec: LREAL;
+	d_ra		: LREAL;
+	d_dec		: LREAL;
 END_VAR
 VAR
-	sunpos: FB_SUNPOS;
-	nutate: FB_NUTATE;
-	sunra, sundec, sunlon,
-	d_psi, d_epsilon, eps0,
+	sunpos		: FB_SUNPOS;
+	nutate		: FB_NUTATE;
+	sunra		: LREAL;
+	sundec		: LREAL;
+	sunlon		: LREAL;
+	d_psi		: LREAL;
+	d_epsilon	: LREAL; 
+	eps0		: LREAL;
 	t, e, peri, cd, sd, ce, te, cp, sp, cs, ss, ca, sa, term1, term2, term3, term4: LREAL;
 END_VAR
 VAR CONSTANT
-	d2r : LREAL := PI/180.0;
-	k: LREAL := 20.49552; //constant of aberration, in arcseconds
+	d2r 		: LREAL := PI/180.0;
+	k			: LREAL := 20.49552; 	//constant of aberration, in arcseconds
 	
 END_VAR]]></Declaration>
     <Implementation>
