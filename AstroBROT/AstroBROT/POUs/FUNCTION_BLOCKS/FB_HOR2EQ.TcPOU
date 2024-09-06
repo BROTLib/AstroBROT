@@ -35,7 +35,6 @@ VAR
 	co_refract:		FB_CO_REFRACT;
 	fbprecess:		FB_PRECESS;
 	altaz2hadec:	FB_ALTAZ2HADEC;
-	time_coord:			S_SkyCoordEquatorial 	:=  (ra:= 45.0, dec:= 45.0); // used for LOCAL APPARENT SIDEREAL TIME (180deg,0dec)
 	last: LREAL;
 	eps: LREAL;
 	d_psi: LREAL;

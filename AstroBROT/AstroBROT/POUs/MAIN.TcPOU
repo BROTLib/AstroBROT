@@ -3,7 +3,7 @@
   <POU Name="MAIN" Id="{9edd3dc7-464a-45b7-b5f9-e2076842766b}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-	estate 			: 	test_state := test_state.IDLE;	// different test states for the functions
+	estate 			: 	E_TestState := E_TestState.IDLE;	// different test states for the functions
 	lat, lon        :   LREAL;							// location for observer						
 	ra, dec			:   LREAL;							// coord eq
 	alt, az			:   LREAL;							// coord eq
@@ -17,34 +17,34 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[CASE estate OF
-	test_state.IDLE:
-		estate := test_state.IDLE;
+	E_TestState.IDLE:
+		estate := E_TestState.IDLE;
 		
 		
-	test_state.JD2LST:
+	E_TestState.JD2LST:
 		// transform time
 		lst1 := JD2LST(jd := jd1, lon := lon);
 		// return to IDLE
 		cycle_time := UDINT_TO_LREAL(_TaskInfo[GETCURTASKINDEXEX()].CycleTime) / 10_000_000;
-		estate := test_state.IDLE;
+		estate := E_TestState.IDLE;
 		
 		
-	test_state.EQ2HOR:
+	E_TestState.EQ2HOR:
 		// transform coordinates
 		eq2hor(alpha:=ra, delta:=dec, jd:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
 		// return to IDLE
 		cycle_time := UDINT_TO_LREAL(_TaskInfo[GETCURTASKINDEXEX()].CycleTime) / 10_000_000;
-		estate := test_state.IDLE;
-	test_state.EQ2EQ:
+		estate := E_TestState.IDLE;
+	E_TestState.EQ2EQ:
 		// transform to ALT AZ
 		eq2hor(alpha:=ra, delta:=dec, JD:=jd1, lon:=lon, lat:=lat, refract:=FALSE, alt=>alt, az=>az);
 		// transform back :)
 		hor2eq(alt:=alt, az:=az, jd:=jd1,lon:=lon, lat:=lat, refract:=FALSE, ra=>ra, dec=>dec);
-		estate := test_state.IDLE;
-	test_state.HOR2EQ:
+		estate := E_TestState.IDLE;
+	E_TestState.HOR2EQ:
 		// transform :)
 		hor2eq(alt:=alt, az:=az, jd:=jd1 , lon:=lon, lat:=lat, refract:=FALSE, ra=>ra, dec=>dec);
-		estate := test_state.IDLE;
+		estate := E_TestState.IDLE;
 END_CASE]]></ST>
     </Implementation>
     <LineIds Name="MAIN">

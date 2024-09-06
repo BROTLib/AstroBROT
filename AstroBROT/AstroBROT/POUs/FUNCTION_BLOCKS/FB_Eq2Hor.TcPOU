@@ -3,28 +3,21 @@
   <POU Name="FB_EQ2HOR" Id="{2aaa455b-6325-4dbe-b61c-a8cfdf369fe1}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_EQ2HOR
 VAR_INPUT
-	// right ascension in degrees
-	alpha: LREAL;
-	// declination in degrees
-	delta: LREAL;
-	jd: 		LREAL;					// Julian Date
-	// longitude in degrees
-	lon: LREAL;
-	// latitude in degrees
-	lat: LREAL;
-	ws:			BOOL := FALSE; 			// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
-	precess:	BOOL := TRUE; 			// Set this to 1 to force precession [default], 0 for no precession correction
-	nutate:		BOOL := TRUE; 			// Set this to 1 to force nutation [default], 0 for no nutation correction.
-	aberration:	BOOL := TRUE; 			// Set this to 1 to force aberration correction [default], 0 for no correction.
-	refract:	BOOL := TRUE; 			// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
+	ra				: LREAL;	// right ascension in degrees
+	dec				: LREAL;	// declination in degrees
+	jd				: LREAL;	// Julian Date
+	lon				: LREAL;	// longitude in degrees
+	lat				: LREAL;	// latitude in degrees
+	ws				: BOOL := FALSE; 	// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
+	precess			: BOOL := TRUE; 	// Set this to 1 to force precession [default], 0 for no precession correction
+	nutate			: BOOL := TRUE; 	// Set this to 1 to force nutation [default], 0 for no nutation correction.
+	aberration		: BOOL := TRUE; 	// Set this to 1 to force aberration correction [default], 0 for no correction.
+	refract 		: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
 END_VAR
 VAR_OUTPUT
-	// altitude in degrees
-	alt: LREAL;
-	// azimuth in degrees
-	az: LREAL;
-	// hour angle in degreesss
-	ha: LREAL;
+	alt				: LREAL;		// altitude in degrees
+	az				: LREAL;		// azimuth in degrees
+	ha				: LREAL;		// hour angle in degreesss
 END_VAR
 VAR
 	tstart, J_now:		LREAL;
@@ -72,15 +65,15 @@ tstart := 2000.0;
 J_now := (JD - jd2000)/365.25 + 2000.0; // compute current equinox
 IF precess THEN
 	fbprecess( 
-		ra := alpha, 
-		dec := delta, 
+		ra := ra, 
+		dec := dec, 
 		equinox1 := tstart, 
 		equinox2 := J_now, 
 		ra_precessed => alpha1, 
 		dec_precessed => delta1);
 ELSE
-	alpha1 := alpha;
-	delta1 := delta;
+	alpha1 := ra;
+	delta1 := dec;
 END_IF
 
 (******************************************************************************
@@ -107,8 +100,8 @@ IF ABERRATION THEN
 		d_dec => d_dec_nut,
 		eps := eps);	
 END_IF
-alpha := alpha + d_ra_abr + d_ra_nut;
-delta := delta + d_dec_abr + d_dec_nut;
+ra := ra + d_ra_abr + d_ra_nut;
+dec := dec + d_dec_abr + d_dec_nut;
 
 (***************************************************************************************
 Calculate LOCAL MEAN SIDEREAL TIME *)
@@ -118,14 +111,14 @@ last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 
 (******************************************************************************
  Find hour angle (in DEGREES) *)
-ha := last - alpha;
+ha := last - ra;
 ha := MODABS(ha, 360.0);
 
 (*******************************************************************************
  Now do the spherical trig to get APPARENT alt,az. *)
 hadec2altaz(	
 	ha := ha, 
-	dec := delta, 
+	dec := dec, 
 	lat := lat, 
 	alt => alt, 
 	az => az, 
@@ -145,34 +138,7 @@ END_IF
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_EQ2HOR">
-      <LineId Id="3" Count="8" />
-      <LineId Id="16" Count="2" />
-      <LineId Id="21" Count="9" />
-      <LineId Id="177" Count="1" />
-      <LineId Id="31" Count="0" />
-      <LineId Id="179" Count="0" />
-      <LineId Id="32" Count="0" />
-      <LineId Id="251" Count="3" />
-      <LineId Id="33" Count="7" />
-      <LineId Id="182" Count="0" />
-      <LineId Id="41" Count="0" />
-      <LineId Id="184" Count="2" />
-      <LineId Id="45" Count="1" />
-      <LineId Id="49" Count="2" />
-      <LineId Id="57" Count="0" />
-      <LineId Id="187" Count="5" />
-      <LineId Id="60" Count="0" />
-      <LineId Id="133" Count="0" />
-      <LineId Id="61" Count="0" />
-      <LineId Id="193" Count="0" />
-      <LineId Id="62" Count="2" />
-      <LineId Id="66" Count="10" />
-      <LineId Id="195" Count="0" />
-      <LineId Id="77" Count="2" />
-      <LineId Id="202" Count="0" />
-      <LineId Id="81" Count="7" />
-      <LineId Id="203" Count="0" />
-      <LineId Id="89" Count="3" />
+      <LineId Id="488" Count="91" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
