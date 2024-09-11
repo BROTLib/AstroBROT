@@ -99,11 +99,11 @@ IF ABERRATION THEN
 		ra := ra_pre, 
 		dec := dec_pre, 
 		d_ra => d_ra_abr, 
-		d_dec => d_dec_nut,
+		d_dec => d_dec_abr,
 		eps := eps);	
 END_IF
-ra := ra + d_ra_abr + d_ra_nut;
-dec := dec + d_dec_abr + d_dec_nut;
+ra := ra_pre + d_ra_abr + d_ra_nut;
+dec := dec_pre + d_dec_abr + d_dec_nut;
 
 (***************************************************************************************
 Calculate LOCAL MEAN SIDEREAL TIME *)
