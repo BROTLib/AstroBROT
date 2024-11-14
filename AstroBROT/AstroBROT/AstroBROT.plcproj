@@ -8,7 +8,7 @@
     <WriteProductVersion>true</WriteProductVersion>
     <GenerateTpy>false</GenerateTpy>
     <Name>AstroBROT</Name>
-    <ProgramVersion>3.1.4024.0</ProgramVersion>
+    <ProgramVersion>3.1.4026.11</ProgramVersion>
     <Application>{9fc9a62f-59a0-4aae-a660-003ede100064}</Application>
     <TypeSystem>{69dcf73f-9939-42fe-84b7-559c8427b85e}</TypeSystem>
     <Implicit_Task_Info>{12e30059-8c76-4024-968b-6e7711e07d2d}</Implicit_Task_Info>
@@ -31,6 +31,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTIONS\CO_REFRACT_FORWARD.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\CT2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTIONS\DateTime2JD.TcPOU">
