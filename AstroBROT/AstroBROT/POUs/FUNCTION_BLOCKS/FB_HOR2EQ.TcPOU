@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="FB_HOR2EQ" Id="{a0256175-d56a-4186-a182-fc276b1c60fe}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_HOR2EQ
 VAR_INPUT
@@ -14,6 +14,7 @@ VAR_INPUT
 	aberration		: BOOL := TRUE; 	// Set this to 1 to force aberration correction [default], 0 for no correction.
 	refract			: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
 	altitude		: LREAL := 0.0;
+	refract_to_observed : BOOL := TRUE;
 END_VAR
 VAR_OUTPUT
 	ra				: LREAL;			// Right Ascension of object  (J2000) in degrees (FK5)
@@ -104,7 +105,7 @@ IF refract THEN
 	co_refract(	
 		old_alt := alt, 
 		altitude := altitude, 
-		to_observed := TRUE, 
+		to_observed := refract_to_observed, 
 		new_alt => alt);
 END_IF
 

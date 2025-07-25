@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="FB_SUNPOS" Id="{0dff82b7-3e2e-4cb4-82b3-58dc17eb6623}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SUNPOS
 VAR_INPUT
@@ -31,7 +31,8 @@ VAR CONSTANT
 	d2r				: LREAL := PI/180.0; // Pi/180
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* NOTES:
+      <ST><![CDATA[(* https://github.com/wlandsman/IDLAstro/blob/master/pro/
+NOTES:
 ;       Patrick Wallace (Rutherford Appleton Laboratory, UK) has tested the
 ;       accuracy of a C adaptation of the sunpos.pro code and found the 
 ;       following results.   From 1900-2100 SUNPOS  gave 7.3 arcsec maximum 
@@ -109,7 +110,9 @@ dec := dec/d2r;
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_SUNPOS">
-      <LineId Id="130" Count="9" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="131" Count="8" />
       <LineId Id="3" Count="59" />
       <LineId Id="64" Count="1" />
       <LineId Id="70" Count="0" />

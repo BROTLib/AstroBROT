@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="FB_ALTAZ2HADEC" Id="{c9e9fae4-f444-4bfc-a187-9c746df0d157}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ALTAZ2HADEC
 VAR_INPUT
@@ -24,7 +24,7 @@ VAR CONSTANT
 	//h2d:	LREAL := 15.0;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(*
+      <ST><![CDATA[(*https://github.com/wlandsman/IDLAstro/blob/master/pro/
 
   NAME:
     ALTAZ2HADEC

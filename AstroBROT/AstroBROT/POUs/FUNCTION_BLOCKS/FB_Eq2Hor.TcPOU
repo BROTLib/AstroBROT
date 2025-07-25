@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="FB_EQ2HOR" Id="{2aaa455b-6325-4dbe-b61c-a8cfdf369fe1}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_EQ2HOR
 VAR_INPUT
@@ -13,6 +13,8 @@ VAR_INPUT
 	nutate			: BOOL := TRUE; 	// Set this to 1 to force nutation [default], 0 for no nutation correction.
 	aberration		: BOOL := TRUE; 	// Set this to 1 to force aberration correction [default], 0 for no correction.
 	refract 		: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
+	refract_to_observed : BOOL := TRUE;
+	altitude		: LREAL := 0.0;
 END_VAR
 VAR_OUTPUT
 	alt				: LREAL;		// altitude in degrees
@@ -45,7 +47,7 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* source https://idlastro.gsfc.nasa.gov/ftp/pro/astro/eq2hor.pro 
+      <ST><![CDATA[(* source https://github.com/wlandsman/IDLAstro/blob/master/pro/eq2hor.pro 
 
 PURPOSE:
 	Convert celestial  (ra-dec) coords to local horizon coords (alt-az).
@@ -133,8 +135,8 @@ hadec2altaz(
 IF refract THEN 
 	co_refract(	
 		old_alt := alt, 
-		altitude := lat, 
-		to_observed := TRUE, 
+		altitude := altitude, 
+		to_observed := refract_to_observed, 
 		new_alt => alt);
 END_IF
 ]]></ST>

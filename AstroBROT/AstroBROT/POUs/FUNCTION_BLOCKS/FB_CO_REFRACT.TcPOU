@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="FB_CO_REFRACT" Id="{3da273e0-5aa9-4438-ae19-b4f0ec632a24}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_CO_REFRACT
 VAR_INPUT
@@ -20,7 +20,7 @@ VAR CONSTANT
 	alpha 			: LREAL := 0.0065; 	//temp lapse rate [deg C per meter]
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// https://idlastro.gsfc.nasa.gov/ftp/pro/astro/co_refract.pro
+      <ST><![CDATA[// https://github.com/wlandsman/IDLAstro/blob/master/pro/co_refract.pro
 IF temperature = 0.0 THEN
 	IF altitude > 11000.0 THEN 
 		temperature := 211.5; 

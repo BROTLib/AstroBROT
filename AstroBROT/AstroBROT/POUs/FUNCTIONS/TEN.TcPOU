@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="TEN" Id="{48a4167d-326b-4179-a49a-d85a103bff69}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION TEN : LREAL
 VAR_INPUT

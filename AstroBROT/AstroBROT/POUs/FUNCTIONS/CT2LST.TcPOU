@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.8">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="CT2LST" Id="{69d1807b-966a-4b2d-9801-b72992fcc729}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION CT2LST : LREAL
 VAR_INPUT
@@ -14,7 +14,7 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(* source https://idlastro.gsfc.nasa.gov/ftp/pro/astro/ct2lst.pro 
+      <ST><![CDATA[(* https://github.com/wlandsman/IDLAstro/blob/master/pro/ct2lst.pro 
 
 ;+
 ; NAME:
