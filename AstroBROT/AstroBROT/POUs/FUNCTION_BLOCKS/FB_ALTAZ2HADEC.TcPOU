@@ -79,7 +79,7 @@ ha := ha / d2r;
 IF ha < 0.0 THEN 
 	ha := ha + 360.0;
 END_IF
- ha := MODABS(ha, 360.0);
+ha := MODABS(ha, 360.0);
 
 // Find declination (positive if north of Celestial Equator, negative if south)
 sindec := SIN(lat_r)*SIN(alt_r) + COS(lat_r)*COS(alt_r)*COS(az_r);

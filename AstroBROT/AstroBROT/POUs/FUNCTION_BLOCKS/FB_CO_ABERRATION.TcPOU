@@ -14,7 +14,7 @@ VAR_OUTPUT
 END_VAR
 VAR
 	sunpos		: FB_SUNPOS;
-	nutate		: FB_NUTATE;
+	nutate		: FB_IAU2000B;
 	sunra		: LREAL;
 	sundec		: LREAL;
 	sunlon		: LREAL;
@@ -74,7 +74,9 @@ T := (jd -2451545.0)/36525.0; // julian centuries from J2000 of jd.
 
 IF eps = 0.0 THEN
 	// must calculate obliquity of ecliptic
-	nutate(jd := jd, nut_long => d_psi, nut_obliq => d_epsilon); //d_psi and d_epsilon in degrees
+	nutate(jd := jd,
+		d_psi => d_psi, 
+		d_eps => d_epsilon); //d_psi and d_epsilon in arcsec
 	eps0 := ten(23,26,21.448)*3600.0 - 46.8150*T - 0.00059*EXPT(T, 2) +  0.001813*EXPT(T, 3);
 	// TRUE obliquity OF the ecliptic in radians
 	eps := (eps0 + d_epsilon)/3600.0*d2r; 	
@@ -108,7 +110,9 @@ d_dec := (-k * term3 + e*k * term4)/3600;
       <LineId Id="18" Count="10" />
       <LineId Id="37" Count="12" />
       <LineId Id="104" Count="0" />
-      <LineId Id="50" Count="33" />
+      <LineId Id="50" Count="6" />
+      <LineId Id="131" Count="1" />
+      <LineId Id="57" Count="26" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

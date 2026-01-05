@@ -15,11 +15,11 @@ END_VAR
 VAR
 	ra_rad			: LREAL;		// RA in rad
 	dec_rad			: LREAL;		// Dec in rad
-	a, b, c, t		: LREAL;
+	t				: LREAL;		// the elapsed time in Julian centuries since J2000 TT (days)
+	EPS0, PSIA, OMEGAA, CHIA : LREAL;
 	x, x2			: ARRAY[0..2] OF LREAL;
-	st1				: LREAL;
 	rot				: ARRAY[0..2,0..2] OF LREAL;
-	sina, sinb, sinc, cosa,cosb,cosc: LREAL;
+	SA, CA, SB,CB,SC,CC,SD,CD: LREAL;
 END_VAR
 VAR CONSTANT
 	d2r 			: LREAL := PI/180.0;
@@ -27,47 +27,77 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[//https://github.com/wlandsman/IDLAstro/blob/master/pro/precess.pro
+      <ST><![CDATA[(*
+based on: NOVAS_F3.1.f -> SUBROUTINE PRECES
+Kaplan, G., Bartlett, J., Monet, A., Bangert, J., & Puatua, W. (2011) User's Guide to NOVAS Version F3.1 (Washington, DC: USNO).
 
-(*
-; RESTRICTIONS:
-;       Accuracy of precession decreases for declination values near 90 
-;       degrees.  PRECESS should not be used more than 2.5 centuries from
-;       2000 on the FK5 system (1950.0 on the FK4 system).
-; PROCEDURE:
-;       Algorithm from Computational Spherical Astronomy by Taff (1983), 
-;       p. 24. (FK4). FK5 constants from "Astronomical Almanac Explanatory
-;       Supplement 1992, page 104 Table 3.211.1.
+ THIS SUBROUTINE PRECESSES EQUATORIAL RECTANGULAR COORDINATES FROM
+ ONE EPOCH TO ANOTHER.  THE COORDINATES ARE REFERRED TO THE MEAN
+ DYNAMICAL EQUATOR AND EQUINOX OF THE TWO RESPECTIVE EPOCHS.  SEE
+ EXPLANATORY SUPPLEMENT TO THE ASTRONOMICAL ALMANAC, PP. 103-104,
+ AND CAPITAINE ET AL. (2003), ASTRONOMY AND ASTROPHYSICS 412,
+ 567-586.
 *)
 
 // deg 2 radian
 ra_rad := ra*d2r;
 dec_rad := dec*d2r;
 
+x[0] := COS(dec_rad )*COS(ra_rad);
+x[1] := COS(dec_rad )*SIN(ra_rad);
+x[2] := SIN(dec_rad);
 
-a := COS( dec_rad );
-x[0] := a*COS(ra_rad); x[1] := a*SIN(ra_rad); x[2] := SIN(dec_rad);
 
-//*** PREMAT code starts here
-ST1 := 0.001*( equinox1 - 2000.0);
-t := 0.001*( equinox2 - equinox1);
-//  Compute 3 rotation angles
-A := sec_to_rad * T * (23062.181 + ST1*(139.656 +0.0139*ST1) + T*(30.188 - 0.344*ST1+17.998*T));
-B := sec_to_rad * T * T * (79.280 + 0.410*ST1 + 0.205*T) + A;
-C := sec_to_rad * T * (20043.109 - ST1*(85.33 + 0.217*ST1) + T*(-42.665 - 0.217*ST1 -41.833*T));
-  sina := SIN(a); sinb := SIN(b);  sinc := SIN(c);
-  cosa := COS(a); cosb := COS(b);  cosc := COS(c);
+// t is  is the elapsed time in Julian centuries since J2000 TT (days),
+t := 0.001*(equinox2 - equinox1); 
+IF equinox2 = 2000.0 THEN
+	t := -1.0*t;
+END_IF
+EPS0 := sec_to_rad*	84381.406;
+PSIA := sec_to_rad*	( ( ( ( -    0.0000000951   * t
+							+    0.000132851  ) * t
+							-    0.00114045   ) * t
+							-    1.0790069    ) * t
+							+ 5038.481507     ) * t;
+OMEGAA := sec_to_rad*	( ( ( ( +    0.0000003337   * t
+								-    0.000000467  ) * t
+								-    0.00772503   ) * t
+								+    0.0512623    ) * t
+								-    0.025754     ) * t + EPS0;
+CHIA   := sec_to_rad*	( ( ( ( -    0.0000000560   * t
+								+    0.000170663  ) * t
+								-    0.00121197   ) * t
+								-    2.3814292    ) * t
+								+   10.556403     ) * t;
+SA := SIN(EPS0);
+CA := COS( EPS0 );
+SB := SIN( -PSIA );
+CB := COS( -PSIA );
+SC := SIN( -OMEGAA );
+CC := COS( -OMEGAA );
+SD := SIN( CHIA );
+CD := COS( CHIA );
 
-rot[0,0] :=  cosa*cosb*cosc-sina*sinb; 	rot[0,1] := sina*cosb+cosa*sinb*cosc; 	rot[0,2] := cosa*sinc;
-rot[1,0] := -cosa*sinb-sina*cosb*cosc; 	rot[1,1] := cosa*cosb-sina*sinb*cosc; 	rot[1,2] := -sina*sinc;
-rot[2,0] := -cosb*sinc;					rot[2,1] := -sinb*sinc; 				rot[2,2] := cosc;
+// COMPUTE ELEMENTS OF PRECESSION ROTATION MATRIX
+// EQUIVALENT TO R3(CHI_A)R1(-OMEGA_A)R3(-PSI_A)R1(EPSILON_0)
+rot[0,0] :=  CD * CB - SB * SD * CC; 	rot[0,1] := CD * SB * CA + SD * CC * CB * CA - SA * SD * SC; 	rot[0,2] := CD * SB * SA + SD * CC * CB * SA + CA * SD * SC;
+rot[1,0] := -SD * CB - SB * CD * CC; 	rot[1,1] := -SD * SB * CA + CD * CC * CB * CA - SA * CD * SC; 	rot[1,2] := -SD * SB * SA + CD * CC * CB * SA + CA * CD * SC;
+rot[2,0] := SB * SC;					rot[2,1] := -SC * CB * CA - SA * CC; 							rot[2,2] := -SC * CB * SA + CC * CA;
 
-//*** PREMAT code ends here
-
+// calculation as: Explanatory Supplement to the Astronomical Almanac (2013) p.220 eq.6.30
 //x2 := rot* x; //rotate to get output direction cosines
-x2[0] := rot[0,0]*x[0] + rot[1,0]*x[1] + rot[2,0]*x[2];
-x2[1] := rot[0,1]*x[0] + rot[1,1]*x[1] + rot[2,1]*x[2];
-x2[2] := rot[0,2]*x[0] + rot[1,2]*x[1] + rot[2,2]*x[2];
+IF equinox2 = 2000.0 THEN
+	// PERFORM ROTATION FROM J2000.0 TO EPOCH
+	x2[0] := rot[0,0]*x[0] + rot[1,0]*x[1] + rot[2,0]*x[2];
+	x2[1] := rot[0,1]*x[0] + rot[1,1]*x[1] + rot[2,1]*x[2];
+	x2[2] := rot[0,2]*x[0] + rot[1,2]*x[1] + rot[2,2]*x[2];
+ELSE
+	//  PERFORM ROTATION FROM EPOCH TO J2000.0
+	x2[0] := rot[0,0]*x[0] + rot[0,1]*x[1] + rot[0,2]*x[2];
+	x2[1] := rot[1,0]*x[0] + rot[1,1]*x[1] + rot[1,2]*x[2];
+	x2[2] := rot[2,0]*x[0] + rot[2,1]*x[1] + rot[2,2]*x[2];
+END_IF
+
 
 ra_rad := atan2(x2[1],x2[0]);
 dec_rad := ASIN(x2[2]);
@@ -78,17 +108,46 @@ dec_precessed := dec_rad/d2r;]]></ST>
     </Implementation>
     <LineIds Name="FB_PRECESS">
       <LineId Id="79" Count="0" />
-      <LineId Id="104" Count="1" />
-      <LineId Id="134" Count="0" />
-      <LineId Id="106" Count="1" />
-      <LineId Id="103" Count="0" />
-      <LineId Id="131" Count="2" />
-      <LineId Id="130" Count="0" />
-      <LineId Id="129" Count="0" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="280" Count="4" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="227" Count="0" />
       <LineId Id="80" Count="1" />
       <LineId Id="72" Count="1" />
-      <LineId Id="78" Count="0" />
-      <LineId Id="11" Count="28" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="236" Count="1" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="204" Count="2" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="244" Count="11" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="258" Count="6" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="270" Count="1" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="278" Count="1" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="216" Count="0" />
+      <LineId Id="273" Count="1" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="276" Count="1" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="35" Count="4" />
       <LineId Id="41" Count="1" />
     </LineIds>
   </POU>

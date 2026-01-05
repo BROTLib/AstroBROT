@@ -19,7 +19,7 @@ VAR
 	eps				: LREAL;
 	eps0			: LREAL;
 	T				: LREAL;
-	nutate			: FB_NUTATE;
+	nutate			: FB_IAU200B;
 	fbprecess		: FB_PRECESS;
 	J_now			: LREAL;
 END_VAR
@@ -38,8 +38,8 @@ T := (jd -jd2000)/36525.0;
 
 // must calculate obliquity OF ecliptic
 nutate(jd := jd,
-		nut_long => d_psi, 
-		nut_obliq => d_eps); 
+		d_psi => d_psi, 
+		d_eps => d_eps); 
 
 eps0 := 23.4392911*3600.0 - 46.8150*T - 0.00059*EXPT(T, 2) + 0.001813*EXPT(T, 3);
 eps := (eps0 + d_eps)/3600.0*d2r; // TRUE obliquity OF the ecliptic in radians
@@ -67,7 +67,9 @@ fbprecess(
       <LineId Id="86" Count="0" />
       <LineId Id="89" Count="0" />
       <LineId Id="87" Count="1" />
-      <LineId Id="12" Count="9" />
+      <LineId Id="12" Count="3" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="18" Count="3" />
       <LineId Id="30" Count="0" />
       <LineId Id="23" Count="4" />
       <LineId Id="29" Count="0" />
