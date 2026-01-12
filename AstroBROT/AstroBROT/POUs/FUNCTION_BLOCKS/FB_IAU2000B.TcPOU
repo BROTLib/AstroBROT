@@ -48,6 +48,9 @@ which implements:
         the Precession & Nutation of the Celestial Pole," Celestial
         Mechanics and Dynamical Astronomy, Volume 85, Issue 1,
         Jan. 2003, p. 37. (IAU 2000B)
+NOTES:
+- does not implement precession biases (McCarthy, 2003) 2.1
+- does implement frame bias offsets as opposed to the SOFA code
 
 IAU 2000B reproduces the IAU 2000A model to a precision
 of 1 milliarcsecond in the interval 1995-2050
@@ -79,9 +82,9 @@ FOR i:=1 TO 78 BY 1 DO
 	d_p := d_p + ((A[i] + A1[i]*t)*s_theta + A2[i]*c_theta);
 	d_e := d_e + ((B[i] + B1[i]*t)*c_theta + B2[i]*s_theta);
 END_FOR;
-// convert from 1e-7 arcsec to rad and add planetary nutation terms
-d_psi := d_p * 1.0E-7 +  -0.000135;
-d_eps := d_e * 1.0E-7 +  0.000388;]]></ST>
+// convert from 1e-7 arcsec to arcsec and add planetary nutation terms and frame bias
+d_psi := d_p * 1.0E-7 - 0.0433585;
+d_eps := d_e * 1.0E-7 - 0.0084531;]]></ST>
     </Implementation>
     <LineIds Name="FB_IAU2000B">
       <LineId Id="9" Count="0" />
@@ -91,6 +94,7 @@ d_eps := d_e * 1.0E-7 +  0.000388;]]></ST>
       <LineId Id="18" Count="2" />
       <LineId Id="17" Count="0" />
       <LineId Id="21" Count="0" />
+      <LineId Id="109" Count="2" />
       <LineId Id="16" Count="0" />
       <LineId Id="15" Count="0" />
       <LineId Id="13" Count="0" />
