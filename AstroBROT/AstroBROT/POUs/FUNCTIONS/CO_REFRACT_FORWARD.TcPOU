@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
   <POU Name="CO_REFRACT_FORWARD" Id="{9e2a6c66-b60a-451a-a6f4-0d24b94a8b52}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION CO_REFRACT_FORWARD : LREAL
 VAR_INPUT
@@ -9,27 +9,35 @@ VAR_INPUT
 END_VAR
 VAR
 	ref			: LREAL;
-	tpcor		: LREAL;
 END_VAR
 VAR CONSTANT
 	d2r 		: LREAL := PI/180.0;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[a := LIMIT(0.0, a, 90.0);
+      <ST><![CDATA[(*Formular based on: 
+Explanatory Supplement to the Astronomical Almanac, 2013
+p.280 eq. 7.90 and 7.91
+accurate to 0.5 arcsec
+*)
+
+a := LIMIT(0.0, a, 90.0);
 P := LIMIT(600.0, P, 1200.0);
 T := LIMIT(-40.0, T, 40.0);
 
 IF a >= 15.0 THEN
-	ref := 1.0 / TAN((a + 7.31 / (a + 4.4)) * d2r);
+	ref := (28.0*P)/(T+273.0)*0.0167/ TAN((a + 7.31 / (a + 4.4)) * d2r);
 ELSE
-	ref := 3.569 * (0.1594 + 0.0196 * a + 0.00002 * EXPT(a, 2)) / (1.0 + 0.505 * a + 0.0845 * EXPT(a, 2));
+	ref := P/(T+273.0)* (0.1594 + 0.0196 * a + 0.00002 * EXPT(a, 2)) / (1.0 + 0.505 * a + 0.0845 * EXPT(a, 2));
 END_IF
-tpcor := P * 283.15 / (1010.0 * (273.15 + T));
-CO_REFRACT_FORWARD := tpcor * ref;
+CO_REFRACT_FORWARD :=  ref;
 ]]></ST>
     </Implementation>
     <LineIds Name="CO_REFRACT_FORWARD">
+      <LineId Id="59" Count="0" />
+      <LineId Id="62" Count="2" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="60" Count="0" />
       <LineId Id="40" Count="1" />
       <LineId Id="45" Count="0" />
       <LineId Id="43" Count="0" />
@@ -37,7 +45,8 @@ CO_REFRACT_FORWARD := tpcor * ref;
       <LineId Id="15" Count="0" />
       <LineId Id="21" Count="0" />
       <LineId Id="44" Count="0" />
-      <LineId Id="22" Count="2" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="24" Count="0" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
