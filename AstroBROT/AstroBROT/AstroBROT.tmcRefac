@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Refactors>
+  <Renames>
+    <RenamedType>
+      <Type guid="8f7a7748-90e3-4e16-8cf9-41e658f19889">FB_HA2RA</Type>
+      <From>FB_HA2RA</From>
+      <To>FB_HADEC2RADEC</To>
+    </RenamedType>
+  </Renames>
+</Refactors>
