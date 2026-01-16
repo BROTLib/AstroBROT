@@ -19,7 +19,7 @@ VAR
 	eps				: LREAL;
 	eps0			: LREAL;
 	T				: LREAL;
-	nutate			: FB_IAU200B;
+	nutate			: FB_IAU2000B;
 	fbprecess		: FB_PRECESS;
 	J_now			: LREAL;
 END_VAR
