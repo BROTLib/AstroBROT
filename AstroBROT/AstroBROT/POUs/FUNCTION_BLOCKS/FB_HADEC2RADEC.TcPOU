@@ -7,10 +7,12 @@ VAR_INPUT
 	ha				: LREAL;		// Hour angle in degrees
 	dec				: LREAL;		// Declination in degrees
 	lon				: LREAL;		// Longitude in degrees
+	lat				: LREAL;		// Latitude in degrees
+	altitude		: LREAL;		// Elevation in meters
 END_VAR
 VAR_OUTPUT
 	ra_out				: LREAL;		// RA in degrees
-	dec_out			: LREAL;		// DEC in degrees
+	dec_out			: LREAL;			// DEC in degrees
 END_VAR
 VAR
 	lmst			: LREAL;
@@ -25,10 +27,14 @@ VAR
 	fbprecess		: FB_PRECESS;
 	co_nutate		: FB_CO_NUTATE;
 	co_aberration	: FB_CO_ABERRATION;
+	co_refract		: FB_CO_REFRACT;
+	hadec2altaz		: FB_HADEC2ALTAZ;
+	altaz2hadec		: FB_ALTAZ2HADEC;
 	d_ra_abr		: LREAL;		// Difference in RA due to aberration
 	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
 	d_ra_nut		: LREAL;		// Difference in RA due to nutation
 	d_dec_nut		: LREAL;		// Difference in Dec due to nutation
+	alt,az			: LREAL;
 END_VAR
 VAR CONSTANT
 	d2r				: LREAL := PI/180.0;
@@ -36,10 +42,29 @@ VAR CONSTANT
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// This code uses astrobrot and calculates the Right Ascension and Declination from the Hour Angle and Declination
-// outputs the ra, dec nutation, aberration corrected and precessed  back!!!
+      <ST><![CDATA[// This code calculates the Right Ascension and Declination (ICRS) from the Hour Angle and Declination (APPARENT)
 
-
+//*****************************************************************************
+// calculate refraction correction
+// calculate alt az from ha,dec
+hadec2altaz(ha:=ha,
+			dec:=dec,
+			lat:=lat,
+			alt=>alt,
+			az=>az);
+// calculate refraction
+co_refract(	
+		old_alt := alt, 
+		altitude := altitude, 
+		to_observed := FALSE, 
+		new_alt => alt);
+// go back to ha dec
+altaz2hadec(alt:=alt,
+			az:=az,
+			lat:=lat,
+			ha=>ha,
+			dec=>dec);
+//*****************************************************************************
 // Julian centuries FROM J2000 OF jd.
 T := (jd -jd2000)/36525.0; 
 
@@ -60,7 +85,6 @@ last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 ra_out := last - ha;
 dec_out := dec;
 J_now := (jd - jd2000)/365.25 + 2000.0; // compute current equinox
-
 //*****************************************************************************
 // calculate NUTATION and ABERRATION Corrections to Ra-Dec
 co_nutate(	
@@ -69,7 +93,6 @@ co_nutate(
 		dec := dec_out, 
 		d_ra => d_ra_nut, 
 		d_dec => d_dec_nut);
-
 
 co_aberration(	
 		jd := jd, 
@@ -80,7 +103,8 @@ co_aberration(
 		d_dec => d_dec_abr);
 //apply
 ra_out := ra_out - (d_ra_abr + d_ra_nut);
-dec := dec_out - (d_dec_abr + d_dec_nut);
+dec_out := dec_out - (d_dec_abr + d_dec_nut);
+//*****************************************************************************
 //precess back
 fbprecess( 
 	ra := ra_out, 
@@ -89,27 +113,32 @@ fbprecess(
 	equinox2 := 2000.0, 
 	ra_precessed => ra_out, 
 	dec_precessed => dec_out);
+
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_HADEC2RADEC">
       <LineId Id="86" Count="0" />
-      <LineId Id="157" Count="0" />
-      <LineId Id="87" Count="1" />
-      <LineId Id="12" Count="3" />
-      <LineId Id="116" Count="1" />
-      <LineId Id="18" Count="3" />
-      <LineId Id="30" Count="0" />
-      <LineId Id="23" Count="4" />
-      <LineId Id="29" Count="0" />
-      <LineId Id="9" Count="0" />
-      <LineId Id="184" Count="0" />
       <LineId Id="145" Count="0" />
+      <LineId Id="232" Count="2" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="237" Count="1" />
+      <LineId Id="240" Count="1" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="243" Count="3" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="249" Count="1" />
+      <LineId Id="252" Count="3" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="256" Count="18" />
       <LineId Id="159" Count="2" />
       <LineId Id="163" Count="4" />
-      <LineId Id="170" Count="11" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="172" Count="9" />
       <LineId Id="158" Count="0" />
+      <LineId Id="226" Count="0" />
       <LineId Id="222" Count="0" />
       <LineId Id="147" Count="6" />
+      <LineId Id="230" Count="0" />
       <LineId Id="144" Count="0" />
     </LineIds>
   </POU>

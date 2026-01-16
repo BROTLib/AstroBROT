@@ -84,6 +84,9 @@
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_PRECESS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FUNCTION_BLOCKS\FB_RADEC2HADEC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_SUNPOS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
