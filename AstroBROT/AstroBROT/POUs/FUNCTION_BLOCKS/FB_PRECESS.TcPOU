@@ -49,7 +49,7 @@ x[2] := SIN(dec_rad);
 
 
 // t is  is the elapsed time in Julian centuries since J2000 TT (days),
-t := 0.001*(equinox2 - equinox1); 
+t := 0.01*(equinox2 - equinox1); 
 IF equinox2 = 2000.0 THEN
 	t := -1.0*t;
 END_IF
