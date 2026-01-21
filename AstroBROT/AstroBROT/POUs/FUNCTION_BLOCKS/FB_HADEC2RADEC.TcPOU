@@ -4,15 +4,13 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_HADEC2RADEC
 VAR_INPUT
 	jd				: LREAL;		// Julian date
-	ha				: LREAL;		// Hour angle in degrees
-	dec				: LREAL;		// Declination in degrees
+	ha				: LREAL;		// Hour angle (APPARENT) in degrees
+	dec				: LREAL;		// Declination (APPARENT) in degrees
 	lon				: LREAL;		// Longitude in degrees
-	lat				: LREAL;		// Latitude in degrees
-	altitude		: LREAL;		// Elevation in meters
 END_VAR
 VAR_OUTPUT
-	ra_out				: LREAL;		// RA in degrees
-	dec_out			: LREAL;			// DEC in degrees
+	ra_out				: LREAL;		// RA in degrees (ICRS)
+	dec_out			: LREAL;			// DEC in degrees (ICRS)
 END_VAR
 VAR
 	lmst			: LREAL;
@@ -27,9 +25,6 @@ VAR
 	fbprecess		: FB_PRECESS;
 	co_nutate		: FB_CO_NUTATE;
 	co_aberration	: FB_CO_ABERRATION;
-	co_refract		: FB_CO_REFRACT;
-	hadec2altaz		: FB_HADEC2ALTAZ;
-	altaz2hadec		: FB_ALTAZ2HADEC;
 	d_ra_abr		: LREAL;		// Difference in RA due to aberration
 	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
 	d_ra_nut		: LREAL;		// Difference in RA due to nutation
@@ -43,28 +38,11 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[// This code calculates the Right Ascension and Declination (ICRS) from the Hour Angle and Declination (APPARENT)
+// This includes P03 precession and IAU2000B nutation as well as aberration (IDL libary)
+// adapted from: https://github.com/wlandsman/IDLAstro/blob/master/pro/hor2eq.pro (IDL libary)
+// this version is written by Lukas Melzig
 
-//*****************************************************************************
-// calculate refraction correction
-// calculate alt az from ha,dec
-hadec2altaz(ha:=ha,
-			dec:=dec,
-			lat:=lat,
-			alt=>alt,
-			az=>az);
-// calculate refraction
-co_refract(	
-		old_alt := alt, 
-		altitude := altitude, 
-		to_observed := FALSE, 
-		new_alt => alt);
-// go back to ha dec
-altaz2hadec(alt:=alt,
-			az:=az,
-			lat:=lat,
-			ha=>ha,
-			dec=>dec);
-//*****************************************************************************
+
 // Julian centuries FROM J2000 OF jd.
 T := (jd -jd2000)/36525.0; 
 
@@ -118,16 +96,8 @@ fbprecess(
     </Implementation>
     <LineIds Name="FB_HADEC2RADEC">
       <LineId Id="86" Count="0" />
+      <LineId Id="315" Count="2" />
       <LineId Id="145" Count="0" />
-      <LineId Id="232" Count="2" />
-      <LineId Id="231" Count="0" />
-      <LineId Id="237" Count="1" />
-      <LineId Id="240" Count="1" />
-      <LineId Id="247" Count="0" />
-      <LineId Id="243" Count="3" />
-      <LineId Id="242" Count="0" />
-      <LineId Id="249" Count="1" />
-      <LineId Id="252" Count="3" />
       <LineId Id="275" Count="0" />
       <LineId Id="256" Count="18" />
       <LineId Id="159" Count="2" />

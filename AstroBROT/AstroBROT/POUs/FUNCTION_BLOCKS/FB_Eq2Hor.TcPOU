@@ -20,7 +20,6 @@ VAR_OUTPUT
 	alt				: LREAL;		// altitude in degrees
 	az				: LREAL;		// azimuth in degrees
 	ha				: LREAL;		// hour angle in degrees
-	dec_apparent	: LREAL;		// declination in degrees, in apparent HA DEC system
 END_VAR
 VAR
 	tstart, J_now	: LREAL;
@@ -117,8 +116,6 @@ last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
  Find hour angle (in DEGREES) *)
 ha := last - ra;
 ha := MODABS(ha, 360.0);
-// save apparent declination
-dec_apparent := dec;
 (*******************************************************************************
  Now do the spherical trig to get APPARENT alt,az. *)
 hadec2altaz(	
@@ -145,8 +142,7 @@ END_IF
     <LineIds Name="FB_EQ2HOR">
       <LineId Id="752" Count="58" />
       <LineId Id="812" Count="9" />
-      <LineId Id="889" Count="0" />
-      <LineId Id="822" Count="21" />
+      <LineId Id="823" Count="20" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

@@ -4,15 +4,13 @@
     <Declaration><![CDATA[FUNCTION_BLOCK FB_RADEC2HADEC
 VAR_INPUT
 	jd				: LREAL;		// Julian date
-	ra				: LREAL;		// Right Ascension in degrees
-	dec				: LREAL;		// Declination in degrees
+	ra				: LREAL;		// Right Ascension (ICRS) in degrees
+	dec				: LREAL;		// Declination (ICRS) in degrees
 	lon				: LREAL;		// Longitude in degrees
-	lat				: LREAL;		// Latitude in degrees
-	altitude		: LREAL;		// Elevation in meters
 END_VAR
 VAR_OUTPUT
-	ha_out			: LREAL;		// apparent hour angle
-	dec_out			: LREAL;		// apparent declination
+	ha_out			: LREAL;		// Hour angle (APPARENT) in degrees
+	dec_out			: LREAL;		// Declination (APPARENT) in degrees
 END_VAR
 VAR
 	lmst			: LREAL;
@@ -20,22 +18,15 @@ VAR
 	d_psi			: LREAL;
 	d_eps			: LREAL;
 	eps				: LREAL;
-	eps0			: LREAL;
-	T				: LREAL;
 	J_now			: LREAL;
-	nutate			: FB_IAU2000B;
 	fbprecess		: FB_PRECESS;
 	co_nutate		: FB_CO_NUTATE;
 	co_aberration	: FB_CO_ABERRATION;
-	co_refract		: FB_CO_REFRACT;
-	hadec2altaz		: FB_HADEC2ALTAZ;
-	altaz2hadec		: FB_ALTAZ2HADEC;
 	d_ra_abr		: LREAL;		// Difference in RA due to aberration
 	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
 	d_ra_nut		: LREAL;		// Difference in RA due to nutation
 	d_dec_nut		: LREAL;		// Difference in Dec due to nutation
 	ra_pre, dec_pre	: LREAL;		// precessed coords
-	alt,az			: LREAL;
 END_VAR
 VAR CONSTANT
 	d2r				: LREAL := PI/180.0;
@@ -43,7 +34,9 @@ VAR CONSTANT
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// This code calculates the Hour Angle and Declination (APPARENT) from the Right Ascension and Declination (ICRS)
-
+// This includes P03 precession and IAU2000B nutation as well as aberration (IDL libary)
+// adapted from: https://github.com/wlandsman/IDLAstro/blob/master/pro/eq2hor.pro (IDL libary)
+// this version is written by Lukas Melzig
 (* ******************************************************************************
  PRECESS coordinates to current date
  (uses astro lib procedure PRECESS.pro)
@@ -57,7 +50,6 @@ fbprecess(
 		ra_precessed => ra_pre, 
 		dec_precessed => dec_pre);
 
-
 (******************************************************************************
  calculate NUTATION and ABERRATION Corrections to Ra-Dec 
 *)
@@ -70,7 +62,6 @@ co_nutate(
 		d_dec => d_dec_nut,
 		eps=>eps, 
 		d_psi=>d_psi);
-
 
 co_aberration(	
 		jd := jd, 
@@ -93,47 +84,15 @@ ha_out := last - ra;
 ha_out := MODABS(ha_out, 360.0);
 // apparent declination
 dec_out := dec;
-(*******************************************************************************
- Now do the spherical trig to get APPARENT alt,az. *)
-hadec2altaz(	
-	ha := ha_out, 
-	dec := dec_out, 
-	lat := lat, 
-	alt => alt, 
-	az => az);
-
-(********************************************************************************************
- Make Correction for ATMOSPHERIC REFRACTION *)
-
-co_refract(	
-		old_alt := alt, 
-		altitude := altitude, 
-		to_observed := TRUE, 
-		new_alt => alt);
-
-// go back to ha dec
-altaz2hadec(alt:=alt,
-			az:=az,
-			lat:=lat,
-			ha=>ha_out,
-			dec=>dec_out);
-
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_RADEC2HADEC">
-      <LineId Id="44" Count="0" />
-      <LineId Id="48" Count="5" />
-      <LineId Id="55" Count="6" />
-      <LineId Id="65" Count="5" />
-      <LineId Id="72" Count="7" />
-      <LineId Id="81" Count="8" />
-      <LineId Id="91" Count="21" />
-      <LineId Id="114" Count="2" />
-      <LineId Id="119" Count="5" />
-      <LineId Id="127" Count="5" />
-      <LineId Id="125" Count="0" />
-      <LineId Id="46" Count="0" />
-      <LineId Id="9" Count="0" />
+      <LineId Id="172" Count="1" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="174" Count="11" />
+      <LineId Id="193" Count="12" />
+      <LineId Id="214" Count="22" />
     </LineIds>
   </POU>
 </TcPlcObject>
