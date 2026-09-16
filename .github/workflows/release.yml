@@ -35,7 +35,7 @@ jobs:
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
           PLCPROJ="AstroBROT/AstroBROT/AstroBROT.plcproj"
-          GVL="AstroBROT/AstroBROT/GVLs/GVL_Version.TcGVL"
+          GVL="AstroBROT/AstroBROT/GVLs/Global_Version.TcGVL"
 
           sed -i "s|<ProjectVersion>.*</ProjectVersion>|<ProjectVersion>${VERSION}</ProjectVersion>|" "$PLCPROJ"
 
@@ -50,7 +50,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add AstroBROT/AstroBROT/AstroBROT.plcproj AstroBROT/AstroBROT/GVLs/GVL_Version.TcGVL
+          git add AstroBROT/AstroBROT/AstroBROT.plcproj AstroBROT/AstroBROT/GVLs/Global_Version.TcGVL
           git commit -m "Bump version to ${{ inputs.version }}"
           git push origin develop
 
