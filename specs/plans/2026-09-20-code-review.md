@@ -48,10 +48,10 @@ realistic (an upstream division by zero). Normal input converges in 1 to 5 itera
 HOR2EQ takes measured alt/az, so refraction must be removed (`FALSE`). With the default it is added
 again. *Verified (port):* EQ2HOR (refract on) then HOR2EQ with the default gives a 562" round-trip error
 at 10° altitude; with `FALSE` the error is 0.0". The notebook never caught this because it ran with
-`refract := FALSE`. IAG50cm passes `refract_to_observed := TRUE` to `fbHor2Eq`
-(`FB_TelescopeControl.TcPOU:234`) and `FALSE` to `fbEq2Hor` (`:287`, `:298`), the reverse of the
-IDLAstro convention. I could not tell from the snippet whether those altitudes are observed or
-geometric. **Owner to check on the IAG50cm side** whether that is intended.
+`refract := FALSE`. At least one consumer passes `refract_to_observed` explicitly in the direction that is
+the reverse of the IDLAstro convention for one of the two blocks. I could not tell from the call site
+whether the altitudes there are observed or geometric. **Owner to check the consumers' call sites** whether
+that is intended (details kept out of this public repo).
 
 **H4. The committed `.library` binaries are stale relative to the sources.**
 `AstroBROT.library` was last committed 2025-07-25, the sources changed on 2026-01-16 to 2026-01-21. A
@@ -169,9 +169,8 @@ Nothing here is exploitable remotely. The library does no I/O. The items are hyg
   test gate.** Combined with H4 this is how a bad binary gets tagged. `actions/checkout@v4` is pinned by
   tag, not commit SHA.
 - **S3 (Low). Internal address in a public repo.** The notebook contains the PLC AmsNetId
-  `134.76.204.249.1.1`. *Inference:* 134.76.x.x looks like a university network range; I did not
-  verify that, nor that the GitHub repo is public (the README says it is). Remove it, or reduce it to
-  a placeholder.
+  (an IP-based address, not repeated here). *Not verified:* whether it is routable or internal. The repo is
+  public (checked with `gh`). Remove it or reduce it to a placeholder; it stays in git history either way.
 - **S4 (Low). About 67 MB of binaries are tracked**: three `.compileinfo` files (11 MB, 11 MB, 4.6 MB),
   `_Boot/` for three targets, three versions of several Beckhoff libraries, and the notebook twice
   (1.9 MB each, once as `.ipynb_checkpoints/`). Text files show no credentials (grep for `password`,
@@ -212,8 +211,8 @@ Investigated 2026-09-20. Build CI already exists and works. Test CI does not, an
   `BROTLib/specs/plans/2026-09-15-twincat-ci-investigation.md`. I could not list the runner itself (needs
   `admin:org`).
 - `tcbuild-test.yml` (`workflow_dispatch` only) exists on AstroBROT `main`, not on `develop`. Its last run
-  succeeded on 2026-09-16 (2m47s). BROTLib's run succeeded on 2026-09-15. The last five IAG50cm runs
-  failed; the runner doc lists full telescope solutions as an open problem.
+  succeeded on 2026-09-16 (2m47s). BROTLib's run succeeded on 2026-09-15. Full telescope solutions are an
+  open problem for this runner, per the runner doc.
 - The tool is `JustusRijke/TcBuild` (MIT, Windows, TwinCAT 3.1.4024 or newer, .NET 4.8). `build` compiles,
   `install` compiles and exports a `.library` into the library repository. Exit codes: 0 ok, 1 success with
   warnings, 2 errors, 3 to 5 COM or missing-file problems. Per its README it does **not** run tests or
