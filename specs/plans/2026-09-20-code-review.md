@@ -2,6 +2,9 @@
 
 **Status: draft. Review finished, no fixes applied. Nothing here has been run on a PLC.**
 
+Reviewed at `develop` b9ea338. `origin/main` is 3 commits ahead (visualization profile fix to 4024, a
+manual TcBuild workflow, runner labels); those are not part of the review except in the CI section.
+
 Scope: all 21 POUs (~2000 lines of ST), `.github/workflows/release.yml`, the committed `_Boot/`,
 `_Libraries/` and `.library` artifacts, `testing/BROT_test.ipynb`, and the public API. Consumers
 (BROTLib, IAG50cm) were only sampled at their call sites.
@@ -57,7 +60,7 @@ string search of both `.library` files (zip archives) finds `FB_PRECESS` and `FB
 decompile the objects, so absence of a string is strong evidence, not proof. This matches the open
 `docs/todo-astrobrot-library-mismatch` branch (IAG50cm fails to resolve the two HADEC blocks).
 `release.yml` bumps the version numbers but never rebuilds the library, so a tagged release can carry a
-binary that does not match its own source tree. Fix: build in CI (see the CI section) and stop
+binary that does not match its own source tree. Fix: build the library in CI (a TcBuild job already exists on `main`, see the CI section) and stop
 committing the `.library`, or make the release job fail if the binary is older than the sources.
 
 ### Medium
@@ -118,6 +121,13 @@ copy-pasted in four blocks (`FB_CO_NUTATE`, `FB_CO_ABERRATION`, `FB_HADEC2RADEC`
 `FB_RADEC2HADEC`/`FB_HADEC2RADEC` were adapted from EQ2HOR/HOR2EQ by copy instead of being composed
 (`EQ2HOR` = `RADEC2HADEC` + `HADEC2ALTAZ` + refraction). Two nutation model calls happen per HOR2EQ and
 HADEC2RADEC call (`FB_IAU2000B` directly and again inside `FB_CO_NUTATE`).
+
+**M8. The next release will fail half way, because `main` has diverged from `develop`.** *Read from code,
+divergence verified with `git rev-list`.* `origin/main` has 3 commits that `origin/develop` lacks (0 the other
+way). `release.yml` pushes its version-bump commit to `develop` first, then runs
+`git merge --ff-only develop` on `main`. After the bump, `develop` is no longer an ancestor-descendant of
+`main`, so the merge fails and the job stops with the bump already on `develop`, `main` not updated and no
+tag. Merge `main` into `develop` before the next release. I did not run the workflow.
 
 ### Low
 
@@ -193,29 +203,59 @@ Nothing here is exploitable remotely. The library does no I/O. The items are hyg
 
 ## CI: can it compare against astropy?
 
-Not on a GitHub-hosted runner, since there is no TwinCAT runtime for Linux. Options, best first:
+Investigated 2026-09-20. Build CI already exists and works. Test CI does not, and its tooling is the weak part.
 
-1. **Self-hosted Windows runner with XAE (and TcBuild) for build and TcUnit**, plus pyads against the
-   local runtime for numeric tests. This is feasible. Points to verify before committing to it:
-   - **Runtime licensing for unattended runs.** *Unsure:* TwinCAT 3 trial licenses need periodic manual
-     re-activation. Check Beckhoff's licensing terms for a CI machine.
-   - **TcBuild and TcUnit-Runner** exist as Beckhoff/TcUnit tooling; I have not checked their current
-     state or compatibility with 4024.x.
-   - **Security:** GitHub advises against self-hosted runners on public repos, because a pull request from
-     a fork can run code on the machine. Restrict the workflow to `push` on protected branches and
-     `workflow_dispatch`, never `pull_request` from forks.
-   - Even without running tests, a **compile-only job** would have caught H4 and the library mismatch.
+**What exists (verified from the repos and `gh run list`):**
+- An org-level self-hosted runner (labels `self-hosted, twincat, windows`), set up as described in
+  `BROTLib/specs/design/twincat-ci-runner-setup.md` and
+  `BROTLib/specs/plans/2026-09-15-twincat-ci-investigation.md`. I could not list the runner itself (needs
+  `admin:org`).
+- `tcbuild-test.yml` (`workflow_dispatch` only) exists on AstroBROT `main`, not on `develop`. Its last run
+  succeeded on 2026-09-16 (2m47s). BROTLib's run succeeded on 2026-09-15. The last five IAG50cm runs
+  failed; the runner doc lists full telescope solutions as an open problem.
+- The tool is `JustusRijke/TcBuild` (MIT, Windows, TwinCAT 3.1.4024 or newer, .NET 4.8). `build` compiles,
+  `install` compiles and exports a `.library` into the library repository. Exit codes: 0 ok, 1 success with
+  warnings, 2 errors, 3 to 5 COM or missing-file problems. Per its README it does **not** run tests or
+  activate a configuration.
+- The runner doc keeps workflows `workflow_dispatch` only after an earlier PR-triggered setup exposed the
+  runner on a public repo. That matches the concern in my first draft of this section.
+
+**What that settles:** a compile check for H4 is possible today. `TcBuild install` on the AstroBROT solution
+would produce the `.library` from the sources; upload it as a workflow artifact instead of committing it.
+Decide whether exit code 1 (warnings only) should fail the job; the runner doc lists a spurious exit 1 among
+its known flakiness symptoms.
+
+**What it does not settle (numeric tests):**
+- Running the blocks needs a TwinCAT runtime. Beckhoff's test licenses last 7 days, can be renewed any
+  number of times, are created in XAE (not on the runtime), are bound to the target system and need no
+  internet. The pages I read say nothing about VMs, unattended renewal, or what happens at expiry, so
+  **unattended runs are unverified**. Whether a PLC runtime license is required here I do not know. The
+  runner doc only says compile-only use does not appear to need one.
+- **TcUnit-Runner is archived** (read-only since 2025-10-17, "contact us for the latest version"), and was
+  built around Jenkins and xUnit XML. I would not build new CI on it. Your investigation doc also lists
+  [zkbuild-action](https://github.com/Zeugwerk/zkbuild-action) as "not yet evaluated"; I have not
+  evaluated it either.
+
+**Recommendation:**
+1. Get the build job onto `develop` (merge `main` back, see M8), add an `install` step and upload the
+   `.library` as an artifact, then drop the committed binary.
+2. Write the golden vectors (option 2 below) and run them from the pyads notebook on a real PLC for now,
+   with hard thresholds.
+3. Only then look at unattended runtime tests: ask Beckhoff about licensing for a CI machine and evaluate
+   zkbuild-action. Do not depend on TcUnit-Runner.
+
+Options as first ranked:
+1. **Self-hosted runner with XAE**: build now, tests pending the licensing and tooling questions above.
 2. **Golden vectors.** Generate reference values with `erfa` (fixed seed, dates, sites, including poles,
-   zenith, RA wrap, refraction on and off) and commit them as JSON. One job checks they still
-   regenerate; the PLC-side job (option 1, or run by hand from the notebook) compares against them with
-   hard tolerances (for example 1" great-circle). This is independent of any runner choice.
+   zenith, RA wrap, refraction on and off) and commit them as JSON. A PLC-side run compares against them
+   with hard tolerances (for example 1" great-circle). Independent of the runner.
 3. **Python port in cloud CI.** Cheap and catches regressions in the maths, but tests the port, not the
    ST. It should not count as coverage of the library.
 
 ## Suggested order of work
 
 1. H2 (cap the loop), H1 (temperature unit), H3 (default direction plus an IAG50cm check). Small changes.
-2. H4 and S2: build in CI, gate the release on it.
+2. M8 (sync `main` into `develop`), then H4 and S2: build in CI, gate the release on it.
 3. Golden vectors with great-circle metric (M6), including RADEC2HADEC/HADEC2RADEC and refraction.
 4. M1 to M3 (input mutation, `PRECESS` contract, `d_ra` wrap) together with the M7 refactor.
 5. `dut1` input (M5) if the pointing budget needs it.
