@@ -122,12 +122,13 @@ copy-pasted in four blocks (`FB_CO_NUTATE`, `FB_CO_ABERRATION`, `FB_HADEC2RADEC`
 (`EQ2HOR` = `RADEC2HADEC` + `HADEC2ALTAZ` + refraction). Two nutation model calls happen per HOR2EQ and
 HADEC2RADEC call (`FB_IAU2000B` directly and again inside `FB_CO_NUTATE`).
 
-**M8. The next release will fail half way, because `main` has diverged from `develop`.** *Read from code,
+**M8. The next release would have failed half way, because `main` had diverged from `develop`. Resolved 2026-09-20: `origin/main` was merged into `develop` (bf588dc) and pushed.** *Read from code,
 divergence verified with `git rev-list`.* `origin/main` has 3 commits that `origin/develop` lacks (0 the other
 way). `release.yml` pushes its version-bump commit to `develop` first, then runs
 `git merge --ff-only develop` on `main`. After the bump, `develop` is no longer an ancestor-descendant of
 `main`, so the merge fails and the job stops with the bump already on `develop`, `main` not updated and no
-tag. Merge `main` into `develop` before the next release. I did not run the workflow.
+tag. Merging `main` into `develop` fixed the divergence. Nothing prevents it from recurring if `main` gets
+commits directly, and I did not run the workflow.
 
 ### Low
 
@@ -237,7 +238,7 @@ its known flakiness symptoms.
   evaluated it either.
 
 **Recommendation:**
-1. Get the build job onto `develop` (merge `main` back, see M8), add an `install` step and upload the
+1. The build job is now on `develop` (see M8); add an `install` step and upload the
    `.library` as an artifact, then drop the committed binary.
 2. Write the golden vectors (option 2 below) and run them from the pyads notebook on a real PLC for now,
    with hard thresholds.
@@ -255,7 +256,7 @@ Options as first ranked:
 ## Suggested order of work
 
 1. H2 (cap the loop), H1 (temperature unit), H3 (default direction plus an IAG50cm check). Small changes.
-2. M8 (sync `main` into `develop`), then H4 and S2: build in CI, gate the release on it.
+2. H4 and S2: build in CI, gate the release on it (M8 is already resolved).
 3. Golden vectors with great-circle metric (M6), including RADEC2HADEC/HADEC2RADEC and refraction.
 4. M1 to M3 (input mutation, `PRECESS` contract, `d_ra` wrap) together with the M7 refactor.
 5. `dut1` input (M5) if the pointing budget needs it.
