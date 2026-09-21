@@ -11,8 +11,9 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 | `FB_HOR2EQ_Tests` | `FB_HOR2EQ` | the same for the reverse transform, plus `ws` (azimuth west from south) and the round trip through `FB_EQ2HOR` |
 | `FB_CO_REFRACT_Tests` | `FB_CO_REFRACT` | golden values in both directions, 0.0 degC as a valid temperature, no state kept between calls, out-of-range input, non-positive `epsilon` |
 | `FB_CO_ABERRATION_Tests` | `FB_CO_ABERRATION` | golden `d_ra` / `d_dec` at two epochs, `eps` input not modified |
+| `FB_TEN_Tests` | `TEN` | positive values, IDLAstro sign convention (a minus on any element negates the whole value), zero |
 
-29 test cases in total.
+42 test cases in total.
 
 The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
 every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The

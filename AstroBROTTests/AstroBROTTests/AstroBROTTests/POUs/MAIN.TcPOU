@@ -9,6 +9,7 @@ VAR
 	fbCoRefractTests	: FB_CO_REFRACT_Tests;
 	fbCoAberrationTests	: FB_CO_ABERRATION_Tests;
 	fbCoNutateTests	: FB_CO_NUTATE_Tests;
+	fbTenTests	: FB_TEN_Tests;
 END_VAR
 ]]></Declaration>
     <Implementation>

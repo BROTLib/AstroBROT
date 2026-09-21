@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_TEN_Tests" Id="{fc8a84fc-6b8f-4261-8435-b86b22a69f30}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.TEN (sexagesimal to decimal).
+//
+// Sign convention of IDLAstro's ten: a minus sign on any nonzero element makes the whole value negative, so
+// TEN(-5, 30, 0) = -5.5 and TEN(0, -23, 34) = -0.39277778 (the example from the IDL documentation), tolerance 1e-12.
+FUNCTION_BLOCK FB_TEN_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Positive_Values();
+Negative_Degrees_Apply_To_The_Whole_Value();
+Negative_Minutes_Or_Seconds_Apply_To_The_Whole_Value();
+Zero_Is_Zero();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{dd2487a8-3a31-4dc1-a97b-84c5773d7118}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Positive_Values" Id="{97052381-d3a5-4108-b131-6e6cd1aba0e6}">
+      <Declaration><![CDATA[METHOD PRIVATE Positive_Values
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Positive_Values');
+CheckNear(5.5, AstroBROT.TEN(5.0, 30.0, 0.0), 1.0E-12, 'TEN(5, 30, 0)');
+CheckNear(10.392777777777777, AstroBROT.TEN(10.0, 23.0, 34.0), 1.0E-12, 'TEN(10, 23, 34)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Negative_Degrees_Apply_To_The_Whole_Value" Id="{12eaa817-cb18-48cc-bd8e-476154434e72}">
+      <Declaration><![CDATA[METHOD PRIVATE Negative_Degrees_Apply_To_The_Whole_Value
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Negative_Degrees_Apply_To_The_Whole_Value');
+CheckNear(-5.5, AstroBROT.TEN(-5.0, 30.0, 0.0), 1.0E-12, 'TEN(-5, 30, 0)');
+CheckNear(-1.0341666666666667, AstroBROT.TEN(-1.0, 2.0, 3.0), 1.0E-12, 'TEN(-1, 2, 3)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Negative_Minutes_Or_Seconds_Apply_To_The_Whole_Value" Id="{b0f0d3a2-6c1e-4f6b-9a57-3e2f7d1c8a44}">
+      <Declaration><![CDATA[METHOD PRIVATE Negative_Minutes_Or_Seconds_Apply_To_The_Whole_Value
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Negative_Minutes_Or_Seconds_Apply_To_The_Whole_Value');
+CheckNear(-0.3927777777777778, AstroBROT.TEN(0.0, -23.0, 34.0), 1.0E-12, 'TEN(0, -23, 34)');
+CheckNear(-5.5, AstroBROT.TEN(5.0, -30.0, 0.0), 1.0E-12, 'TEN(5, -30, 0)');
+CheckNear(-1.0341666666666667, AstroBROT.TEN(1.0, 2.0, -3.0), 1.0E-12, 'TEN(1, 2, -3)');
+CheckNear(-0.008333333333333333, AstroBROT.TEN(0.0, 0.0, -30.0), 1.0E-12, 'TEN(0, 0, -30)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Zero_Is_Zero" Id="{6e9b1c57-2d84-4a0f-8c3b-5f7a9e4d2b18}">
+      <Declaration><![CDATA[METHOD PRIVATE Zero_Is_Zero
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Zero_Is_Zero');
+CheckNear(0.0, AstroBROT.TEN(0.0, 0.0, 0.0), 1.0E-15, 'TEN(0, 0, 0)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

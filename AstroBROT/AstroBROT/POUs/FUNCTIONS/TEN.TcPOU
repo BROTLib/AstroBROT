@@ -6,15 +6,19 @@ VAR_INPUT
 	dd, mm, ss	: LREAL;
 END_VAR
 VAR
+	fSign	: LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[TEN := dd + (mm/60.0) + (ss/3600.0);
+      <ST><![CDATA[// as IDLAstro's ten: a minus sign on any element makes the whole value negative, so TEN(-5, 30, 0) = -5.5
+// (unlike IDL, a literal -0.0 is not recognised as negative)
+IF (dd < 0.0) OR (mm < 0.0) OR (ss < 0.0) THEN
+	fSign := -1.0;
+ELSE
+	fSign := 1.0;
+END_IF
+TEN := fSign * (ABS(dd) + (ABS(mm)/60.0) + (ABS(ss)/3600.0));
 ]]></ST>
     </Implementation>
-    <LineIds Name="TEN">
-      <LineId Id="3" Count="0" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>
