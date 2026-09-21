@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="MAIN" Id="{ffd4640f-010b-4811-97a9-18864652ad5b}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	// TcUnit finds every FB_TestSuite instance by itself; it is enough to declare them here.
+	fbEq2HorTests	: FB_EQ2HOR_Tests;
+	fbHor2EqTests	: FB_HOR2EQ_Tests;
+	fbCoRefractTests	: FB_CO_REFRACT_Tests;
+	fbCoAberrationTests	: FB_CO_ABERRATION_Tests;
+	fbCoNutateTests	: FB_CO_NUTATE_Tests;
+	fbTenTests	: FB_TEN_Tests;
+	fbAltaz2HadecTests	: FB_ALTAZ2HADEC_Tests;
+	fbAtan2Tests	: FB_ATAN2_Tests;
+	fbDateTime2JdTests	: FB_DateTime2JD_Tests;
+	fbJd2LstTests	: FB_JD2LST_Tests;
+	fbDut1Tests	: FB_DUT1_Tests;
+	fbPrecessTests	: FB_PRECESS_Tests;
+	fbRadec2HadecTests	: FB_RADEC2HADEC_Tests;
+	fbHadec2RadecTests	: FB_HADEC2RADEC_Tests;
+	fbSunposTests	: FB_SUNPOS_Tests;
+	fbEdgeCasesTests	: FB_EdgeCases_Tests;
+	fbPipelineTests	: FB_Pipeline_Tests;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[TcUnit.RUN();
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

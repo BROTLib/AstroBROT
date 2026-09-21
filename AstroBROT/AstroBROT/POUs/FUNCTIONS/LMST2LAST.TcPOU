@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="LMST2LAST" Id="{28d2c17f-87c1-4eca-8b88-5fa75b583eea}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION LMST2LAST : LREAL
+VAR_INPUT
+	lmst		: LREAL;	// local mean sidereal time in degrees
+	d_psi		: LREAL;	// nutation in longitude in arcsec (FB_IAU2000B)
+	eps			: LREAL;	// TRUE obliquity of the ecliptic in radians (JD2OBLIQUITY)
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// local APPARENT sidereal time in degrees: add the equation of the equinoxes
+LMST2LAST := lmst + d_psi*COS(eps)/3600.0;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

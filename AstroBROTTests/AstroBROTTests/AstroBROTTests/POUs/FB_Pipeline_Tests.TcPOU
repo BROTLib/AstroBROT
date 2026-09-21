@@ -1,0 +1,414 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_Pipeline_Tests" Id="{d572f465-3f5c-4589-ad4a-1db462bcd62d}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for the shared building blocks of the apparent-place pipeline (issue #14, finding M7): the helper functions
+// JD2OBLIQUITY, JD2JEPOCH and LMST2LAST, the precess / nutate / aberration switches of FB_RADEC2HADEC and
+// FB_HADEC2RADEC, the nut_given input of FB_CO_NUTATE, and that FB_EQ2HOR and FB_HOR2EQ are exactly the composition of
+// these blocks with FB_HADEC2ALTAZ / FB_ALTAZ2HADEC.
+//
+// The golden numbers of the helpers come from the formulas themselves (Python) and are cross-checked against
+// erfa.obl06 (the polynomial differs from IAU 2006 by 0.05 arcsec). The switch tests are relative: with everything
+// off the blocks only apply the sidereal time, and each switch on its own adds exactly the correction that the
+// separate FB_PRECESS / FB_CO_NUTATE / FB_CO_ABERRATION returns.
+FUNCTION_BLOCK FB_Pipeline_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[JD2OBLIQUITY_Golden();
+JD2JEPOCH_Golden();
+LMST2LAST_Golden();
+CO_NUTATE_Given_Nutation_Is_Used_Not_Evaluated();
+RADEC2HADEC_All_Switches_Off_Only_Applies_Sidereal_Time();
+RADEC2HADEC_Each_Switch_Applies_Exactly_One_Correction();
+RADEC2HADEC_Switching_Off_Does_Not_Keep_The_Last_Correction();
+RADEC2HADEC_Cyclic_Calls_With_Inputs_Set_Once_Are_Stable();
+HADEC2RADEC_All_Switches_Off_Only_Applies_Sidereal_Time();
+HADEC2RADEC_Each_Switch_Applies_Exactly_One_Correction();
+HADEC2RADEC_Right_Ascension_Is_Wrapped_Without_Precession();
+HADEC2RADEC_Switching_Off_Does_Not_Keep_The_Last_Correction();
+EQ2HOR_Is_The_Composition_Of_Its_Parts();
+HOR2EQ_Is_The_Composition_Of_Its_Parts();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{e148252f-d6c9-4876-a1bf-bcc0da67e964}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckAngle" Id="{12c36917-cd4f-45a1-a62e-30ac1c12f767}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAngle
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+VAR
+	fDiff	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// angles in degrees, compared modulo 360 so that 359.9999999 and -1.0E-7 are equal
+fDiff := fActual - fExpected;
+WHILE fDiff > 180.0 DO fDiff := fDiff - 360.0; END_WHILE
+WHILE fDiff < -180.0 DO fDiff := fDiff + 360.0; END_WHILE
+AssertEquals_LREAL(Expected := 0.0, Actual := fDiff, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ApparentSidereal" Id="{a5b54216-fa10-473f-8a9c-f32ae9d0911e}">
+      <Declaration><![CDATA[METHOD PRIVATE ApparentSidereal : LREAL
+VAR_INPUT
+	jd		: LREAL;
+	lon		: LREAL;
+END_VAR
+VAR
+	nut		: AstroBROT.FB_IAU2000B;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// local apparent sidereal time in degrees, built from the pieces the blocks use
+nut(jd := jd);
+ApparentSidereal := AstroBROT.LMST2LAST(
+	lmst := AstroBROT.JD2LST(jd := jd, lon := lon, dut1 := 0.0),
+	d_psi := nut.d_psi,
+	eps := AstroBROT.JD2OBLIQUITY(jd := jd, d_eps := nut.d_eps));
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="JD2OBLIQUITY_Golden" Id="{0c891305-1ecb-46c5-a005-5773c7ad366f}">
+      <Declaration><![CDATA[METHOD PRIVATE JD2OBLIQUITY_Golden
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('JD2OBLIQUITY_Golden');
+CheckNear(0.4090928040284035, AstroBROT.JD2OBLIQUITY(jd := 2451545.0, d_eps := 0.0), 1.0E-12, 'J2000, no nutation');
+CheckNear(0.40903218198173297, AstroBROT.JD2OBLIQUITY(jd := 2461300.75, d_eps := 0.0), 1.0E-12, '2026-09-21, no nutation');
+CheckNear(0.40894733958753876, AstroBROT.JD2OBLIQUITY(jd := 2461300.75, d_eps := -17.5), 1.0E-12, 'd_eps is added in arcsec');
+CheckNear(0.40916089319108967, AstroBROT.JD2OBLIQUITY(jd := 2440587.5, d_eps := 0.0), 1.0E-12, '1970');
+CheckNear(AstroBROT.JD2OBLIQUITY(jd := 2461300.75, d_eps := 0.0) + PI / 180.0, AstroBROT.JD2OBLIQUITY(jd := 2461300.75, d_eps := 3600.0), 1.0E-12, '3600 arcsec is one degree');
+// erfa.obl06 (IAU 2006 mean obliquity): 0.4090926006005829 and 0.4090319505229558, 0.05 arcsec = 2.3E-7 rad away
+CheckNear(0.4090926006005829, AstroBROT.JD2OBLIQUITY(jd := 2451545.0, d_eps := 0.0), 5.0E-7, 'erfa J2000');
+CheckNear(0.4090319505229558, AstroBROT.JD2OBLIQUITY(jd := 2461300.75, d_eps := 0.0), 5.0E-7, 'erfa 2026-09-21');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="JD2JEPOCH_Golden" Id="{95e373df-497f-4eee-ab4a-444b5895205e}">
+      <Declaration><![CDATA[METHOD PRIVATE JD2JEPOCH_Golden
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('JD2JEPOCH_Golden');
+CheckNear(2000.0, AstroBROT.JD2JEPOCH(jd := 2451545.0), 1.0E-9, 'J2000');
+CheckNear(2001.0, AstroBROT.JD2JEPOCH(jd := 2451910.25), 1.0E-9, 'one Julian year later');
+CheckNear(2026.709787816564, AstroBROT.JD2JEPOCH(jd := 2461300.75), 1.0E-9, '2026-09-21');
+CheckNear(1970.0, AstroBROT.JD2JEPOCH(jd := 2440587.5), 1.0E-9, '1970');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="LMST2LAST_Golden" Id="{e9870e87-e380-4e08-9f15-7d30cfa919f7}">
+      <Declaration><![CDATA[METHOD PRIVATE LMST2LAST_Golden
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('LMST2LAST_Golden');
+CheckNear(100.0, AstroBROT.LMST2LAST(lmst := 100.0, d_psi := 0.0, eps := 0.4), 1.0E-12, 'no nutation');
+CheckNear(101.0, AstroBROT.LMST2LAST(lmst := 100.0, d_psi := 3600.0, eps := 0.0), 1.0E-12, 'eps 0: d_psi in full, 3600 arcsec is one degree');
+CheckNear(99.5, AstroBROT.LMST2LAST(lmst := 100.0, d_psi := -3600.0, eps := PI / 3.0), 1.0E-12, 'cos(60 deg) = 0.5');
+CheckNear(100.0, AstroBROT.LMST2LAST(lmst := 100.0, d_psi := 3600.0, eps := PI / 2.0), 1.0E-12, 'eps 90 deg: no correction');
+CheckNear(100.0 + -14.0 * COS(0.409) / 3600.0, AstroBROT.LMST2LAST(lmst := 100.0, d_psi := -14.0, eps := 0.409), 1.0E-12, 'typical values');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CO_NUTATE_Given_Nutation_Is_Used_Not_Evaluated" Id="{b78fc429-e75c-4595-a98b-68df28a850e9}">
+      <Declaration><![CDATA[METHOD PRIVATE CO_NUTATE_Given_Nutation_Is_Used_Not_Evaluated
+VAR
+	fbA	: AstroBROT.FB_CO_NUTATE;
+	fbB	: AstroBROT.FB_CO_NUTATE;
+	fbC	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('CO_NUTATE_Given_Nutation_Is_Used_Not_Evaluated');
+fbA(jd := 2461300.75, ra := 83.63, dec := 22.01);
+AssertTrue(Condition := ABS(fbA.d_ra) > 1.0E-6, Message := 'nutation is evaluated by default');
+// the nutation of the same date passed in gives the same corrections
+fbB(jd := 2461300.75, ra := 83.63, dec := 22.01, nut_given := TRUE, d_psi_in := fbA.d_psi, d_eps_in := fbA.d_eps);
+CheckNear(fbA.d_ra, fbB.d_ra, 1.0E-12, 'd_ra');
+CheckNear(fbA.d_dec, fbB.d_dec, 1.0E-12, 'd_dec');
+CheckNear(fbA.d_psi, fbB.d_psi, 0.0, 'd_psi');
+CheckNear(fbA.d_eps, fbB.d_eps, 0.0, 'd_eps');
+CheckNear(fbA.eps, fbB.eps, 1.0E-12, 'eps');
+// a given zero nutation is used as it is: nothing is looked up for jd
+fbC(jd := 2461300.75, ra := 83.63, dec := 22.01, nut_given := TRUE, d_psi_in := 0.0, d_eps_in := 0.0);
+CheckNear(0.0, fbC.d_psi, 0.0, 'given d_psi');
+CheckNear(0.0, fbC.d_ra, 1.0E-9, 'no nutation: d_ra');
+CheckNear(0.0, fbC.d_dec, 1.0E-9, 'no nutation: d_dec');
+CheckNear(AstroBROT.JD2OBLIQUITY(jd := 2461300.75, d_eps := 0.0), fbC.eps, 1.0E-12, 'eps is the mean obliquity');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RADEC2HADEC_All_Switches_Off_Only_Applies_Sidereal_Time" Id="{1726456d-ded6-4b93-87d2-c188b87e6881}">
+      <Declaration><![CDATA[METHOD PRIVATE RADEC2HADEC_All_Switches_Off_Only_Applies_Sidereal_Time
+VAR
+	fb		: AstroBROT.FB_RADEC2HADEC;
+	fLast	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('RADEC2HADEC_All_Switches_Off_Only_Applies_Sidereal_Time');
+fLast := ApparentSidereal(2461300.75, -16.5);
+fb(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+CheckAngle(fLast - 83.63, fb.ha_out, 1.0E-9, 'ha = LAST - ra');
+CheckNear(22.01, fb.dec_out, 0.0, 'dec unchanged');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RADEC2HADEC_Each_Switch_Applies_Exactly_One_Correction" Id="{8ce192fa-371e-43e9-ba63-5e8593c49ee9}">
+      <Declaration><![CDATA[METHOD PRIVATE RADEC2HADEC_Each_Switch_Applies_Exactly_One_Correction
+VAR
+	fbOff		: AstroBROT.FB_RADEC2HADEC;
+	fbPre		: AstroBROT.FB_RADEC2HADEC;
+	fbNut		: AstroBROT.FB_RADEC2HADEC;
+	fbAbr		: AstroBROT.FB_RADEC2HADEC;
+	fbPrecess	: AstroBROT.FB_PRECESS;
+	nut			: AstroBROT.FB_CO_NUTATE;
+	abr			: AstroBROT.FB_CO_ABERRATION;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('RADEC2HADEC_Each_Switch_Applies_Exactly_One_Correction');
+fbOff(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+fbPre(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := TRUE, nutate := FALSE, aberration := FALSE);
+fbNut(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := FALSE, nutate := TRUE, aberration := FALSE);
+fbAbr(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := TRUE);
+fbPrecess(ra := 83.63, dec := 22.01, equinox1 := 2000.0, equinox2 := AstroBROT.JD2JEPOCH(jd := 2461300.75));
+nut(jd := 2461300.75, ra := 83.63, dec := 22.01);
+abr(jd := 2461300.75, ra := 83.63, dec := 22.01);
+// the corrections must be big enough for the comparisons below to mean something
+AssertTrue(Condition := ABS(fbPrecess.ra_precessed - 83.63) > 1.0E-3, Message := 'precession is not negligible');
+AssertTrue(Condition := ABS(nut.d_ra) > 1.0E-5, Message := 'nutation is not negligible');
+AssertTrue(Condition := ABS(abr.d_ra) > 1.0E-5, Message := 'aberration is not negligible');
+// ha = LAST - ra_apparent, so a correction d_ra to ra lowers ha by d_ra
+CheckAngle(fbOff.ha_out - (fbPrecess.ra_precessed - 83.63), fbPre.ha_out, 1.0E-9, 'precession only: ha');
+CheckNear(fbPrecess.dec_precessed, fbPre.dec_out, 1.0E-9, 'precession only: dec');
+CheckAngle(fbOff.ha_out - nut.d_ra, fbNut.ha_out, 1.0E-9, 'nutation only: ha');
+CheckNear(22.01 + nut.d_dec, fbNut.dec_out, 1.0E-9, 'nutation only: dec');
+CheckAngle(fbOff.ha_out - abr.d_ra, fbAbr.ha_out, 1.0E-9, 'aberration only: ha');
+CheckNear(22.01 + abr.d_dec, fbAbr.dec_out, 1.0E-9, 'aberration only: dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RADEC2HADEC_Switching_Off_Does_Not_Keep_The_Last_Correction" Id="{f565b266-c333-4583-a8af-de0709aee3fd}">
+      <Declaration><![CDATA[METHOD PRIVATE RADEC2HADEC_Switching_Off_Does_Not_Keep_The_Last_Correction
+VAR
+	fb		: AstroBROT.FB_RADEC2HADEC;
+	fbFresh	: AstroBROT.FB_RADEC2HADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('RADEC2HADEC_Switching_Off_Does_Not_Keep_The_Last_Correction');
+fb(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5);
+fb(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+fbFresh(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+CheckAngle(fbFresh.ha_out, fb.ha_out, 1.0E-12, 'ha');
+CheckNear(fbFresh.dec_out, fb.dec_out, 1.0E-12, 'dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RADEC2HADEC_Cyclic_Calls_With_Inputs_Set_Once_Are_Stable" Id="{092d81e0-e896-4f30-87de-d31e4e083487}">
+      <Declaration><![CDATA[METHOD PRIVATE RADEC2HADEC_Cyclic_Calls_With_Inputs_Set_Once_Are_Stable
+VAR
+	fb		: AstroBROT.FB_RADEC2HADEC;
+	fbRef	: AstroBROT.FB_RADEC2HADEC;
+	i		: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('RADEC2HADEC_Cyclic_Calls_With_Inputs_Set_Once_Are_Stable');
+fbRef(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5);
+fb.jd := 2461300.75;
+fb.ra := 83.63;
+fb.dec := 22.01;
+fb.lon := -16.5;
+FOR i := 1 TO 5 DO
+	fb();
+	CheckAngle(fbRef.ha_out, fb.ha_out, 1.0E-12, 'cyclic call ha');
+	CheckNear(fbRef.dec_out, fb.dec_out, 1.0E-12, 'cyclic call dec');
+END_FOR
+CheckNear(83.63, fb.ra, 0.0, 'ra input untouched');
+CheckNear(22.01, fb.dec, 0.0, 'dec input untouched');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HADEC2RADEC_All_Switches_Off_Only_Applies_Sidereal_Time" Id="{3f27e004-ddde-4ada-aec4-30271dde7829}">
+      <Declaration><![CDATA[METHOD PRIVATE HADEC2RADEC_All_Switches_Off_Only_Applies_Sidereal_Time
+VAR
+	fb		: AstroBROT.FB_HADEC2RADEC;
+	fLast	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('HADEC2RADEC_All_Switches_Off_Only_Applies_Sidereal_Time');
+fLast := ApparentSidereal(2461300.75, -16.5);
+fb(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+CheckAngle(fLast - 345.0, fb.ra_out, 1.0E-9, 'ra = LAST - ha');
+CheckNear(22.01, fb.dec_out, 0.0, 'dec unchanged');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HADEC2RADEC_Each_Switch_Applies_Exactly_One_Correction" Id="{a99b2f72-eca0-48fd-a0f1-81b38d3e06e8}">
+      <Declaration><![CDATA[METHOD PRIVATE HADEC2RADEC_Each_Switch_Applies_Exactly_One_Correction
+VAR
+	fbOff		: AstroBROT.FB_HADEC2RADEC;
+	fbPre		: AstroBROT.FB_HADEC2RADEC;
+	fbNut		: AstroBROT.FB_HADEC2RADEC;
+	fbAbr		: AstroBROT.FB_HADEC2RADEC;
+	fbPrecess	: AstroBROT.FB_PRECESS;
+	nut			: AstroBROT.FB_CO_NUTATE;
+	abr			: AstroBROT.FB_CO_ABERRATION;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('HADEC2RADEC_Each_Switch_Applies_Exactly_One_Correction');
+fbOff(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+fbPre(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := TRUE, nutate := FALSE, aberration := FALSE);
+fbNut(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := FALSE, nutate := TRUE, aberration := FALSE);
+fbAbr(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := TRUE);
+// the corrections are looked up at the position without any correction, like the block does
+fbPrecess(ra := fbOff.ra_out, dec := fbOff.dec_out, equinox1 := AstroBROT.JD2JEPOCH(jd := 2461300.75), equinox2 := 2000.0);
+nut(jd := 2461300.75, ra := fbOff.ra_out, dec := fbOff.dec_out);
+abr(jd := 2461300.75, ra := fbOff.ra_out, dec := fbOff.dec_out);
+AssertTrue(Condition := ABS(fbPrecess.ra_precessed - fbOff.ra_out) > 1.0E-3, Message := 'precession is not negligible');
+AssertTrue(Condition := ABS(nut.d_ra) > 1.0E-5, Message := 'nutation is not negligible');
+AssertTrue(Condition := ABS(abr.d_ra) > 1.0E-5, Message := 'aberration is not negligible');
+CheckAngle(fbPrecess.ra_precessed, fbPre.ra_out, 1.0E-9, 'precession only: ra');
+CheckNear(fbPrecess.dec_precessed, fbPre.dec_out, 1.0E-9, 'precession only: dec');
+CheckAngle(fbOff.ra_out - nut.d_ra, fbNut.ra_out, 1.0E-9, 'nutation only: ra');
+CheckNear(fbOff.dec_out - nut.d_dec, fbNut.dec_out, 1.0E-9, 'nutation only: dec');
+CheckAngle(fbOff.ra_out - abr.d_ra, fbAbr.ra_out, 1.0E-9, 'aberration only: ra');
+CheckNear(fbOff.dec_out - abr.d_dec, fbAbr.dec_out, 1.0E-9, 'aberration only: dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HADEC2RADEC_Right_Ascension_Is_Wrapped_Without_Precession" Id="{6c6d368b-3f77-42b4-81cb-78b238672857}">
+      <Declaration><![CDATA[METHOD PRIVATE HADEC2RADEC_Right_Ascension_Is_Wrapped_Without_Precession
+VAR
+	fbLow	: AstroBROT.FB_HADEC2RADEC;
+	fbHigh	: AstroBROT.FB_HADEC2RADEC;
+	fLast	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('HADEC2RADEC_Right_Ascension_Is_Wrapped_Without_Precession');
+// the uncorrected RA is 1E-6 deg above 0 or below 360, the nutation and aberration correction (several
+// arcsec) moves it across the wrap in one of the two cases
+fLast := ApparentSidereal(2461300.75, -16.5);
+fbLow(jd := 2461300.75, ha := fLast - 1.0E-6, dec := 22.01, lon := -16.5, precess := FALSE);
+fbHigh(jd := 2461300.75, ha := fLast + 1.0E-6, dec := 22.01, lon := -16.5, precess := FALSE);
+AssertTrue(Condition := fbLow.ra_out >= 0.0 AND fbLow.ra_out < 360.0, Message := 'ra in [0, 360) above the wrap');
+AssertTrue(Condition := fbHigh.ra_out >= 0.0 AND fbHigh.ra_out < 360.0, Message := 'ra in [0, 360) below the wrap');
+CheckAngle(0.0, fbLow.ra_out, 0.1, 'ra is near 0 above the wrap');
+CheckAngle(0.0, fbHigh.ra_out, 0.1, 'ra is near 0 below the wrap');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HADEC2RADEC_Switching_Off_Does_Not_Keep_The_Last_Correction" Id="{ba9d842c-442d-48a2-83c5-de0bf9210541}">
+      <Declaration><![CDATA[METHOD PRIVATE HADEC2RADEC_Switching_Off_Does_Not_Keep_The_Last_Correction
+VAR
+	fb		: AstroBROT.FB_HADEC2RADEC;
+	fbFresh	: AstroBROT.FB_HADEC2RADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('HADEC2RADEC_Switching_Off_Does_Not_Keep_The_Last_Correction');
+fb(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5);
+fb(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+fbFresh(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, precess := FALSE, nutate := FALSE, aberration := FALSE);
+CheckAngle(fbFresh.ra_out, fb.ra_out, 1.0E-12, 'ra');
+CheckNear(fbFresh.dec_out, fb.dec_out, 1.0E-12, 'dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="EQ2HOR_Is_The_Composition_Of_Its_Parts" Id="{2a256bcd-c439-475d-bfa2-7c0730d9c550}">
+      <Declaration><![CDATA[METHOD PRIVATE EQ2HOR_Is_The_Composition_Of_Its_Parts
+VAR
+	fbEq	: AstroBROT.FB_EQ2HOR;
+	fbHd	: AstroBROT.FB_RADEC2HADEC;
+	fbAz	: AstroBROT.FB_HADEC2ALTAZ;
+	i		: INT;
+	bOn		: BOOL;
+	bWs		: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('EQ2HOR_Is_The_Composition_Of_Its_Parts');
+// no refraction: FB_EQ2HOR = FB_RADEC2HADEC + FB_HADEC2ALTAZ, with and without the corrections and with ws
+FOR i := 0 TO 3 DO
+	bOn := (i MOD 2) = 0;
+	bWs := i >= 2;
+	fbEq(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, lat := 48.5, ws := bWs, precess := bOn, nutate := bOn, aberration := TRUE, refract := FALSE);
+	fbHd(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, precess := bOn, nutate := bOn, aberration := TRUE);
+	fbAz(ha := fbHd.ha_out, dec := fbHd.dec_out, lat := 48.5, WS := bWs);
+	CheckNear(fbAz.alt, fbEq.alt, 1.0E-12, 'alt');
+	CheckAngle(fbAz.az, fbEq.az, 1.0E-12, 'az');
+	CheckAngle(fbHd.ha_out, fbEq.ha, 1.0E-12, 'ha');
+END_FOR
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HOR2EQ_Is_The_Composition_Of_Its_Parts" Id="{caecec19-cff8-4106-9a5a-0e9be9da6ca5}">
+      <Declaration><![CDATA[METHOD PRIVATE HOR2EQ_Is_The_Composition_Of_Its_Parts
+VAR
+	fbHor	: AstroBROT.FB_HOR2EQ;
+	fbAh	: AstroBROT.FB_ALTAZ2HADEC;
+	fbRd	: AstroBROT.FB_HADEC2RADEC;
+	i		: INT;
+	bOn		: BOOL;
+	bWs		: BOOL;
+	fAz		: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('HOR2EQ_Is_The_Composition_Of_Its_Parts');
+// no refraction: FB_HOR2EQ = FB_ALTAZ2HADEC + FB_HADEC2RADEC, with and without the corrections and with ws
+FOR i := 0 TO 3 DO
+	bOn := (i MOD 2) = 0;
+	bWs := i >= 2;
+	fbHor(alt := 40.0, az := 120.0, jd := 2461300.75, lat := 48.5, lon := -16.5, ws := bWs, precess := bOn, nutate := bOn, aberration := TRUE, refract := FALSE);
+	fAz := 120.0;
+	IF bWs THEN
+		fAz := 120.0 - 180.0;
+	END_IF
+	fbAh(alt := 40.0, az := fAz, lat := 48.5);
+	fbRd(jd := 2461300.75, ha := fbAh.ha, dec := fbAh.dec, lon := -16.5, precess := bOn, nutate := bOn, aberration := TRUE);
+	CheckAngle(fbRd.ra_out, fbHor.ra, 1.0E-12, 'ra');
+	CheckNear(fbRd.dec_out, fbHor.dec, 1.0E-12, 'dec');
+	CheckAngle(fbAh.ha, fbHor.ha, 1.0E-12, 'ha');
+END_FOR
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

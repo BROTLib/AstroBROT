@@ -1,0 +1,306 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_EQ2HOR_Tests" Id="{163d4519-caea-4ce4-8abb-b23e20af8328}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.FB_EQ2HOR (equatorial J2000 -> apparent horizontal coordinates).
+//
+// Golden values come from AstroBROT/testing/golden_astro.py (the Python port, validated against erfa). The port
+// reproduces the ST to about 1e-10 deg, the tolerance here is 1e-7 deg (0.36 mas). Three sites: Tenerife 2026
+// (high in the sky), Tenerife at about 20 deg altitude (refraction) and a southern site in 2010.
+//
+// Besides the numbers the tests pin down that the block never modifies its inputs and keeps no state between
+// calls (issue #8). MAIN of the library assigns every input on every call, which hides both problems.
+FUNCTION_BLOCK FB_EQ2HOR_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Golden_All_Corrections_Tenerife_2026();
+Golden_All_Corrections_Tenerife_low();
+Golden_All_Corrections_South_2010();
+Golden_Nutation_And_Aberration_Switches();
+Toggling_The_Switches_Keeps_No_Stale_Corrections();
+Inputs_Are_Not_Modified();
+Cyclic_Calls_With_Inputs_Set_Once_Are_Stable();
+Refraction_Tenerife_low();
+Refraction_South_2010();
+Golden_Dut1_Tenerife_2026();
+Golden_Dut1_Tenerife_low();
+Golden_Dut1_South_2010();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{ed0f85b5-4330-4a9f-9a54-acb32627980f}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckAngle" Id="{7acc6d9f-7fd9-4f0c-a1b2-cfded46ccff0}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAngle
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+VAR
+	fDiff	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// angles in degrees, compared modulo 360 so that 359.9999999 and -1.0E-7 are equal
+fDiff := fActual - fExpected;
+WHILE fDiff > 180.0 DO fDiff := fDiff - 360.0; END_WHILE
+WHILE fDiff < -180.0 DO fDiff := fDiff + 360.0; END_WHILE
+AssertEquals_LREAL(Expected := 0.0, Actual := fDiff, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_All_Corrections_Tenerife_2026" Id="{77618858-d85a-4ba9-95e3-3d70c4d39e1c}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_All_Corrections_Tenerife_2026
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_All_Corrections_Tenerife_2026');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE);
+CheckNear(75.59846498223517, fb.alt, 1.0E-7, 'Tenerife_2026 alt');
+CheckAngle(112.59057933299366, fb.az, 1.0E-7, 'Tenerife_2026 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_All_Corrections_Tenerife_low" Id="{67af639c-9414-4ac8-80a9-75d54aac45e8}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_All_Corrections_Tenerife_low
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_All_Corrections_Tenerife_low');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE);
+CheckNear(20.004849547711906, fb.alt, 1.0E-7, 'Tenerife_low alt');
+CheckAngle(114.06814750558047, fb.az, 1.0E-7, 'Tenerife_low az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_All_Corrections_South_2010" Id="{ea9971af-04fd-4625-8f8f-db1f8eba0ce7}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_All_Corrections_South_2010
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_All_Corrections_South_2010');
+fb(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE);
+CheckNear(29.98028023128418, fb.alt, 1.0E-7, 'South_2010 alt');
+CheckAngle(229.80793288979396, fb.az, 1.0E-7, 'South_2010 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Nutation_And_Aberration_Switches" Id="{c15ff492-e0eb-4ed9-8655-10e2662011cf}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Nutation_And_Aberration_Switches
+VAR
+	fb01	: AstroBROT.FB_EQ2HOR;
+	fb10	: AstroBROT.FB_EQ2HOR;
+	fb00	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Nutation_And_Aberration_Switches');
+// nutate = FALSE still uses d_psi for the sidereal time, only the RA/Dec correction is skipped
+fb10(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := FALSE);
+CheckNear(75.59846841386083, fb10.alt, 1.0E-7, 'Tenerife_2026 nutate=1 aberration=0 alt');
+CheckAngle(112.59118972427912, fb10.az, 1.0E-7, 'Tenerife_2026 nutate=1 aberration=0 az');
+fb01(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := TRUE);
+CheckNear(75.59936757788323, fb01.alt, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=1 alt');
+CheckAngle(112.60350125711398, fb01.az, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=1 az');
+fb00(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := FALSE);
+CheckNear(75.59937097997194, fb00.alt, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=0 alt');
+CheckAngle(112.60411169109408, fb00.az, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=0 az');
+fb10(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, nutate := TRUE, aberration := FALSE);
+CheckNear(29.98438866090121, fb10.alt, 1.0E-7, 'South_2010 nutate=1 aberration=0 alt');
+CheckAngle(229.8121407986145, fb10.az, 1.0E-7, 'South_2010 nutate=1 aberration=0 az');
+fb01(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, nutate := FALSE, aberration := TRUE);
+CheckNear(29.976340392064657, fb01.alt, 1.0E-7, 'South_2010 nutate=0 aberration=1 alt');
+CheckAngle(229.8060751934534, fb01.az, 1.0E-7, 'South_2010 nutate=0 aberration=1 az');
+fb00(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, nutate := FALSE, aberration := FALSE);
+CheckNear(29.980448533028405, fb00.alt, 1.0E-7, 'South_2010 nutate=0 aberration=0 alt');
+CheckAngle(229.81028321929855, fb00.az, 1.0E-7, 'South_2010 nutate=0 aberration=0 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Toggling_The_Switches_Keeps_No_Stale_Corrections" Id="{e9688f76-7936-402f-95fb-6a7dd3b435a9}">
+      <Declaration><![CDATA[METHOD PRIVATE Toggling_The_Switches_Keeps_No_Stale_Corrections
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Toggling_The_Switches_Keeps_No_Stale_Corrections');
+// the block keeps its correction deltas between calls; switching a flag off must drop that correction
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := TRUE);
+CheckNear(75.59846498223517, fb.alt, 1.0E-7, 'toggle nutate=1 aberration=1 alt');
+CheckAngle(112.59057933299366, fb.az, 1.0E-7, 'toggle nutate=1 aberration=1 az');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := TRUE);
+CheckNear(75.59936757788323, fb.alt, 1.0E-7, 'toggle nutate=0 aberration=1 alt');
+CheckAngle(112.60350125711398, fb.az, 1.0E-7, 'toggle nutate=0 aberration=1 az');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := FALSE);
+CheckNear(75.59846841386083, fb.alt, 1.0E-7, 'toggle nutate=1 aberration=0 alt');
+CheckAngle(112.59118972427912, fb.az, 1.0E-7, 'toggle nutate=1 aberration=0 az');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := FALSE);
+CheckNear(75.59937097997194, fb.alt, 1.0E-7, 'toggle nutate=0 aberration=0 alt');
+CheckAngle(112.60411169109408, fb.az, 1.0E-7, 'toggle nutate=0 aberration=0 az');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := TRUE);
+CheckNear(75.59846498223517, fb.alt, 1.0E-7, 'toggle nutate=1 aberration=1 alt');
+CheckAngle(112.59057933299366, fb.az, 1.0E-7, 'toggle nutate=1 aberration=1 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Inputs_Are_Not_Modified" Id="{cba8ebd2-2bda-49dc-ae87-d76e369d7378}">
+      <Declaration><![CDATA[METHOD PRIVATE Inputs_Are_Not_Modified
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Inputs_Are_Not_Modified');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := TRUE);
+CheckNear(83.63, fb.ra, 1.0E-15, 'ra unchanged');
+CheckNear(22.01, fb.dec, 1.0E-15, 'dec unchanged');
+CheckNear(2461300.75, fb.jd, 1.0E-15, 'jd unchanged');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Cyclic_Calls_With_Inputs_Set_Once_Are_Stable" Id="{670fddd3-e25d-455f-be72-600dfb1f8bc4}">
+      <Declaration><![CDATA[METHOD PRIVATE Cyclic_Calls_With_Inputs_Set_Once_Are_Stable
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+	i	: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Cyclic_Calls_With_Inputs_Set_Once_Are_Stable');
+fb.ra := 83.63;
+fb.dec := 22.01;
+fb.jd := 2461300.75;
+fb.lon := -16.5;
+fb.lat := 28.3;
+fb.refract := FALSE;
+FOR i := 1 TO 5 DO
+	// inputs are set once and the block is called cyclically, like a PLC program would do
+	fb();
+	CheckNear(75.59846498223517, fb.alt, 1.0E-7, 'cyclic call alt');
+	CheckAngle(112.59057933299366, fb.az, 1.0E-7, 'cyclic call az');
+END_FOR
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Refraction_Tenerife_low" Id="{63a9a6dd-e67e-430e-8a7f-af089c5b1a50}">
+      <Declaration><![CDATA[METHOD PRIVATE Refraction_Tenerife_low
+VAR
+	fbObs	: AstroBROT.FB_EQ2HOR;
+	fbGeo	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Refraction_Tenerife_low');
+fbObs(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := TRUE, refract_to_observed := TRUE, altitude := 2400.0);
+CheckNear(20.039496339721794, fbObs.alt, 1.0E-7, 'Tenerife_low to observed alt');
+CheckAngle(114.06814750558047, fbObs.az, 1.0E-7, 'Tenerife_low to observed az');
+fbGeo(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := TRUE, refract_to_observed := FALSE, altitude := 2400.0);
+CheckNear(19.970138517747017, fbGeo.alt, 1.0E-7, 'Tenerife_low to geometric alt');
+CheckAngle(114.06814750558047, fbGeo.az, 1.0E-7, 'Tenerife_low to geometric az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Refraction_South_2010" Id="{eebefb23-af43-48ef-a878-2dba815acabf}">
+      <Declaration><![CDATA[METHOD PRIVATE Refraction_South_2010
+VAR
+	fbObs	: AstroBROT.FB_EQ2HOR;
+	fbGeo	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Refraction_South_2010');
+fbObs(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := TRUE, refract_to_observed := TRUE, altitude := 2700.0);
+CheckNear(30.001616325954682, fbObs.alt, 1.0E-7, 'South_2010 to observed alt');
+CheckAngle(229.80793288979396, fbObs.az, 1.0E-7, 'South_2010 to observed az');
+fbGeo(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := TRUE, refract_to_observed := FALSE, altitude := 2700.0);
+CheckNear(29.958925879892362, fbGeo.alt, 1.0E-7, 'South_2010 to geometric alt');
+CheckAngle(229.80793288979396, fbGeo.az, 1.0E-7, 'South_2010 to geometric az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dut1_Tenerife_2026" Id="{a16a35cb-29a3-4440-92a1-3abf2a17dc95}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dut1_Tenerife_2026
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dut1_Tenerife_2026');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := 0.9);
+CheckNear(75.6015217605425, fb.alt, 1.0E-7, 'Tenerife_2026 dut1 +0.9 alt');
+CheckAngle(112.59731630906032, fb.az, 1.0E-7, 'Tenerife_2026 dut1 +0.9 az');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := -0.9);
+CheckNear(75.5954080544077, fb.alt, 1.0E-7, 'Tenerife_2026 dut1 -0.9 alt');
+CheckAngle(112.58384485334773, fb.az, 1.0E-7, 'Tenerife_2026 dut1 -0.9 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dut1_Tenerife_low" Id="{58c92258-fcbb-4de1-aaa6-a4d48118dcd7}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dut1_Tenerife_low
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dut1_Tenerife_low');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := 0.9);
+CheckNear(20.007872562062794, fb.alt, 1.0E-7, 'Tenerife_low dut1 +0.9 alt');
+CheckAngle(114.07042187844327, fb.az, 1.0E-7, 'Tenerife_low dut1 +0.9 az');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := -0.9);
+CheckNear(20.00182647976375, fb.alt, 1.0E-7, 'Tenerife_low dut1 -0.9 alt');
+CheckAngle(114.06587325708954, fb.az, 1.0E-7, 'Tenerife_low dut1 -0.9 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dut1_South_2010" Id="{84a2e0c7-88e1-4c1b-a34a-3b892a732dea}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dut1_South_2010
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dut1_South_2010');
+fb(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, dut1 := 0.9);
+CheckNear(29.97779764757124, fb.alt, 1.0E-7, 'South_2010 dut1 +0.9 alt');
+CheckAngle(229.80725126973925, fb.az, 1.0E-7, 'South_2010 dut1 +0.9 az');
+fb(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, dut1 := -0.9);
+CheckNear(29.982762840100285, fb.alt, 1.0E-7, 'South_2010 dut1 -0.9 alt');
+CheckAngle(229.8086144058053, fb.az, 1.0E-7, 'South_2010 dut1 -0.9 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

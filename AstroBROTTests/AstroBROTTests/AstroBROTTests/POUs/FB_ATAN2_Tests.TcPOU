@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_ATAN2_Tests" Id="{ead7ad78-fb7e-425e-ab60-8c5c0898c8a2}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.ATAN2, the four-quadrant arctangent (TwinCAT's PLC has none of its own).
+//
+// Expected values come from Python math.atan2, tolerance 1e-12 rad. Known difference from IEEE: y = -0.0 with x < 0
+// gives +pi (ST cannot tell -0.0 from 0.0), harmless because the callers wrap the angle.
+FUNCTION_BLOCK FB_ATAN2_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Quadrants();
+Axes();
+Origin_Is_Zero();
+Close_To_The_Axes();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckAtan2" Id="{14ad1f1a-5137-4bdb-a424-26dd7ec55a3e}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAtan2
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := 1.0E-12, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Quadrants" Id="{f52e0b7d-9243-4fed-abd0-9d87af2850f2}">
+      <Declaration><![CDATA[METHOD PRIVATE Quadrants
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Quadrants');
+CheckAtan2(0.7853981633974483, AstroBROT.ATAN2(y := 1.0, x := 1.0), 'q1 (1, 1)');
+CheckAtan2(2.5535900500422257, AstroBROT.ATAN2(y := 2.0, x := -3.0), 'q2 (2, -3)');
+CheckAtan2(-2.5535900500422257, AstroBROT.ATAN2(y := -2.0, x := -3.0), 'q3 (-2, -3)');
+CheckAtan2(-0.5880026035475675, AstroBROT.ATAN2(y := -2.0, x := 3.0), 'q4 (-2, 3)');
+CheckAtan2(0.5880026035475675, AstroBROT.ATAN2(y := 2.0, x := 3.0), 'q1 (2, 3)');
+CheckAtan2(2.356194490192345, AstroBROT.ATAN2(y := 1.0, x := -1.0), 'q2 (1, -1)');
+CheckAtan2(-2.356194490192345, AstroBROT.ATAN2(y := -1.0, x := -1.0), 'q3 (-1, -1)');
+CheckAtan2(-0.7853981633974483, AstroBROT.ATAN2(y := -1.0, x := 1.0), 'q4 (-1, 1)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Axes" Id="{c7295f6e-5d5a-44c6-b168-d6f05a92b97c}">
+      <Declaration><![CDATA[METHOD PRIVATE Axes
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Axes');
+CheckAtan2(0.0, AstroBROT.ATAN2(y := 0.0, x := 1.0), '+x axis');
+CheckAtan2(1.5707963267948966, AstroBROT.ATAN2(y := 1.0, x := 0.0), '+y axis');
+CheckAtan2(-1.5707963267948966, AstroBROT.ATAN2(y := -1.0, x := 0.0), '-y axis');
+CheckAtan2(3.141592653589793, AstroBROT.ATAN2(y := 0.0, x := -1.0), '-x axis, y = 0 gives +pi');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Origin_Is_Zero" Id="{8cafbbc4-3c94-43fe-a11c-61772ae9706f}">
+      <Declaration><![CDATA[METHOD PRIVATE Origin_Is_Zero
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Origin_Is_Zero');
+CheckAtan2(0.0, AstroBROT.ATAN2(y := 0.0, x := 0.0), 'origin');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Close_To_The_Axes" Id="{33af2029-cc01-44f5-8f55-c52cc613a142}">
+      <Declaration><![CDATA[METHOD PRIVATE Close_To_The_Axes
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Close_To_The_Axes');
+CheckAtan2(1.5707963267938967, AstroBROT.ATAN2(y := 1.0, x := 1.0E-12), 'just right of the +y axis');
+CheckAtan2(3.141592653588793, AstroBROT.ATAN2(y := 1.0E-12, x := -1.0), 'just above the -x axis');
+CheckAtan2(-3.141592653588793, AstroBROT.ATAN2(y := -1.0E-12, x := -1.0), 'just below the -x axis');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

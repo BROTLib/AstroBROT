@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_DateTime2JD_Tests" Id="{7239f86e-bec2-4737-a723-34a686d54720}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.DateTime2JD (TIMESTRUCT, UTC, to Julian Date).
+//
+// Golden values come from erfa.cal2jd (Gregorian calendar), tolerance 1e-8 days (0.9 ms).
+FUNCTION_BLOCK FB_DateTime2JD_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Golden_Dates();
+Leap_Years();
+Milliseconds();
+Out_Of_Range_Fields_Roll_Over();
+]]></ST>
+    </Implementation>
+    <Method Name="Jd" Id="{d7867953-fbe8-430b-a04d-679828aac1ac}">
+      <Declaration><![CDATA[METHOD PRIVATE Jd : LREAL
+VAR_INPUT
+	wYear, wMonth, wDay, wHour, wMinute, wSecond, wMilliseconds	: UINT;
+END_VAR
+VAR
+	t	: TIMESTRUCT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[t.wYear := wYear;
+t.wMonth := wMonth;
+t.wDay := wDay;
+t.wHour := wHour;
+t.wMinute := wMinute;
+t.wSecond := wSecond;
+t.wMilliseconds := wMilliseconds;
+Jd := AstroBROT.DateTime2JD(epoch := t);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckNear" Id="{60bc03e3-f128-4045-982e-96dc0c94eb6e}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dates" Id="{bb73ea4d-a7ba-484b-87b1-6d74371b5f3b}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dates
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dates');
+CheckNear(2451545.0, Jd(2000, 1, 1, 12, 0, 0, 0), 1.0E-8, 'J2000');
+CheckNear(2461304.5, Jd(2026, 9, 21, 0, 0, 0, 0), 1.0E-8, '2026-09-21 00:00');
+CheckNear(2461305.2710069446, Jd(2026, 9, 21, 18, 30, 15, 0), 1.0E-8, '2026-09-21 18:30:15');
+CheckNear(2451544.499988426, Jd(1999, 12, 31, 23, 59, 59, 0), 1.0E-8, '1999-12-31 23:59:59');
+CheckNear(2299160.5, Jd(1582, 10, 15, 0, 0, 0, 0), 1.0E-8, '1582-10-15, first Gregorian day');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Leap_Years" Id="{0781262d-9ba0-45a0-87f5-84fa889d83df}">
+      <Declaration><![CDATA[METHOD PRIVATE Leap_Years
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Leap_Years');
+CheckNear(2460370.0, Jd(2024, 2, 29, 12, 0, 0, 0), 1.0E-8, '2024-02-29 12:00');
+CheckNear(1.0, Jd(2024, 3, 1, 0, 0, 0, 0) - Jd(2024, 2, 29, 0, 0, 0, 0), 1.0E-9, '2024 is a leap year');
+CheckNear(1.0, Jd(2100, 3, 1, 0, 0, 0, 0) - Jd(2100, 2, 28, 0, 0, 0, 0), 1.0E-9, '2100 is not a leap year');
+CheckNear(1.0, Jd(2000, 3, 1, 0, 0, 0, 0) - Jd(2000, 2, 29, 0, 0, 0, 0), 1.0E-9, '2000 is a leap year');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Milliseconds" Id="{b6d6f656-adf6-4afc-bf8c-b905c77ac8b2}">
+      <Declaration><![CDATA[METHOD PRIVATE Milliseconds
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Milliseconds');
+// 500 ms = 5.787037037037037E-6 days
+CheckNear(5.787037037037037E-6, Jd(2026, 9, 21, 0, 0, 0, 500) - Jd(2026, 9, 21, 0, 0, 0, 0), 1.0E-9, '500 ms');
+CheckNear(1.1574074074074073E-8, Jd(2026, 9, 21, 0, 0, 0, 1) - Jd(2026, 9, 21, 0, 0, 0, 0), 1.0E-9, '1 ms');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Out_Of_Range_Fields_Roll_Over" Id="{522f24a8-dcd0-4f09-9d11-f2b676bf9b9f}">
+      <Declaration><![CDATA[METHOD PRIVATE Out_Of_Range_Fields_Roll_Over
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Out_Of_Range_Fields_Roll_Over');
+// documented behaviour, not a feature to rely on
+CheckNear(2461406.5, Jd(2026, 13, 1, 0, 0, 0, 0), 1.0E-8, 'month 13 is January of the next year');
+CheckNear(2461101.5, Jd(2026, 2, 30, 0, 0, 0, 0), 1.0E-8, '30 February is 2 March');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

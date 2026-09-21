@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_CO_REFRACT_Tests" Id="{2d4302a4-2839-4051-ad61-adfff3df4ef3}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.FB_CO_REFRACT and CO_REFRACT_FORWARD (atmospheric refraction).
+//
+//   to_observed = FALSE: old_alt is the observed altitude, new_alt the geometric one (refraction removed)
+//   to_observed = TRUE : old_alt is geometric, new_alt observed (iterated)
+//
+// Golden values come from AstroBROT/testing/golden_astro.py (temperature in degrees Celsius), tolerance 1e-7 deg.
+// The refraction model is CO_REFRACT_FORWARD: rational formula below 14 deg, eraRefco (dry) from 16 deg, blend between (#11).
+FUNCTION_BLOCK FB_CO_REFRACT_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Golden_Observed_To_Geometric();
+Golden_Geometric_To_Observed();
+Temperature_Zero_Celsius_Is_Used();
+No_State_Is_Kept_Between_Calls();
+Out_Of_Range_Altitude_Passes_Through();
+Zero_Or_Negative_Epsilon_Terminates();
+Forward_Values();
+Continuous_And_Decreasing();
+Clamped_Flag();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{644cf1f8-41d6-49e1-9ed2-91be7aa26e04}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckAngle" Id="{a4b8b061-864e-4aa6-b2d5-81f78992a898}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAngle
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+VAR
+	fDiff	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// angles in degrees, compared modulo 360 so that 359.9999999 and -1.0E-7 are equal
+fDiff := fActual - fExpected;
+WHILE fDiff > 180.0 DO fDiff := fDiff - 360.0; END_WHILE
+WHILE fDiff < -180.0 DO fDiff := fDiff + 360.0; END_WHILE
+AssertEquals_LREAL(Expected := 0.0, Actual := fDiff, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Observed_To_Geometric" Id="{91f5a0a4-39e8-4ec4-a827-55dab824c3d1}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Observed_To_Geometric
+VAR
+	fb	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Observed_To_Geometric');
+fb(old_alt := 45.0, altitude := 0.0, pressure := 0.0, to_observed := FALSE);
+CheckNear(44.98388737240353, fb.new_alt, 1.0E-7, 'alt45_sea to geometric');
+fb(old_alt := 10.0, altitude := 0.0, pressure := 0.0, to_observed := FALSE);
+CheckNear(9.912032655050567, fb.new_alt, 1.0E-7, 'alt10_sea to geometric');
+fb(old_alt := 3.0, altitude := 2400.0, pressure := 0.0, to_observed := FALSE);
+CheckNear(2.8120678712676828, fb.new_alt, 1.0E-7, 'alt3_high to geometric');
+fb(old_alt := 20.0, altitude := 0.0, pressure := 1000.0, temperature := 0.0, temperature_set := TRUE, to_observed := FALSE);
+CheckNear(19.954879536938076, fb.new_alt, 1.0E-7, 'alt20_P_T0 to geometric');
+fb(old_alt := 20.0, altitude := 0.0, pressure := 900.0, temperature := -15.0, temperature_set := TRUE, to_observed := FALSE);
+CheckNear(19.957009525944056, fb.new_alt, 1.0E-7, 'alt20_P_Tminus15 to geometric');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Geometric_To_Observed" Id="{29fc28e7-95ff-4fd6-b6c8-2cc4024ee973}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Geometric_To_Observed
+VAR
+	fb	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Geometric_To_Observed');
+fb(old_alt := 45.0, altitude := 0.0, pressure := 0.0, to_observed := TRUE, epsilon := 0.001);
+CheckNear(45.01610359317409, fb.new_alt, 1.0E-7, 'alt45_sea to observed');
+fb(old_alt := 10.0, altitude := 0.0, pressure := 0.0, to_observed := TRUE, epsilon := 0.001);
+CheckNear(10.087240824501489, fb.new_alt, 1.0E-7, 'alt10_sea to observed');
+fb(old_alt := 3.0, altitude := 2400.0, pressure := 0.0, to_observed := TRUE, epsilon := 0.001);
+CheckNear(3.180753517200842, fb.new_alt, 1.0E-7, 'alt3_high to observed');
+fb(old_alt := 20.0, altitude := 0.0, pressure := 1000.0, temperature := 0.0, temperature_set := TRUE, to_observed := TRUE, epsilon := 0.001);
+CheckNear(20.045012197500732, fb.new_alt, 1.0E-7, 'alt20_P_T0 to observed');
+fb(old_alt := 20.0, altitude := 0.0, pressure := 900.0, temperature := -15.0, temperature_set := TRUE, to_observed := TRUE, epsilon := 0.001);
+CheckNear(20.042892076742575, fb.new_alt, 1.0E-7, 'alt20_P_Tminus15 to observed');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Temperature_Zero_Celsius_Is_Used" Id="{239c1ec1-915e-4ae2-a457-5efd1af182e0}">
+      <Declaration><![CDATA[METHOD PRIVATE Temperature_Zero_Celsius_Is_Used
+VAR
+	fbT0	: AstroBROT.FB_CO_REFRACT;
+	fbEst	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Temperature_Zero_Celsius_Is_Used');
+fbT0(old_alt := 20.0, altitude := 0.0, pressure := 1000.0, temperature := 0.0, temperature_set := TRUE, to_observed := FALSE);
+fbEst(old_alt := 20.0, altitude := 0.0, pressure := 1000.0, to_observed := FALSE);
+CheckNear(19.954879536938076, fbT0.new_alt, 1.0E-7, '0.0 C with temperature_set');
+// without temperature_set the temperature is estimated from the altitude (10 C at sea level), which must differ
+AssertTrue(Condition := ABS(fbEst.new_alt - fbT0.new_alt) > 1.0E-5, Message := 'estimated temperature differs from 0.0 C');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="No_State_Is_Kept_Between_Calls" Id="{2baed0e4-7173-4337-9865-170c30162cc1}">
+      <Declaration><![CDATA[METHOD PRIVATE No_State_Is_Kept_Between_Calls
+VAR
+	fb	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('No_State_Is_Kept_Between_Calls');
+// the estimated pressure and temperature of the first call (sea level) must not leak into the second (2400 m)
+fb(old_alt := 45.0, altitude := 0.0, pressure := 0.0, to_observed := FALSE);
+fb(old_alt := 3.0, altitude := 2400.0, pressure := 0.0, to_observed := FALSE);
+CheckNear(2.8120678712676828, fb.new_alt, 1.0E-7, 'high site after sea level call');
+CheckNear(0.0, fb.pressure, 1.0E-15, 'pressure input unchanged');
+CheckNear(0.0, fb.temperature, 1.0E-15, 'temperature input unchanged');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Out_Of_Range_Altitude_Passes_Through" Id="{14acb9b9-9fcb-4b96-b98e-4bceebd6211c}">
+      <Declaration><![CDATA[METHOD PRIVATE Out_Of_Range_Altitude_Passes_Through
+VAR
+	fb	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Out_Of_Range_Altitude_Passes_Through');
+fb(old_alt := 2.0E6, to_observed := TRUE);
+CheckNear(2.0E6, fb.new_alt, 1.0E-15, '2e6 deg to observed');
+fb(old_alt := -1.0E9, to_observed := TRUE);
+CheckNear(-1.0E9, fb.new_alt, 1.0E-15, '-1e9 deg to observed');
+fb(old_alt := 2.0E6, to_observed := FALSE);
+CheckNear(2.0E6, fb.new_alt, 1.0E-15, '2e6 deg to geometric');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Zero_Or_Negative_Epsilon_Terminates" Id="{134737b8-64c4-4d7d-81a2-b071bd5ee02f}">
+      <Declaration><![CDATA[METHOD PRIVATE Zero_Or_Negative_Epsilon_Terminates
+VAR
+	fb	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Zero_Or_Negative_Epsilon_Terminates');
+// epsilon <= 0 could never satisfy the exit condition of the iteration; it is clamped to 0.001 arcsec
+fb(old_alt := 10.0, altitude := 0.0, pressure := 0.0, to_observed := TRUE, epsilon := 0.0);
+CheckNear(10.087240824501489, fb.new_alt, 1.0E-7, 'epsilon 0');
+fb(old_alt := 10.0, altitude := 0.0, pressure := 0.0, to_observed := TRUE, epsilon := -5.0);
+CheckNear(10.087240824501489, fb.new_alt, 1.0E-7, 'epsilon -5');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Forward_Values" Id="{1299d3c8-f0eb-4530-b0e2-9b03107a1812}">
+      <Declaration><![CDATA[METHOD PRIVATE Forward_Values
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Forward_Values');
+// refraction in degrees from CO_REFRACT_FORWARD, values from testing/astrobrot_port.py (agrees with erfa.refco from 16 deg up)
+CheckNear(0.163267493516567, AstroBROT.CO_REFRACT_FORWARD(a := 5.0, P := 1010.0, T := 10.0), 1.0E-9, 'a5 P1010 T10');
+CheckNear(0.08796734494943341, AstroBROT.CO_REFRACT_FORWARD(a := 10.0, P := 1010.0, T := 10.0), 1.0E-9, 'a10 P1010 T10');
+CheckNear(0.0634207907895386, AstroBROT.CO_REFRACT_FORWARD(a := 14.0, P := 1010.0, T := 10.0), 1.0E-9, 'a14 P1010 T10');
+CheckNear(0.05924934349202771, AstroBROT.CO_REFRACT_FORWARD(a := 15.0, P := 1010.0, T := 10.0), 1.0E-9, 'a15 P1010 T10');
+CheckNear(0.055488304257851416, AstroBROT.CO_REFRACT_FORWARD(a := 16.0, P := 1010.0, T := 10.0), 1.0E-9, 'a16 P1010 T10');
+CheckNear(0.027845320022875337, AstroBROT.CO_REFRACT_FORWARD(a := 30.0, P := 1010.0, T := 10.0), 1.0E-9, 'a30 P1010 T10');
+CheckNear(0.016112627596470155, AstroBROT.CO_REFRACT_FORWARD(a := 45.0, P := 1010.0, T := 10.0), 1.0E-9, 'a45 P1010 T10');
+CheckNear(0.009309582059912834, AstroBROT.CO_REFRACT_FORWARD(a := 60.0, P := 1010.0, T := 10.0), 1.0E-9, 'a60 P1010 T10');
+CheckNear(0.0028441768234894497, AstroBROT.CO_REFRACT_FORWARD(a := 80.0, P := 1010.0, T := 10.0), 1.0E-9, 'a80 P1010 T10');
+CheckNear(0.159583354818749, AstroBROT.CO_REFRACT_FORWARD(a := 5.0, P := 900.0, T := -15.0), 1.0E-9, 'a5 P900 T-15');
+CheckNear(0.08598235765838011, AstroBROT.CO_REFRACT_FORWARD(a := 10.0, P := 900.0, T := -15.0), 1.0E-9, 'a10 P900 T-15');
+CheckNear(0.06198969765175947, AstroBROT.CO_REFRACT_FORWARD(a := 14.0, P := 900.0, T := -15.0), 1.0E-9, 'a14 P900 T-15');
+CheckNear(0.057958476783226534, AstroBROT.CO_REFRACT_FORWARD(a := 15.0, P := 900.0, T := -15.0), 1.0E-9, 'a15 P900 T-15');
+CheckNear(0.05431185364376681, AstroBROT.CO_REFRACT_FORWARD(a := 16.0, P := 900.0, T := -15.0), 1.0E-9, 'a16 P900 T-15');
+CheckNear(0.02722749052714757, AstroBROT.CO_REFRACT_FORWARD(a := 30.0, P := 900.0, T := -15.0), 1.0E-9, 'a30 P900 T-15');
+CheckNear(0.015751696957665602, AstroBROT.CO_REFRACT_FORWARD(a := 45.0, P := 900.0, T := -15.0), 1.0E-9, 'a45 P900 T-15');
+CheckNear(0.009100385246363576, AstroBROT.CO_REFRACT_FORWARD(a := 60.0, P := 900.0, T := -15.0), 1.0E-9, 'a60 P900 T-15');
+CheckNear(0.0027801739663453123, AstroBROT.CO_REFRACT_FORWARD(a := 80.0, P := 900.0, T := -15.0), 1.0E-9, 'a80 P900 T-15');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Continuous_And_Decreasing" Id="{64ae159a-0830-4c42-bd5e-f9d6b8e19b61}">
+      <Declaration><![CDATA[METHOD PRIVATE Continuous_And_Decreasing
+VAR
+	k, i	: INT;
+	P, T, prev, cur	: LREAL;
+	bOk, bDown	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Continuous_And_Decreasing');
+// the branches are blended between 14 and 16 deg, there must be no step (it was 5.2 arcsec at 15 deg, issue #11)
+bOk := TRUE; bDown := TRUE;
+FOR k := 0 TO 1 DO
+	IF k = 0 THEN
+		P := 1010.0; T := 10.0;
+	ELSE
+		P := 900.0; T := -15.0;
+	END_IF
+	prev := AstroBROT.CO_REFRACT_FORWARD(a := 10.0, P := P, T := T);
+	FOR i := 1 TO 1580 DO
+		cur := AstroBROT.CO_REFRACT_FORWARD(a := 10.0 + INT_TO_LREAL(i) * 0.05, P := P, T := T);
+		IF NOT (ABS(prev - cur) < 6.0E-4) THEN bOk := FALSE; END_IF
+		IF NOT (cur < prev) THEN bDown := FALSE; END_IF
+		prev := cur;
+	END_FOR
+END_FOR
+AssertTrue(Condition := bOk, Message := 'no step larger than 6E-4 deg per 0.05 deg between 10 and 89 deg');
+AssertTrue(Condition := bDown, Message := 'refraction decreases with altitude');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Clamped_Flag" Id="{9a0f7106-cc51-49d9-b8c2-8a0ff35110e4}">
+      <Declaration><![CDATA[METHOD PRIVATE Clamped_Flag
+VAR
+	fb	: AstroBROT.FB_CO_REFRACT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Clamped_Flag');
+fb(old_alt := 45.0, altitude := 0.0, pressure := 0.0, to_observed := FALSE);
+AssertFalse(Condition := fb.clamped, Message := 'ordinary input is not clamped');
+fb(old_alt := 45.0, altitude := 0.0, pressure := 0.0, to_observed := TRUE);
+AssertFalse(Condition := fb.clamped, Message := 'ordinary input is not clamped, to observed');
+fb(old_alt := -1.0, altitude := 0.0, pressure := 0.0, to_observed := FALSE);
+AssertTrue(Condition := fb.clamped, Message := 'below the horizon');
+fb(old_alt := 45.0, altitude := 0.0, pressure := 500.0, to_observed := FALSE);
+AssertTrue(Condition := fb.clamped, Message := 'pressure below 600 mbar');
+fb(old_alt := 45.0, altitude := 0.0, pressure := 1000.0, temperature := 50.0, temperature_set := TRUE, to_observed := FALSE);
+AssertTrue(Condition := fb.clamped, Message := 'temperature above 40 degC');
+fb(old_alt := 2.0E6, to_observed := TRUE);
+AssertTrue(Condition := fb.clamped, Message := 'rejected altitude, passed through unchanged');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

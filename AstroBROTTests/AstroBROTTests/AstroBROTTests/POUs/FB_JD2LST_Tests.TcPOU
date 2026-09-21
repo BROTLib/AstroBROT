@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_JD2LST_Tests" Id="{3661f315-095b-442b-beda-79b31057dfed}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.JD2LST (Julian Date -> local sidereal time in degrees) with the dut1 input (issue #12).
+//
+// jd is UTC, dut1 is UT1-UTC in seconds. Golden values come from AstroBROT/testing/golden_astro.py (the Python
+// port, validated against erfa gmst82 by check_time_precess.py), tolerance 1e-9 deg. TwinCAT functions have no
+// optional inputs, so every call passes dut1 explicitly.
+FUNCTION_BLOCK FB_JD2LST_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Golden_Values();
+Dut1_Zero_Is_UTC_As_UT1();
+Dut1_Shifts_By_The_Sidereal_Rate();
+Wraps_Around_360();
+Dut1_Is_Added_To_The_Time_Argument();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckAngle" Id="{b3e740e0-8f9e-4b58-92a6-202707144455}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAngle
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+VAR
+	fDiff	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// angles in degrees, compared modulo 360 so that 359.9999999 and -1.0E-7 are equal
+fDiff := fActual - fExpected;
+WHILE fDiff > 180.0 DO fDiff := fDiff - 360.0; END_WHILE
+WHILE fDiff < -180.0 DO fDiff := fDiff + 360.0; END_WHILE
+AssertEquals_LREAL(Expected := 0.0, Actual := fDiff, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckNear" Id="{28f449f2-6047-4f75-8e36-8fa25f1aa13a}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Dut1_Is_Added_To_The_Time_Argument" Id="{0ebbe406-1ef7-4767-a943-6505f9b7c55b}">
+      <Declaration><![CDATA[METHOD PRIVATE Dut1_Is_Added_To_The_Time_Argument
+VAR
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Dut1_Is_Added_To_The_Time_Argument');
+// the same UT1 reached two ways: jd + 0.5 s with dut1 = 0 is jd with dut1 = 0.5
+CheckNear(AstroBROT.JD2LST(jd := 2461300.75 + 0.5 / 86400.0, lon := 9.945392608768366, dut1 := 0.0), AstroBROT.JD2LST(jd := 2461300.75, lon := 9.945392608768366, dut1 := 0.5), 1.0E-9, 'jd + 0.5 s = dut1 0.5');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Dut1_Shifts_By_The_Sidereal_Rate" Id="{382c8926-704d-4517-be2b-8017ec07024e}">
+      <Declaration><![CDATA[METHOD PRIVATE Dut1_Shifts_By_The_Sidereal_Rate
+VAR
+	fRate	: LREAL;
+	fBase	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Dut1_Shifts_By_The_Sidereal_Rate');
+// 1 s of UT1 is 360.98564736629 / 86400 deg of sidereal time. jd + dut1 / 86400 is quantised to about 40 us
+// (jd is ~2.5E6 days), i.e. up to 1.7E-7 deg, so the tolerance is 5E-7 deg (1.8 mas), far below the 3.8E-3 deg shift.
+fRate := 360.98564736629 / 86400.0;
+fBase := AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := 0.0);
+CheckNear(fBase + 0.9 * fRate, AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := 0.9), 5.0E-7, '+0.9 s');
+CheckNear(fBase - 0.9 * fRate, AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := -0.9), 5.0E-7, '-0.9 s');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Dut1_Zero_Is_UTC_As_UT1" Id="{62f2f11b-fcdd-429d-8f9b-0d2abbcd066c}">
+      <Declaration><![CDATA[METHOD PRIVATE Dut1_Zero_Is_UTC_As_UT1
+VAR
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Dut1_Zero_Is_UTC_As_UT1');
+// dut1 = 0 reproduces the sidereal time of the version without the input (checked against erfa gmst82)
+CheckNear(86.18993972893804, AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := 0.0), 1.0E-9, 'dut1 = 0');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Values" Id="{48b00ff4-af76-413d-9294-0feac0f9e8ad}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Values
+VAR
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Values');
+CheckNear(86.18993972893804, AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := 0.0), 1.0E-9, '2026 lon 0 dut1 +0.0');
+CheckNear(86.19370005978271, AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := 0.9), 1.0E-9, '2026 lon 0 dut1 +0.9');
+CheckNear(86.18617939809337, AstroBROT.JD2LST(jd := 2461300.75, lon := 0.0, dut1 := -0.9), 1.0E-9, '2026 lon 0 dut1 -0.9');
+CheckNear(96.13533233758062, AstroBROT.JD2LST(jd := 2461300.75, lon := 9.945392608768366, dut1 := 0.0), 1.0E-9, '2026 lon 9.945 dut1 +0.0');
+CheckNear(96.13909266842529, AstroBROT.JD2LST(jd := 2461300.75, lon := 9.945392608768366, dut1 := 0.9), 1.0E-9, '2026 lon 9.945 dut1 +0.9');
+CheckNear(96.13157200673595, AstroBROT.JD2LST(jd := 2461300.75, lon := 9.945392608768366, dut1 := -0.9), 1.0E-9, '2026 lon 9.945 dut1 -0.9');
+CheckNear(100.53762762364931, AstroBROT.JD2LST(jd := 2455197.5, lon := 0.0, dut1 := 0.0), 1.0E-9, '2010 lon 0 dut1 +0.0');
+CheckNear(100.54138795426115, AstroBROT.JD2LST(jd := 2455197.5, lon := 0.0, dut1 := 0.9), 1.0E-9, '2010 lon 0 dut1 +0.9');
+CheckNear(100.53386729280464, AstroBROT.JD2LST(jd := 2455197.5, lon := 0.0, dut1 := -0.9), 1.0E-9, '2010 lon 0 dut1 -0.9');
+CheckNear(110.48302023252472, AstroBROT.JD2LST(jd := 2455197.5, lon := 9.945392608768366, dut1 := 0.0), 1.0E-9, '2010 lon 9.945 dut1 +0.0');
+CheckNear(110.48678056313656, AstroBROT.JD2LST(jd := 2455197.5, lon := 9.945392608768366, dut1 := 0.9), 1.0E-9, '2010 lon 9.945 dut1 +0.9');
+CheckNear(110.47925990168005, AstroBROT.JD2LST(jd := 2455197.5, lon := 9.945392608768366, dut1 := -0.9), 1.0E-9, '2010 lon 9.945 dut1 -0.9');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Wraps_Around_360" Id="{479619c9-f746-4569-8227-78bbbb01e82f}">
+      <Declaration><![CDATA[METHOD PRIVATE Wraps_Around_360
+VAR
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Wraps_Around_360');
+// lon 273.808 puts the sidereal time just below 360 deg, +0.9 s carries it past 360 deg
+CheckNear(359.99793972913176, AstroBROT.JD2LST(jd := 2461300.75, lon := 273.808, dut1 := 0.0), 1.0E-9, 'just below 360');
+CheckNear(0.0017000599764287472, AstroBROT.JD2LST(jd := 2461300.75, lon := 273.808, dut1 := 0.9), 1.0E-9, 'wrapped to just above 0');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_JD2LST_Tests">
+      <LineId Id="3" Count="4" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.CheckAngle">
+      <LineId Id="3" Count="4" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.CheckNear">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.Dut1_Is_Added_To_The_Time_Argument">
+      <LineId Id="3" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.Dut1_Shifts_By_The_Sidereal_Rate">
+      <LineId Id="3" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.Dut1_Zero_Is_UTC_As_UT1">
+      <LineId Id="3" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.Golden_Values">
+      <LineId Id="3" Count="13" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_JD2LST_Tests.Wraps_Around_360">
+      <LineId Id="3" Count="4" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

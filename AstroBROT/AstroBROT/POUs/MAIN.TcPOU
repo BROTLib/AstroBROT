@@ -23,7 +23,7 @@ END_VAR
 		
 	E_TestState.JD2LST:
 		// transform time
-		lst1 := JD2LST(jd := jd1, lon := lon);
+		lst1 := JD2LST(jd := jd1, lon := lon, dut1 := 0.0);
 		// return to IDLE
 		cycle_time := UDINT_TO_LREAL(_TaskInfo[GETCURTASKINDEXEX()].CycleTime) / 10_000_000;
 		estate := E_TestState.IDLE;

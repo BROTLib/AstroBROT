@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_ALTAZ2HADEC_Tests" Id="{df6afdbb-ed5f-4464-9ff8-0e95f549735d}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.FB_ALTAZ2HADEC.
+//
+// At the celestial pole (az = 0, alt = lat; or az = 180, alt = -lat for the south pole) the argument of ASIN is
+// exactly 1 in theory, but rounding gives 1 + 2.2E-16 for many latitudes, and ASIN of that is NaN (issue #18).
+FUNCTION_BLOCK FB_ALTAZ2HADEC_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Ordinary_Position();
+Pointing_At_The_North_Pole();
+Pointing_At_The_South_Pole();
+]]></ST>
+    </Implementation>
+    <Method Name="Ordinary_Position" Id="{4471fc1d-1de9-4faf-b46b-da98b70152bb}">
+      <Declaration><![CDATA[METHOD PRIVATE Ordinary_Position
+VAR
+	fb	: AstroBROT.FB_ALTAZ2HADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Ordinary_Position');
+// sin(dec) = sin(45)^2 + 0 = 0.5, so dec = 30 deg
+fb(alt := 45.0, az := 90.0, lat := 45.0);
+AssertEquals_LREAL(Expected := 30.0, Actual := fb.dec, Delta := 1.0E-9, Message := 'dec at alt 45, az 90, lat 45');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Pointing_At_The_North_Pole" Id="{f632ce88-f4ec-487f-acb3-2413cddb3ce0}">
+      <Declaration><![CDATA[METHOD PRIVATE Pointing_At_The_North_Pole
+VAR
+	fb	: AstroBROT.FB_ALTAZ2HADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Pointing_At_The_North_Pole');
+fb(alt := 45.0, az := 0.0, lat := 45.0);
+AssertTrue(Condition := ABS(fb.dec - 90.0) < 1.0E-6, Message := 'lat 45 north pole, dec is 90 (and not NaN)');
+fb(alt := 34.0, az := 0.0, lat := 34.0);
+AssertTrue(Condition := ABS(fb.dec - 90.0) < 1.0E-6, Message := 'lat 34 north pole, dec is 90 (and not NaN)');
+fb(alt := 58.0, az := 0.0, lat := 58.0);
+AssertTrue(Condition := ABS(fb.dec - 90.0) < 1.0E-6, Message := 'lat 58 north pole, dec is 90 (and not NaN)');
+fb(alt := -34.0, az := 0.0, lat := -34.0);
+AssertTrue(Condition := ABS(fb.dec - 90.0) < 1.0E-6, Message := 'lat -34 north pole, dec is 90 (and not NaN)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Pointing_At_The_South_Pole" Id="{40407ba5-ddc0-43e9-81b5-0bd538bdf73f}">
+      <Declaration><![CDATA[METHOD PRIVATE Pointing_At_The_South_Pole
+VAR
+	fb	: AstroBROT.FB_ALTAZ2HADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Pointing_At_The_South_Pole');
+fb(alt := -45.0, az := 180.0, lat := 45.0);
+AssertTrue(Condition := ABS(fb.dec + 90.0) < 1.0E-6, Message := 'lat 45 south pole, dec is -90 (and not NaN)');
+fb(alt := -34.0, az := 180.0, lat := 34.0);
+AssertTrue(Condition := ABS(fb.dec + 90.0) < 1.0E-6, Message := 'lat 34 south pole, dec is -90 (and not NaN)');
+fb(alt := -58.0, az := 180.0, lat := 58.0);
+AssertTrue(Condition := ABS(fb.dec + 90.0) < 1.0E-6, Message := 'lat 58 south pole, dec is -90 (and not NaN)');
+fb(alt := 34.0, az := 180.0, lat := -34.0);
+AssertTrue(Condition := ABS(fb.dec + 90.0) < 1.0E-6, Message := 'lat -34 south pole, dec is -90 (and not NaN)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

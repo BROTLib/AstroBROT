@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_CO_NUTATE_Tests" Id="{3612eb0b-61ad-4a86-8278-a6c484b6e4b9}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.FB_CO_NUTATE (RA/Dec corrections due to nutation).
+//
+// Golden values come from AstroBROT/testing/astrobrot_port.py (co_nutate), tolerance 1e-7 deg.
+// Issue #10: d_ra was ra2 - ra with ra2 in [0, 360) and ra unwrapped, so ra = -5 gave d_ra = 360.0004 instead of
+// 0.00035. The fix wraps d_ra to [-180, 180).
+FUNCTION_BLOCK FB_CO_NUTATE_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Golden_Ra_Minus_5();
+Golden_Ra_355();
+Golden_Ra_0_001();
+Golden_Ra_359_999();
+Golden_Ra_365();
+Golden_South_Ra_Minus_0_001();
+Golden_South_Ra_180();
+Unwrapped_Ra_Equals_Wrapped_Ra();
+D_Ra_Stays_Small_For_Any_Ra();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{a79b6e49-9313-4fee-840e-25e3d8fe1155}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Ra_Minus_5" Id="{f4582a4d-6952-4751-aceb-4703680c6a5b}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Ra_Minus_5
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Ra_Minus_5');
+fb(jd := 2461000.3, ra := -5.0, dec := 10.0);
+CheckNear(0.00035336584255674097, fb.d_ra, 1.0E-7, 'Golden_Ra_Minus_5 d_ra');
+CheckNear(0.00012832548964958335, fb.d_dec, 1.0E-7, 'Golden_Ra_Minus_5 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Ra_355" Id="{e790552e-76fa-45c2-a535-d0b4bde68f86}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Ra_355
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Ra_355');
+fb(jd := 2461000.3, ra := 355.0, dec := 10.0);
+CheckNear(0.0003533658426135844, fb.d_ra, 1.0E-7, 'Golden_Ra_355 d_ra');
+CheckNear(0.00012832548964958335, fb.d_dec, 1.0E-7, 'Golden_Ra_355 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Ra_0_001" Id="{b96a9a42-05a9-4c1b-84d7-e0d7ffaad02e}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Ra_0_001
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Ra_0_001');
+fb(jd := 2461000.3, ra := 0.001, dec := 10.0);
+CheckNear(0.00035692751089300145, fb.d_ra, 1.0E-7, 'Golden_Ra_0_001 d_ra');
+CheckNear(0.00033419026003578267, fb.d_dec, 1.0E-7, 'Golden_Ra_0_001 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Ra_359_999" Id="{855e4b11-5c28-4641-a40c-b897b5dc7feb}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Ra_359_999
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Ra_359_999');
+fb(jd := 2461000.3, ra := 359.999, dec := 10.0);
+CheckNear(0.0003569254541275768, fb.d_ra, 1.0E-7, 'Golden_Ra_359_999 d_ra');
+CheckNear(0.00033410833518665584, fb.d_dec, 1.0E-7, 'Golden_Ra_359_999 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Ra_365" Id="{77895adb-570e-4e36-b74b-85c9036544ed}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Ra_365
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Ra_365');
+fb(jd := 2461000.3, ra := 365.0, dec := 10.0);
+CheckNear(0.000363636662314093, fb.d_ra, 1.0E-7, 'Golden_Ra_365 d_ra');
+CheckNear(0.000537430022859553, fb.d_dec, 1.0E-7, 'Golden_Ra_365 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_South_Ra_Minus_0_001" Id="{2db16ba7-2a62-4743-be1a-5f42f8a5670b}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_South_Ra_Minus_0_001
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_South_Ra_Minus_0_001');
+fb(jd := 2461000.3, ra := -0.001, dec := -40.0);
+CheckNear(0.002740097572001332, fb.d_ra, 1.0E-7, 'Golden_South_Ra_Minus_0_001 d_ra');
+CheckNear(0.00033414078795601654, fb.d_dec, 1.0E-7, 'Golden_South_Ra_Minus_0_001 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_South_Ra_180" Id="{d50d28b8-4e6e-450f-b923-0d7a01b63ce9}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_South_Ra_180
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_South_Ra_180');
+fb(jd := 2461000.3, ra := 180.0, dec := -40.0);
+CheckNear(-0.001198590003980371, fb.d_ra, 1.0E-7, 'Golden_South_Ra_180 d_ra');
+CheckNear(-0.00033414331457493063, fb.d_dec, 1.0E-7, 'Golden_South_Ra_180 d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Unwrapped_Ra_Equals_Wrapped_Ra" Id="{ae403ff3-0fd4-4aa6-a5be-0dc4614c58b8}">
+      <Declaration><![CDATA[METHOD PRIVATE Unwrapped_Ra_Equals_Wrapped_Ra
+VAR
+	fbA, fbB	: AstroBROT.FB_CO_NUTATE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Unwrapped_Ra_Equals_Wrapped_Ra');
+// ra and ra + 360 are the same direction, so the RA correction must agree (before the fix ra = -5 gave 360.0004)
+fbA(jd := 2461000.3, ra := -5.0, dec := 10.0);
+fbB(jd := 2461000.3, ra := 355.0, dec := 10.0);
+CheckNear(fbB.d_ra, fbA.d_ra, 1.0E-9, 'd_ra(-5) = d_ra(355)');
+CheckNear(fbB.d_dec, fbA.d_dec, 1.0E-9, 'd_dec(-5) = d_dec(355)');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="D_Ra_Stays_Small_For_Any_Ra" Id="{52d3769c-a5e7-4558-8572-c4d514a1b180}">
+      <Declaration><![CDATA[METHOD PRIVATE D_Ra_Stays_Small_For_Any_Ra
+VAR
+	fb	: AstroBROT.FB_CO_NUTATE;
+	i	: INT;
+	fMax, fAbs	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('D_Ra_Stays_Small_For_Any_Ra');
+// FB_HADEC2RADEC can pass any ra in (-360, 360); nutation moves RA by at most ~0.011 deg at |dec| <= 60
+fMax := 0.0;
+FOR i := -24 TO 48 DO
+	fb(jd := 2461000.3, ra := INT_TO_LREAL(i) * 15.0 + 0.5, dec := 10.0);
+	fAbs := ABS(fb.d_ra);
+	IF fAbs > fMax THEN fMax := fAbs; END_IF
+END_FOR
+AssertTrue(Condition := fMax < 0.02, Message := 'max |d_ra| over ra -360..720 is below 0.02 deg');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

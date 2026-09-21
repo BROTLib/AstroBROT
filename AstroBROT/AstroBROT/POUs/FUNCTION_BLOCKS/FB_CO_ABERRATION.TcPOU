@@ -20,7 +20,7 @@ VAR
 	sunlon		: LREAL;
 	d_psi		: LREAL;
 	d_epsilon	: LREAL; 
-	eps0		: LREAL;
+	eps_loc		: LREAL;		// obliquity in radians, eps or calculated if eps = 0
 	t, e, peri, cd, sd, ce, te, cp, sp, cs, ss, ca, sa, term1, term2, term3, term4: LREAL;
 END_VAR
 VAR CONSTANT
@@ -77,9 +77,10 @@ IF eps = 0.0 THEN
 	nutate(jd := jd,
 		d_psi => d_psi, 
 		d_eps => d_epsilon); //d_psi and d_epsilon in arcsec
-	eps0 := 23.4392911*3600.0 - 46.8150*T - 0.00059*EXPT(T, 2) + 0.001813*EXPT(T, 3);
 	// TRUE obliquity OF the ecliptic in radians
-	eps := (eps0 + d_epsilon)/3600.0*d2r; 	
+	eps_loc := JD2OBLIQUITY(jd, d_epsilon);
+ELSE
+	eps_loc := eps;
 END_IF
 
 sunpos(jd := jd, ra => sunra, dec => sundec, longmed => sunlon);
@@ -91,7 +92,7 @@ peri := 102.93735 + 1.71946*T + 0.00046*EXPT(T, 2);
 
 //Useful Trig Functions
 cd := COS(dec*d2r);		sd := SIN(dec*d2r);
-ce := COS(eps); 		te := TAN(eps);
+ce := COS(eps_loc); 	te := TAN(eps_loc);
 cp := COS(peri*d2r);	sp := SIN(peri*d2r);
 cs := COS(sunlon*d2r);	ss := SIN(sunlon*d2r);
 ca := COS(ra*d2r);		sa := SIN(ra*d2r);

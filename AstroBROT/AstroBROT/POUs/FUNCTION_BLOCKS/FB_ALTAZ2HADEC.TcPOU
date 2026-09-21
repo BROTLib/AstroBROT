@@ -84,7 +84,7 @@ ha := MODABS(ha, 360.0);
 // Find declination (positive if north of Celestial Equator, negative if south)
 sindec := SIN(lat_r)*SIN(alt_r) + COS(lat_r)*COS(alt_r)*COS(az_r);
 // convert dec to degrees
-dec := ASIN(sindec)/d2r;
+dec := ASIN(LIMIT(-1.0, sindec, 1.0))/d2r;   // clamp: at the celestial pole rounding gives 1 + 2.2E-16, and ASIN of that is NaN
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_ALTAZ2HADEC">

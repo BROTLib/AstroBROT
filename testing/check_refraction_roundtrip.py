@@ -1,13 +1,16 @@
 """Refraction units, refraction loop, HOR2EQ direction, RA wrap and round trips. Run: python3 check_refraction_roundtrip.py"""
 import astrobrot_port as port, erfa, math, numpy as np, random
 random.seed(3); R=math.radians
-# 1. Kelvin/Celsius mismatch in default temperature
-print('default T path: CO_REFRACT passes T=283 to forward fn (expects degC) -> clamped to', min(max(283.0,-40),40),'degC')
-print(' alt  R(T=10C,correct)  R(default path)  diff arcsec')
+# 1. Default temperature must be degC (was Kelvin, clamped to 40 degC by CO_REFRACT_FORWARD)
+print(' alt  R(T=10C)  R(default path)  diff arcsec')
 for a in (5,10,15,30,45,60):
     r_ok=port.refract_forward(a,1010.0,10.0)*3600
-    r_bug=port.co_refract(a,0.0,to_obs=False)[0]; r_bug=(a-r_bug)*3600
-    print(f'{a:4d} {r_ok:10.2f} {r_bug:14.2f} {r_ok-r_bug:10.2f}')
+    r_def=(a-port.co_refract(a,0.0,pressure=1010.0,to_obs=False)[0])*3600
+    print(f'{a:4d} {r_ok:10.2f} {r_def:14.2f} {r_ok-r_def:10.2f}')
+    assert abs(r_ok-r_def)<1e-9, 'default temperature is not 10 degC'
+# explicit 0 degC must be honoured (not treated as unset) and differ from the default
+r0=(30-port.co_refract(30.0,pressure=1010.0,temperature=0.0)[0])*3600
+assert abs(r0-port.refract_forward(30.0,1010.0,0.0)*3600)<1e-9 and abs(r0-port.refract_forward(30.0,1010.0,10.0)*3600)>0.1
 # 2. compare forward model to erfa refco (10C, 1010 hPa, rh 0, 0.55um)
 refa,refb=erfa.refco(1010.0,10.0,0.0,0.55)
 for a in (10,30,60):
@@ -15,18 +18,22 @@ for a in (10,30,60):
     print(f'alt {a}: erfa refraction {ref_erfa:.1f}" vs ExSup formula {port.refract_forward(a,1010.0,10.0)*3600:.1f}"')
 # 3. continuity at 15 deg
 print('continuity at a=15: below %.4f" above %.4f"'%(port.refract_forward(14.9999999)*3600,port.refract_forward(15.0)*3600))
-# 4. iteration: epsilon=0 and NaN
-_,n=port.co_refract(30.0,to_obs=True,eps=0.25); print('normal iterations:',n)
-_,n=port.co_refract(30.0,to_obs=True,eps=0.0,maxit=100000); print('epsilon=0 -> iterations before my cap:',n,'(loop would never exit)')
-_,n=port.co_refract(30.0,to_obs=True,eps=1e-12,maxit=100000); print('epsilon=1e-12" -> iterations:',n)
-nan=float('nan'); print('NaN alt: abs(last-cur)*3600<eps is', abs(nan-nan)*3600<0.25, '-> UNTIL never true')
-# 5. HOR2EQ with default refract_to_observed=TRUE doubles refraction
+# 4. iteration must terminate: epsilon <= 0 / NaN, non-finite altitude (ST caps at 10 iterations, min epsilon 0.001")
+nan=float('nan'); inf=float('inf')
+_,n=port.co_refract(30.0,to_obs=True,eps=0.25); print('normal iterations:',n); assert n<=5
+for e in (0.0,-1.0,1e-12,nan):
+    cur,n=port.co_refract(30.0,to_obs=True,eps=e); print(f'epsilon={e} -> iterations: {n}'); assert n<=10 and math.isfinite(cur)
+for a in (nan,inf,-inf):
+    for to_obs in (True,False):
+        r,n=port.co_refract(a,to_obs=to_obs); print(f'alt={a}, to_obs={to_obs} -> returned {r}, iterations {n}'); assert n==0 and (r!=r if a!=a else r==a)
+# 5. HOR2EQ with the default alt_is_observed=TRUE must undo the refraction added by EQ2HOR
 lon,lat=9.9454,51.5593; jd=2461000.3; ra,dec=120.0,35.0
 alt,az,_=port.eq2hor(jd,ra,dec,lon,lat,refract=True,to_obs=True)
-for flag in (True,False):
-    r2,d2=port.hor2eq(jd,alt,az,lon,lat,refract=True,to_obs=flag)
-    e=math.degrees(math.acos(min(1,math.sin(R(d2))*math.sin(R(dec))+math.cos(R(d2))*math.cos(R(dec))*math.cos(R(r2-ra)))))*3600
-    print(f'HOR2EQ round-trip after EQ2HOR(refract) with refract_to_observed={flag}: error {e:.1f}"  (alt={alt:.2f})')
+def sep(r2,d2): return math.degrees(math.acos(min(1,math.sin(R(d2))*math.sin(R(dec))+math.cos(R(d2))*math.cos(R(dec))*math.cos(R(r2-ra)))))*3600
+e_def=sep(*port.hor2eq(jd,alt,az,lon,lat,refract=True))
+e_geo=sep(*port.hor2eq(jd,alt,az,lon,lat,refract=True,alt_is_observed=False))
+print(f'HOR2EQ round-trip after EQ2HOR(refract): default error {e_def:.1f}", alt_is_observed=FALSE error {e_geo:.1f}"  (alt={alt:.2f})')
+assert e_def<0.5 and e_geo>100, 'HOR2EQ default must remove refraction, alt_is_observed=FALSE must add it'
 # 6. wrap: d_ra magnitude from co_nutate near RA=0
 dra,ddec,_,_,_=port.co_nutate(2461000.3,0.001,10.0); print('co_nutate d_ra at ra=0.001 deg:',dra)
 dra,ddec,_,_,_=port.co_nutate(2461000.3,-5.0,10.0); print('co_nutate d_ra at ra=-5 deg (as HADEC2RADEC can pass):',dra)

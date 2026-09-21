@@ -7,47 +7,71 @@ VAR_INPUT
 	P			: LREAL := 1010.0;	// Pressure [in millibars]. Default is 1010 millibars.
 	T			: LREAL := 0.0;		// Ground Temp [in Celsius].  Default is 0 Celsius.
 END_VAR
+VAR_OUTPUT
+	clamped		: BOOL;				// TRUE if a, P or T was outside its valid range and has been limited
+END_VAR
 VAR
 	ref			: LREAL;
+	ref_lo		: LREAL;
+	ref_hi		: LREAL;
+	w			: LREAL;
+	tk, gamma, beta, tan_z	: LREAL;
 END_VAR
 VAR CONSTANT
 	d2r 		: LREAL := PI/180.0;
+	// (n-1) * T / P for dry air at 0.55 um (IAG 1999 optical refractivity, as in eraRefco)
+	k_gamma		: LREAL := 7.902649953145277E-5;
+	// The two branches are blended linearly between these altitudes [DEGREES], so there is no step
+	a_blend_lo	: LREAL := 14.0;
+	a_blend_hi	: LREAL := 16.0;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[(*Formular based on: 
-Explanatory Supplement to the Astronomical Almanac, 2013
-p.280 eq. 7.90 and 7.91
-accurate to 0.5 arcsec
-*)
+      <ST><![CDATA[(*Atmospheric refraction in DEGREES for an OBSERVED altitude a, pressure P [mbar] and temperature T [degC].
+Dry air, 0.55 um, no humidity or wavelength input.
 
+Below a_blend_lo (about 14 deg): the rational formula of the Explanatory Supplement to the Astronomical
+Almanac, 2013, p.280 (eq. 7.91, not checked against the book).
+From a_blend_hi (about 16 deg): dZ = A tan Z + B tan^3 Z with A and B from Green, Spherical Astronomy, 1987,
+eq. 4.31 and beta from Stone (1996), exactly as ERFA's eraRefco (dry, wl = 0.55 um). eraRefco is
+Copyright (C) 2013-2023 NumFOCUS Foundation, derived from SOFA, see NOTICE-erfa.md. Its documentation gives
+62 mas worst case against ray tracing for zenith distances 15 to 75 deg (optical, humid air included).
+Between the two: linear blend, so the result is continuous.
+
+Accuracy of this implementation against an independent ray trace (testing/check_refraction_model.py, P 900 to
+1013 mbar, T -15 to 30 degC): within 0.7 arcsec from 15 deg up, within 1.9 arcsec from 10 to 15 deg. NOT verified
+below 10 deg, where the error reaches about 6 arcsec at 5 deg; do not rely on it near the horizon.
+
+a, P and T are limited to [0, 90], [600, 1200] and [-40, 40] and clamped is set, so a caller can tell. A
+below-horizon altitude therefore gets the horizon refraction.*)
+
+clamped := (a < 0.0) OR (a > 90.0) OR (P < 600.0) OR (P > 1200.0) OR (T < -40.0) OR (T > 40.0);
 a := LIMIT(0.0, a, 90.0);
 P := LIMIT(600.0, P, 1200.0);
 T := LIMIT(-40.0, T, 40.0);
 
-IF a >= 15.0 THEN
-	ref := (0.28*P)/(T+273.0)*0.0167/ TAN((a + 7.31 / (a + 4.4)) * d2r);
+IF a < a_blend_hi THEN
+	ref_lo := P/(T+273.0)* (0.1594 + 0.0196 * a + 0.00002 * EXPT(a, 2)) / (1.0 + 0.505 * a + 0.0845 * EXPT(a, 2));
+END_IF
+
+IF a > a_blend_lo THEN
+	tk := T + 273.15;
+	gamma := k_gamma * P / tk;
+	beta := 4.4474E-6 * tk;
+	tan_z := TAN((90.0 - a) * d2r);
+	ref_hi := (gamma * (1.0 - beta) * tan_z - gamma * (beta - gamma / 2.0) * tan_z * tan_z * tan_z) / d2r;
+END_IF
+
+IF a <= a_blend_lo THEN
+	ref := ref_lo;
+ELSIF a >= a_blend_hi THEN
+	ref := ref_hi;
 ELSE
-	ref := P/(T+273.0)* (0.1594 + 0.0196 * a + 0.00002 * EXPT(a, 2)) / (1.0 + 0.505 * a + 0.0845 * EXPT(a, 2));
+	w := (a - a_blend_lo) / (a_blend_hi - a_blend_lo);
+	ref := (1.0 - w) * ref_lo + w * ref_hi;
 END_IF
 CO_REFRACT_FORWARD :=  ref;
 ]]></ST>
     </Implementation>
-    <LineIds Name="CO_REFRACT_FORWARD">
-      <LineId Id="59" Count="0" />
-      <LineId Id="62" Count="2" />
-      <LineId Id="61" Count="0" />
-      <LineId Id="60" Count="0" />
-      <LineId Id="40" Count="1" />
-      <LineId Id="45" Count="0" />
-      <LineId Id="43" Count="0" />
-      <LineId Id="42" Count="0" />
-      <LineId Id="15" Count="0" />
-      <LineId Id="21" Count="0" />
-      <LineId Id="44" Count="0" />
-      <LineId Id="22" Count="0" />
-      <LineId Id="24" Count="0" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

@@ -1,0 +1,118 @@
+# AstroBROTTests
+
+TcUnit tests for AstroBROT. A separate PLC project, so no test code ends up in the shipped library. It references
+the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope project does.
+
+## What is covered
+
+| Suite | Tests | What it checks |
+|---|---|---|
+| `FB_EQ2HOR_Tests` | `FB_EQ2HOR` | golden alt/az at three sites (also with `dut1` = ±0.9 s), the `nutate` / `aberration` switches, refraction in both directions, inputs left untouched, cyclic calls with inputs set once |
+| `FB_HOR2EQ_Tests` | `FB_HOR2EQ` | the same for the reverse transform (incl. `dut1`), plus `ws` (azimuth west from south) and the round trip through `FB_EQ2HOR` |
+| `FB_CO_REFRACT_Tests` | `FB_CO_REFRACT` | golden values in both directions, 0.0 degC as a valid temperature, no state kept between calls, out-of-range input, non-positive `epsilon`, `CO_REFRACT_FORWARD` values, no step between the two branches, the `clamped` flag |
+| `FB_CO_ABERRATION_Tests` | `FB_CO_ABERRATION` | golden `d_ra` / `d_dec` at two epochs, `eps` input not modified |
+| `FB_ALTAZ2HADEC_Tests` | `FB_ALTAZ2HADEC` | an ordinary position, pointing exactly at the celestial poles (the `ASIN` argument rounds to 1 + 2.2E-16, issue #18) |
+| `FB_ATAN2_Tests` | `ATAN2` | the four quadrants, the axes, the origin, values close to the axes |
+| `FB_DateTime2JD_Tests` | `DateTime2JD` | golden dates from `erfa.cal2jd`, leap years (incl. 2000 and 2100), milliseconds, the documented roll-over of out-of-range fields |
+| `FB_Pipeline_Tests` | `JD2OBLIQUITY`, `JD2JEPOCH`, `LMST2LAST`, `FB_CO_NUTATE`, `FB_RADEC2HADEC`, `FB_HADEC2RADEC`, `FB_EQ2HOR`, `FB_HOR2EQ` | golden helper values (obliquity also against `erfa.obl06`), `nut_given` uses the given nutation, with all switches off only the sidereal time is applied, each of `precess` / `nutate` / `aberration` alone adds exactly the correction of `FB_PRECESS` / `FB_CO_NUTATE` / `FB_CO_ABERRATION`, no stale correction after switching off, RA wrapped without precession, cyclic calls leave `FB_RADEC2HADEC` inputs alone, `FB_EQ2HOR` / `FB_HOR2EQ` equal the composition of their parts (issue #14) |
+| `FB_JD2LST_Tests` | `JD2LST` | golden sidereal times with `dut1` = 0, +0.9, -0.9 s at two epochs and two longitudes, the shift by the sidereal rate, the wrap at 360 deg, `dut1` added to the time argument (issue #12) |
+| `FB_DUT1_Tests` | `FB_RADEC2HADEC`, `FB_HADEC2RADEC` | hour angle / right ascension move by `dut1` * 360.98564736629 / 86400 deg, round trip with the same `dut1`, inputs left untouched |
+| `FB_TEN_Tests` | `TEN` | positive values, IDLAstro sign convention (a minus on any element negates the whole value), zero |
+| `FB_PRECESS_Tests` | `FB_PRECESS` | golden values (J2000 to date, between two epochs that are both not J2000, back to J2000, RA wrap, poles), the identity, the round trip, two steps equal precessing via J2000 (issue #9), RA normalised to 0..360, inputs untouched, cyclic calls |
+| `FB_RADEC2HADEC_Tests` | `FB_RADEC2HADEC` | golden HA / Dec at three sites, `dut1` = ±0.9 s, RA wrap, exactly at and 0.1 deg from the celestial poles, RA and longitude periodic, outputs stay in range |
+| `FB_HADEC2RADEC_Tests` | `FB_HADEC2RADEC` | the same for the reverse block, plus the round trip through `FB_RADEC2HADEC`, inputs untouched, cyclic calls |
+| `FB_SUNPOS_Tests` | `FB_SUNPOS` | golden `ra` / `dec` / `longmed` / `oblt` at seven dates, a comparison with a position built from erfa, and sanity checks (equinox, solstice, obliquity, RA advances about 1 deg per day) |
+| `FB_EdgeCases_Tests` | `FB_EQ2HOR`, `FB_HOR2EQ` | celestial poles, observers at both poles and on the equator, zenith, nadir, a position below the horizon, RA / azimuth / longitude periodic, outputs in range, and why an azimuth difference is not a sky separation |
+
+152 test cases in total.
+
+The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
+every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
+cyclic tests set the inputs once and call the block repeatedly, like a PLC program would.
+
+The last five suites are **generated** by [`testing/gen_block_tests.py`](../testing/gen_block_tests.py) from
+[`testing/golden_blocks.py`](../testing/golden_blocks.py): run `python gen_block_tests.py` in `testing/` after changing an
+algorithm and look at the diff. Each golden case is checked twice: against the Python port (1e-7 deg, catches any change of
+behaviour) and against **erfa** as a great-circle separation with a hard tolerance (precession 1e-5 deg, everything with
+hour angles and horizon coordinates 2e-4 deg = 0.72 arcsec, `FB_SUNPOS` 1.5e-3 deg = 5.4 arcsec; measured maxima 0.009″,
+0.38″ and 3.2″), so a mistake the port shares with the ST cannot hide. Angles are compared as separations on the sky, never
+as two coordinate differences.
+
+Expected values of the older suites come from [`testing/golden_astro.py`](../testing/golden_astro.py), which builds on
+`testing/astrobrot_port.py` (validated against erfa/SOFA by the `check_*.py` scripts) and adds the `nutate` /
+`aberration` switches. The tolerance is 1e-7 deg (0.36 mas); the port reproduces the ST to about 1e-10 deg. The
+round-trip test uses 1e-6 deg because the two blocks are only approximate inverses (they apply nutation and
+aberration at slightly different positions, up to 0.34 mas). Re-run `golden_astro.py` after changing an algorithm and
+update the numbers in the tests.
+
+**Known limitations the tests pin down (not fixed):**
+
+- `FB_HADEC2RADEC` at exactly dec = ±90: the corrections are applied in (ra, dec), `d_ra` grows like 1/cos(dec) and `d_dec`
+  is evaluated at a meaningless RA. Neither ra nor dec is reproducible there, and the result is 4.7″ (north) / 39″ (south)
+  away from erfa. `Golden_Exact_Poles` only bounds it at 0.015 deg; 0.1 deg from the pole the error is back at 0.5″.
+- Diurnal aberration (up to 0.32″), polar motion and atmospheric dispersion are not modelled; that is the size of the 0.2 to 0.4″ against erfa.
+
+## Running the tests
+
+TcBuild only compiles. Running needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it.
+
+**Windows 11 note.** The TwinCAT 3.1 Build 4024 *real-time* runtime does not run on Windows 11
+([Beckhoff system requirements](https://infosys.beckhoff.com/content/1033/tc3_overview/6162419083.html)); Run mode
+fails with `Init4\RTime: Start Interrupt: Ticker started >> AdsError: 6 (port 200)`. XAE and TcBuild are fine. Use the
+beta **user-mode runtime** that ships with TwinCAT instead (`C:\TwinCAT\3.1\Runtimes\UmRT_Default`, see the
+`Readme.txt` there for its terms of use).
+
+One-time setup on a machine:
+
+1. Install TcUnit into the local library repository (skip if `Managed Libraries\www.tcunit.org` already exists). This
+   starts a hidden XAE instance:
+   ```powershell
+   .\AstroBROTTests\tools\Install-TcUnit.ps1
+   ```
+2. Install the current AstroBROT (the tests use the *installed* copy, not the source tree; repeat after every change
+   to the library):
+   ```powershell
+   & "C:\Program Files\Industrial Brains B.V\TcBuild\TcBuild.exe" install AstroBROT.sln -x AstroBROT -p AstroBROT -l AstroBROT.library
+   ```
+   This replaces the installed library of the same version, so other projects on the machine pick it up.
+
+Every run:
+
+1. Start the user-mode runtime **from its own folder** (`Start.bat` uses the current directory for its config):
+   ```powershell
+   cd C:\TwinCAT\3.1\Runtimes\UmRT_Default; .\Start.bat
+   ```
+2. Build, deploy and run. Exit code 0 = all passed, 1 = a test failed, 2 = no result (timeout, or no test case ran):
+   ```powershell
+   & "C:\Program Files\Industrial Brains B.V\TcBuild\TcBuild.exe" build AstroBROTTests.sln
+   .\AstroBROTTests\tools\Run-Tests.ps1
+   ```
+   It overwrites whatever boot project is on the target runtime (default `192.168.4.1.1.1`, override with
+   `-TargetNetId`). Only one run can use the runtime at a time.
+
+Which test failed: the counters are printed, the individual assertions go to the TwinCAT ADS log (XAE error list).
+Over ADS every suite instance also exposes `MAIN.<suite>.Tests[i].TestName`, `.TestIsFailed` and `.AssertionMessage`.
+
+To debug interactively instead: open `AstroBROTTests.sln` in XAE, choose the user-mode runtime as target, activate the
+configuration, log in and start the PLC. TcUnit prints every result to the error list.
+
+## Things to know
+
+- **Target of `AstroBROT.tsproj`.** The library's own project targets a remote route (`5.146.183.126.1.1`) that does
+  not exist on other machines. A headless XAE (TcBuild, the automation scripts here) then stalls with
+  `RPC_E_SERVERCALL_RETRYLATER` or loads the project as "unmodeled". Point it at a local target (for example
+  `192.168.4.1.1.1`) before running `TcBuild install AstroBROT.sln`. `AstroBROTTests.tsproj` already does.
+- **Trial license.** The PLC trial license lasts 7 days and is renewed by hand (captcha). This is why the tests are not
+  wired into CI.
+- **TcUnit sizing.** TcUnit's defaults allocate about 78 MB of PLC data, which the user-mode runtime cannot start. The
+  project overrides them to 32 / 32 / 256 in the `TcUnit` reference (`AstroBROTTests.plcproj`). TcUnit needs
+  tests-per-suite <= suites, or it does not compile. If you add a suite with more than 32 tests or 256 assertions,
+  raise the numbers together.
+- **Every test method is called every PLC cycle.** Each test registers itself with `TEST('name')` on its first line and
+  ends with `TEST_FINISHED()`; a method without the `TEST()` call is never counted. Locals of a method are
+  re-initialised on every call, so a test that needs state across calls has to keep it within one method call.
+- **Function blocks from another project.** Inputs that are not passed keep their declared defaults, so `fb(ra := ...)`
+  is enough. Functions need every argument.
+- **Identifier pitfall.** ST is case-insensitive: a parameter named `sIn` collides with the `SIN` operator and produces a
+  wall of parse errors.
+- `.tmc`, `_Boot/`, `_CompileInfo/` and `_Libraries/` are generated and ignored by git.

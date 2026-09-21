@@ -18,7 +18,7 @@
     <Company>BROT</Company>
     <Released>false</Released>
     <Title>AstroBROT</Title>
-    <ProjectVersion>0.3.0</ProjectVersion>
+    <ProjectVersion>0.4.0</ProjectVersion>
     <AllowChecksForLibrary>false</AllowChecksForLibrary>
     <POUsForPropertyAccessIncluded>false</POUsForPropertyAccessIncluded>
     <GlobalVersionStructureIncluded>false</GlobalVersionStructureIncluded>
@@ -45,7 +45,13 @@
     <Compile Include="POUs\FUNCTIONS\JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTIONS\POLY.TcPOU">
+    <Compile Include="POUs\FUNCTIONS\JD2JEPOCH.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\JD2OBLIQUITY.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\LMST2LAST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTIONS\TEN.TcPOU">
@@ -76,9 +82,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_IAU2000B.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="POUs\FUNCTION_BLOCKS\FB_NUTATE.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_PRECESS.TcPOU">
