@@ -1,13 +1,16 @@
 """Refraction units, refraction loop, HOR2EQ direction, RA wrap and round trips. Run: python3 check_refraction_roundtrip.py"""
 import astrobrot_port as port, erfa, math, numpy as np, random
 random.seed(3); R=math.radians
-# 1. Kelvin/Celsius mismatch in default temperature
-print('default T path: CO_REFRACT passes T=283 to forward fn (expects degC) -> clamped to', min(max(283.0,-40),40),'degC')
-print(' alt  R(T=10C,correct)  R(default path)  diff arcsec')
+# 1. Default temperature must be degC (was Kelvin, clamped to 40 degC by CO_REFRACT_FORWARD)
+print(' alt  R(T=10C)  R(default path)  diff arcsec')
 for a in (5,10,15,30,45,60):
     r_ok=port.refract_forward(a,1010.0,10.0)*3600
-    r_bug=port.co_refract(a,0.0,to_obs=False)[0]; r_bug=(a-r_bug)*3600
-    print(f'{a:4d} {r_ok:10.2f} {r_bug:14.2f} {r_ok-r_bug:10.2f}')
+    r_def=(a-port.co_refract(a,0.0,pressure=1010.0,to_obs=False)[0])*3600
+    print(f'{a:4d} {r_ok:10.2f} {r_def:14.2f} {r_ok-r_def:10.2f}')
+    assert abs(r_ok-r_def)<1e-9, 'default temperature is not 10 degC'
+# explicit 0 degC must be honoured (not treated as unset) and differ from the default
+r0=(30-port.co_refract(30.0,pressure=1010.0,temperature=0.0)[0])*3600
+assert abs(r0-port.refract_forward(30.0,1010.0,0.0)*3600)<1e-9 and abs(r0-port.refract_forward(30.0,1010.0,10.0)*3600)>0.1
 # 2. compare forward model to erfa refco (10C, 1010 hPa, rh 0, 0.55um)
 refa,refb=erfa.refco(1010.0,10.0,0.0,0.55)
 for a in (10,30,60):

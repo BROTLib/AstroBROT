@@ -130,8 +130,9 @@ def refract_forward(a,P=1010.0,T=0.0):
     if a>=15.0: return (0.28*P)/(T+273.0)*0.0167/math.tan((a+7.31/(a+4.4))*d2r)
     return P/(T+273.0)*(0.1594+0.0196*a+0.00002*a*a)/(1.0+0.505*a+0.0845*a*a)
 
-def co_refract(old_alt,altitude=0.0,pressure=0.0,temperature=0.0,eps=0.25,to_obs=False,maxit=1000):
-    if temperature==0.0: temperature=211.5 if altitude>11000 else 283.0-0.0065*altitude
+def co_refract(old_alt,altitude=0.0,pressure=0.0,temperature=None,eps=0.25,to_obs=False,maxit=1000):
+    # temperature in degC (None = estimate from altitude), like FB_CO_REFRACT with temperature_set
+    if temperature is None: temperature=211.5-273.0 if altitude>11000 else 283.0-273.0-0.0065*altitude
     if pressure==0: pressure=1010.0*(1-6.5/288000*altitude)**5.255
     if not to_obs: return old_alt-refract_forward(old_alt,pressure,temperature),0
     cur=old_alt+refract_forward(old_alt,pressure,temperature); n=0
