@@ -8,6 +8,7 @@ VAR
 	fbHor2EqTests	: FB_HOR2EQ_Tests;
 	fbCoRefractTests	: FB_CO_REFRACT_Tests;
 	fbCoAberrationTests	: FB_CO_ABERRATION_Tests;
+	fbCoNutateTests	: FB_CO_NUTATE_Tests;
 END_VAR
 ]]></Declaration>
     <Implementation>

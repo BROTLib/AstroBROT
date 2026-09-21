@@ -28,6 +28,9 @@
     <Compile Include="POUs\FB_CO_ABERRATION_Tests.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_CO_NUTATE_Tests.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_CO_REFRACT_Tests.TcPOU">
       <SubType>Code</SubType>
     </Compile>
