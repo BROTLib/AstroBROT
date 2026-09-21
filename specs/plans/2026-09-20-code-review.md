@@ -147,7 +147,7 @@ commits directly, and I did not run the workflow.
 - **L4. Unclamped `ASIN` arguments** in `FB_ALTAZ2HADEC`, `FB_PRECESS`, `FB_CO_NUTATE`, `FB_SUNPOS`. A
   rounding overshoot above 1.0 gives NaN. *Not reproduced:* 20000 random alt/az/lat cases and 400 pole
   cases through the precession matrix never exceeded 1.0. Hardening only, cheap (`LIMIT(-1, x, 1)`).
-- **L5. Custom `ATAN2`** hand-rolls a quadrant fix-up around `ATAN(y/x)`. A string search of the
+- **L5. Custom `ATAN2`** *(#19: kept and tested in `FB_ATAN2_Tests`; TwinCAT's PLC has no `ATAN2` of its own; `POLY` removed, it had no callers after `FB_NUTATE` went)* hand-rolls a quadrant fix-up around `ATAN(y/x)`. A string search of the
   Tc2_Math archive finds no `ATAN2` (it does find `LMOD` and `MODABS`), so there is no name clash. It returns +PI for `y = -0.0, x < 0`; harmless after the
   `MODABS` calls. `POLY` uses `EXPT(X, n)` instead of Horner form.
 - **L6. `DateTime2JD` is Gregorian only** (Julian-calendar branch commented out), has an unused variable

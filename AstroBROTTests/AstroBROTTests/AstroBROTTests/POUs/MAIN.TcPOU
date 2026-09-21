@@ -11,6 +11,7 @@ VAR
 	fbCoNutateTests	: FB_CO_NUTATE_Tests;
 	fbTenTests	: FB_TEN_Tests;
 	fbAltaz2HadecTests	: FB_ALTAZ2HADEC_Tests;
+	fbAtan2Tests	: FB_ATAN2_Tests;
 END_VAR
 ]]></Declaration>
     <Implementation>

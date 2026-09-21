@@ -45,9 +45,6 @@
     <Compile Include="POUs\FUNCTIONS\JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTIONS\POLY.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FUNCTIONS\TEN.TcPOU">
       <SubType>Code</SubType>
     </Compile>

@@ -65,7 +65,6 @@ AstroBROT/
 | `CT2LST` | Civil Time → Local Mean Sidereal Time |
 | `DateTime2JD` | TwinCAT `TIMESTRUCT` → Julian Date |
 | `ATAN2` | Four-quadrant arctangent |
-| `POLY` | Polynomial evaluation (4 coefficients) |
 | `TEN` | DMS (degrees-minutes-seconds) → decimal degrees |
 | `CO_REFRACT_FORWARD` | Forward atmospheric refraction model |
 
