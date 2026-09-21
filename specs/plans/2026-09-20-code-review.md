@@ -1,6 +1,6 @@
 # Code review of AstroBROT (develop @ b9ea338)
 
-**Status: draft. Review finished; the body below describes `develop` at the review commit. Since then fixes for #4-#6 and #8-#10 landed on `develop` (`d1d51d9`, `6c46444`, `5a6247e`, `2474443`, `691db41`, `53d0c62`), and `AstroBROTTests` (TcUnit) passes on the user-mode runtime. Nothing has been verified on a telescope. Open items: GitHub issues.**
+**Status: draft. Review finished; the body below describes `develop` at the review commit. Since then fixes for #4-#6, #8-#10 and #15-#17 landed on `develop` (`d1d51d9`, `6c46444`, `5a6247e`, `2474443`, `691db41`, `53d0c62`, `d9af836`, `d6c2d35`, `e1f0a49`), and `AstroBROTTests` (TcUnit) passed on the user-mode runtime before the #15-#17 changes (not re-run since). Nothing has been verified on a telescope. Open items: GitHub issues.**
 
 Reviewed at `develop` b9ea338. `origin/main` is 3 commits ahead (visualization profile fix to 4024, a
 manual TcBuild workflow, runner labels); those are not part of the review except in the CI section.
@@ -142,7 +142,7 @@ commits directly, and I did not run the workflow.
   The constants `-0.0433585"` and `-0.0084531"` stand in for frame bias (the header comment says so). That
   works, since the end-to-end error stays under 0.35", but `d_psi` is no longer the nutation and is
   then reused for sidereal time.
-- **L3. `FB_NUTATE` (1980 theory) is dead code.** Only the `.plcproj` references it (grep over all
+- **L3. `FB_NUTATE` (1980 theory) is dead code.** *Removed in `e1f0a49` (#17).* Only the `.plcproj` references it (grep over all
   sibling repos). Remove or test it.
 - **L4. Unclamped `ASIN` arguments** in `FB_ALTAZ2HADEC`, `FB_PRECESS`, `FB_CO_NUTATE`, `FB_SUNPOS`. A
   rounding overshoot above 1.0 gives NaN. *Not reproduced:* 20000 random alt/az/lat cases and 400 pole
