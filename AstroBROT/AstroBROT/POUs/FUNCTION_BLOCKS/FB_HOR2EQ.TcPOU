@@ -39,6 +39,8 @@ VAR
 	d_dec_nut		: LREAL;		// Difference in Dec due to nutation
 	T				: LREAL;
 	d_dec_ref		: LREAL;		// time reference
+	alt_loc			: LREAL;		// altitude after refraction correction
+	az_loc			: LREAL;		// azimuth measured east from north
 	
 END_VAR
 VAR CONSTANT
@@ -95,20 +97,29 @@ END_VAR]]></Declaration>
 ;     Fixed for case of scalar Julian date but vector positions W L June 2009
 ;-*)
 
+// the corrections are only written below if the respective flag is set, so start from zero
+// to not keep applying the values of a previous call
+d_ra_nut := 0.0;
+d_dec_nut := 0.0;
+d_ra_abr := 0.0;
+d_dec_abr := 0.0;
+
+az_loc := az;
 IF WS THEN 
-	az := az - 180.0;
+	az_loc := az - 180.0;
 END_IF
 
 (********************************************************************************************
  Make Correction for ATMOSPHERIC REFRACTION
  (use this for visible and radio wavelengths; author is unsure about other wavelengths.
   See the comments in CO_REFRACT for more details.) *)
+alt_loc := alt;
 IF refract THEN 
 	co_refract(	
 		old_alt := alt, 
 		altitude := altitude, 
 		to_observed := NOT alt_is_observed, 
-		new_alt => alt);
+		new_alt => alt_loc);
 END_IF
 
 
@@ -134,7 +145,7 @@ last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 //****************************************************************************
 // Now do the spherical trig to get APPARENT Hour Angle [degrees], and
 // declination [degrees].
-altaz2hadec(alt := alt, az := az, lat := lat, ha => ha, dec => dec);
+altaz2hadec(alt := alt_loc, az := az_loc, lat := lat, ha => ha, dec => dec);
 
 // Find Right Ascension (in degrees, from 0 to 360.)
 ra := MODABS(last - ha + 360.0, 360.0);
