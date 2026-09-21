@@ -17,9 +17,9 @@ def _arrays(fname, n):
     for m in re.finditer(r'^\s*(\w+)\s*:\s*ARRAY\[1\.\.%d\] OF LREAL := \[(.*?)\];'%n, txt, re.M):
         out[m.group(1)]=np.array([float(v) for v in m.group(2).split(',')])
     return out
-NUT=_arrays('FB_IAU2000B.TcPOU',79)
+NUT=_arrays('FB_IAU2000B.TcPOU',77)
 
-def iau2000b(jd, nterms=78, bias=True):
+def iau2000b(jd, nterms=77, bias=True):
     t=(jd-2451545.0)/36525.0
     asec2r=math.pi/(180*3600); a360=3600*360
     m_l=lmod(485868.249036+t*1717915923.2178,a360)*asec2r
