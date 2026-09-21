@@ -8,7 +8,7 @@ VAR_INPUT
 	pressure		: LREAL := 0.0;		// pressure
 	temperature		: LREAL := 0.0;		// ground temperature in degrees Celsius, only used if temperature_set is TRUE
 	temperature_set	: BOOL := FALSE;	// TRUE: use temperature (0.0 C is valid), FALSE: estimate it from altitude
-	epsilon			: LREAL := 0.25; 	//accuracy of iteration for observed=TRUE case, in arcseconds
+	epsilon			: LREAL := 0.25; 	//accuracy of iteration for observed=TRUE case, in arcseconds, values below min_epsilon are raised to min_epsilon
 	TO_OBSERVED		: BOOL;
 END_VAR
 VAR_OUTPUT
@@ -16,12 +16,25 @@ VAR_OUTPUT
 END_VAR
 VAR
 	aout, P, T, dr, cur, last : LREAL;	// P in millibars, T in degrees Celsius
+	eps				: LREAL;			// epsilon after clamping
+	n				: INT;				// iterations of the observed=TRUE loop
 END_VAR
 VAR CONSTANT
 	alpha 			: LREAL := 0.0065; 	//temp lapse rate [deg C per meter]
+	min_epsilon		: LREAL := 0.001;	//smallest accepted epsilon [arcsec]
+	max_iterations	: INT := 10;		//iteration cap, the loop converges in 1 to 5 iterations
+	max_abs_alt		: LREAL := 1.0E6;	//old_alt beyond this (or NaN/Inf) is rejected
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// https://github.com/wlandsman/IDLAstro/blob/master/pro/co_refract.pro
+
+// Reject NaN/Inf (the comparisons are FALSE for NaN) and pass old_alt through unchanged,
+// otherwise the iteration below could not converge.
+IF NOT (old_alt > -max_abs_alt AND old_alt < max_abs_alt) THEN
+	new_alt := old_alt;
+	RETURN;
+END_IF
+
 // The IDL original works in Kelvin, CO_REFRACT_FORWARD expects degrees Celsius,
 // so all temperatures here are Celsius (IDL's 283.0 K and 211.5 K minus the 273.0 offset used there).
 IF temperature_set THEN
@@ -47,11 +60,19 @@ ELSE
 	dr := co_refract_forward(old_alt, P:=P, T:=T);
 	cur := old_alt + dr; // guess of observed location
 
+	// epsilon <= 0 (or NaN) would never satisfy the exit condition, so clamp it and cap the iterations
+	IF epsilon > min_epsilon THEN
+		eps := epsilon;
+	ELSE
+		eps := min_epsilon;
+	END_IF
+	n := 0;
 	REPEAT 
 	 	last := cur;
 		dr := co_refract_forward(cur, P:= P, T:=T);
 	  	cur := old_alt + dr;
-	UNTIL ABS(last-cur)*3600.0 < epsilon
+		n := n + 1;
+	UNTIL ABS(last-cur)*3600.0 < eps OR n >= max_iterations
 	END_REPEAT
 	aout := cur;
 END_IF
@@ -61,7 +82,7 @@ new_alt := aout;
     </Implementation>
     <LineIds Name="FB_CO_REFRACT">
       <LineId Id="52" Count="0" />
-      <LineId Id="3" Count="35" />
+      <LineId Id="3" Count="56" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

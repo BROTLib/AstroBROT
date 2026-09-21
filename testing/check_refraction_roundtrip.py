@@ -18,11 +18,14 @@ for a in (10,30,60):
     print(f'alt {a}: erfa refraction {ref_erfa:.1f}" vs ExSup formula {port.refract_forward(a,1010.0,10.0)*3600:.1f}"')
 # 3. continuity at 15 deg
 print('continuity at a=15: below %.4f" above %.4f"'%(port.refract_forward(14.9999999)*3600,port.refract_forward(15.0)*3600))
-# 4. iteration: epsilon=0 and NaN
-_,n=port.co_refract(30.0,to_obs=True,eps=0.25); print('normal iterations:',n)
-_,n=port.co_refract(30.0,to_obs=True,eps=0.0,maxit=100000); print('epsilon=0 -> iterations before my cap:',n,'(loop would never exit)')
-_,n=port.co_refract(30.0,to_obs=True,eps=1e-12,maxit=100000); print('epsilon=1e-12" -> iterations:',n)
-nan=float('nan'); print('NaN alt: abs(last-cur)*3600<eps is', abs(nan-nan)*3600<0.25, '-> UNTIL never true')
+# 4. iteration must terminate: epsilon <= 0 / NaN, non-finite altitude (ST caps at 10 iterations, min epsilon 0.001")
+nan=float('nan'); inf=float('inf')
+_,n=port.co_refract(30.0,to_obs=True,eps=0.25); print('normal iterations:',n); assert n<=5
+for e in (0.0,-1.0,1e-12,nan):
+    cur,n=port.co_refract(30.0,to_obs=True,eps=e); print(f'epsilon={e} -> iterations: {n}'); assert n<=10 and math.isfinite(cur)
+for a in (nan,inf,-inf):
+    for to_obs in (True,False):
+        r,n=port.co_refract(a,to_obs=to_obs); print(f'alt={a}, to_obs={to_obs} -> returned {r}, iterations {n}'); assert n==0 and (r!=r if a!=a else r==a)
 # 5. HOR2EQ with default refract_to_observed=TRUE doubles refraction
 lon,lat=9.9454,51.5593; jd=2461000.3; ra,dec=120.0,35.0
 alt,az,_=port.eq2hor(jd,ra,dec,lon,lat,refract=True,to_obs=True)
