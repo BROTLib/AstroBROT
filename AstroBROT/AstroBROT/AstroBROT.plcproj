@@ -45,6 +45,15 @@
     <Compile Include="POUs\FUNCTIONS\JD2LST.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FUNCTIONS\JD2JEPOCH.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\JD2OBLIQUITY.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FUNCTIONS\LMST2LAST.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FUNCTIONS\TEN.TcPOU">
       <SubType>Code</SubType>
     </Compile>

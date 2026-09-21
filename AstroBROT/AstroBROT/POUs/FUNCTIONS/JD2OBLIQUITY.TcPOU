@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="JD2OBLIQUITY" Id="{d7ac0ac9-71bc-4b9f-96cd-81149039ba50}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION JD2OBLIQUITY : LREAL
+VAR_INPUT
+	jd			: LREAL;	// Julian date
+	d_eps		: LREAL;	// nutation in obliquity in arcsec (FB_IAU2000B)
+END_VAR
+VAR
+	T			: LREAL;
+	eps0		: LREAL;
+END_VAR
+VAR CONSTANT
+	d2r			: LREAL := PI/180.0;
+	jd2000		: LREAL := 2451545.0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Julian centuries from J2000 of jd
+T := (jd - jd2000)/36525.0;
+
+// mean obliquity of the ecliptic in arcsec
+eps0 := 23.4392911*3600.0 - 46.8150*T - 0.00059*EXPT(T, 2) + 0.001813*EXPT(T, 3);
+
+// TRUE obliquity of the ecliptic in radians
+JD2OBLIQUITY := (eps0 + d_eps)/3600.0*d2r;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

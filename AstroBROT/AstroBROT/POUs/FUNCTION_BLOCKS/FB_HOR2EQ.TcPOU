@@ -23,32 +23,17 @@ VAR_OUTPUT
 	ha				: LREAL;			// hour angle (in degrees) (optional)
 END_VAR
 VAR
-	lmst			: LREAL;
-	J_now			: LREAL;
-	co_nutate		: FB_CO_NUTATE;
-	co_aberration	: FB_CO_ABERRATION;
 	co_refract		: FB_CO_REFRACT;
-	fbprecess		: FB_PRECESS;
 	altaz2hadec		: FB_ALTAZ2HADEC;
-	IAU2000B		: FB_IAU2000B;
-	last			: LREAL;
-	eps,eps0,d_eps	: LREAL;
-	d_psi			: LREAL;
-	d_ra_abr		: LREAL;		// Difference in RA due to aberration
-	d_dec_abr		: LREAL;		// Difference in Dec due to aberration
-	d_ra_nut		: LREAL;		// Difference in RA due to nutation
-	d_dec_nut		: LREAL;		// Difference in Dec due to nutation
-	T				: LREAL;
+	hadec2radec		: FB_HADEC2RADEC;
 	d_dec_ref		: LREAL;		// time reference
 	alt_loc			: LREAL;		// altitude after refraction correction
 	az_loc			: LREAL;		// azimuth measured east from north
-	
+
 END_VAR
 VAR CONSTANT
 	// easier then functions
-	d2r				: LREAL := PI/180.0;
 	h2d				: LREAL := 15.0;
-	jd2000			: LREAL := 2451545.0;
 END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[(* https://github.com/wlandsman/IDLAstro/blob/master/pro/hor2eq.pro
@@ -98,13 +83,6 @@ END_VAR]]></Declaration>
 ;     Fixed for case of scalar Julian date but vector positions W L June 2009
 ;-*)
 
-// the corrections are only written below if the respective flag is set, so start from zero
-// to not keep applying the values of a previous call
-d_ra_nut := 0.0;
-d_dec_nut := 0.0;
-d_ra_abr := 0.0;
-d_dec_abr := 0.0;
-
 az_loc := az;
 IF WS THEN 
 	az_loc := az - 180.0;
@@ -124,73 +102,25 @@ IF refract THEN
 END_IF
 
 
-//******************************************************************************
-//Calculate LOCAL APPARENT SIDEREAL TIME
-// Nutation for d_psi and eps
-// must calculate obliquity OF ecliptic
-T := (jd -jd2000)/36525.0; 
-IAU2000B(jd := jd,
-		d_psi => d_psi, 
-		d_eps => d_eps); 
-
-eps0 := 23.4392911*3600.0 - 46.8150*T - 0.00059*EXPT(T, 2) + 0.001813*EXPT(T, 3);
-eps := (eps0 + d_eps)/3600.0*d2r; // TRUE obliquity OF the ecliptic in radians
-// first get local mean sidereal time (lmst)
-// get LST (in hours) - note:this is indep of tzone since giving jd
-// Calculate LOCAL MEAN SIDEREAL TIME 
-lmst := jd2lst(JD:=jd, lon:=lon, dut1:=dut1);
-// calculate local APPARENT sidereal time
-last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
-
-
 //****************************************************************************
 // Now do the spherical trig to get APPARENT Hour Angle [degrees], and
 // declination [degrees].
 altaz2hadec(alt := alt_loc, az := az_loc, lat := lat, ha => ha, dec => dec);
 
-// Find Right Ascension (in degrees, from 0 to 360.)
-ra := MODABS(last - ha + 360.0, 360.0);
-
 //*****************************************************************************
-// calculate NUTATION and ABERRATION Corrections to Ra-Dec
-IF nutate THEN
-	co_nutate(	
-		jd := jd, 
-		ra := ra, 
-		dec := dec, 
-		d_ra => d_ra_nut, 
-		d_dec => d_dec_nut, 
-		eps=>eps, 
-		d_psi=>d_psi);
-END_IF
-IF ABERRATION THEN	
-	co_aberration(	
-		jd := jd, 
-		ra := ra, 
-		dec := dec,
-		eps := eps,
-		d_ra => d_ra_abr, 
-		d_dec => d_dec_abr);
-END_IF
-ra := ra - (d_ra_abr + d_ra_nut);
-dec := dec - (d_dec_abr + d_dec_nut);
- 
-
-
-(* ******************************************************************************
- PRECESS coordinates to current date
- (uses astro lib procedure PRECESS.pro)
-*)
-J_now := (jd - jd2000)/365.25 + 2000.0; // compute current equinox
-IF precess THEN
-	fbprecess( 
-		ra := ra, 
-		dec := dec, 
-		equinox1 := J_now, 
-		equinox2 := 2000.0, 
-		ra_precessed => ra, 
-		dec_precessed => dec);
-END_IF
+// Right Ascension (in degrees, from 0 to 360.): local apparent sidereal time, then
+// the corrections for nutation, aberration and precession back to J2000
+hadec2radec(
+	jd := jd,
+	dut1 := dut1,
+	ha := ha,
+	dec := dec,
+	lon := lon,
+	precess := precess,
+	nutate := nutate,
+	aberration := aberration,
+	ra_out => ra,
+	dec_out => dec);
 ]]></ST>
     </Implementation>
     <LineIds Name="FB_HOR2EQ">

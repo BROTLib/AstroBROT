@@ -14,6 +14,7 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 | `FB_ALTAZ2HADEC_Tests` | `FB_ALTAZ2HADEC` | an ordinary position, pointing exactly at the celestial poles (the `ASIN` argument rounds to 1 + 2.2E-16, issue #18) |
 | `FB_ATAN2_Tests` | `ATAN2` | the four quadrants, the axes, the origin, values close to the axes |
 | `FB_DateTime2JD_Tests` | `DateTime2JD` | golden dates from `erfa.cal2jd`, leap years (incl. 2000 and 2100), milliseconds, the documented roll-over of out-of-range fields |
+| `FB_Pipeline_Tests` | `JD2OBLIQUITY`, `JD2JEPOCH`, `LMST2LAST`, `FB_CO_NUTATE`, `FB_RADEC2HADEC`, `FB_HADEC2RADEC`, `FB_EQ2HOR`, `FB_HOR2EQ` | golden helper values (obliquity also against `erfa.obl06`), `nut_given` uses the given nutation, with all switches off only the sidereal time is applied, each of `precess` / `nutate` / `aberration` alone adds exactly the correction of `FB_PRECESS` / `FB_CO_NUTATE` / `FB_CO_ABERRATION`, no stale correction after switching off, RA wrapped without precession, cyclic calls leave `FB_RADEC2HADEC` inputs alone, `FB_EQ2HOR` / `FB_HOR2EQ` equal the composition of their parts (issue #14) |
 | `FB_JD2LST_Tests` | `JD2LST` | golden sidereal times with `dut1` = 0, +0.9, -0.9 s at two epochs and two longitudes, the shift by the sidereal rate, the wrap at 360 deg, `dut1` added to the time argument (issue #12) |
 | `FB_DUT1_Tests` | `FB_RADEC2HADEC`, `FB_HADEC2RADEC` | hour angle / right ascension move by `dut1` * 360.98564736629 / 86400 deg, round trip with the same `dut1`, inputs left untouched |
 | `FB_TEN_Tests` | `TEN` | positive values, IDLAstro sign convention (a minus on any element negates the whole value), zero |
@@ -23,7 +24,7 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 | `FB_SUNPOS_Tests` | `FB_SUNPOS` | golden `ra` / `dec` / `longmed` / `oblt` at seven dates, a comparison with a position built from erfa, and sanity checks (equinox, solstice, obliquity, RA advances about 1 deg per day) |
 | `FB_EdgeCases_Tests` | `FB_EQ2HOR`, `FB_HOR2EQ` | celestial poles, observers at both poles and on the equator, zenith, nadir, a position below the horizon, RA / azimuth / longitude periodic, outputs in range, and why an azimuth difference is not a sky separation |
 
-138 test cases in total.
+152 test cases in total.
 
 The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
 every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
@@ -49,8 +50,6 @@ update the numbers in the tests.
 - `FB_HADEC2RADEC` at exactly dec = ±90: the corrections are applied in (ra, dec), `d_ra` grows like 1/cos(dec) and `d_dec`
   is evaluated at a meaningless RA. Neither ra nor dec is reproducible there, and the result is 4.7″ (north) / 39″ (south)
   away from erfa. `Golden_Exact_Poles` only bounds it at 0.015 deg; 0.1 deg from the pole the error is back at 0.5″.
-- `FB_RADEC2HADEC` writes the precessed and corrected position back into its `ra` and `dec` inputs (issue #8), so its
-  tests assign every input on every call and there is no "cyclic call with inputs set once" test for it.
 - Diurnal aberration (up to 0.32″), polar motion and atmospheric dispersion are not modelled; that is the size of the 0.2 to 0.4″ against erfa.
 
 ## Running the tests

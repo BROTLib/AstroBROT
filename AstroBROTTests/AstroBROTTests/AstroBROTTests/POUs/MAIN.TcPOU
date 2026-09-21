@@ -20,6 +20,7 @@ VAR
 	fbHadec2RadecTests	: FB_HADEC2RADEC_Tests;
 	fbSunposTests	: FB_SUNPOS_Tests;
 	fbEdgeCasesTests	: FB_EdgeCases_Tests;
+	fbPipelineTests	: FB_Pipeline_Tests;
 END_VAR
 ]]></Declaration>
     <Implementation>

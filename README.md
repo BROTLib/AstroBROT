@@ -46,8 +46,8 @@ AstroBROT/
 |---|---|
 | `FB_EQ2HOR` | Equatorial (RA/Dec, J2000) → Horizontal (Alt/Az) conversion |
 | `FB_HOR2EQ` | Horizontal (Alt/Az) → Equatorial (RA/Dec) conversion. Input `alt_is_observed` (default TRUE) says whether `alt` is measured, so refraction is removed. It replaces `refract_to_observed`, whose default `TRUE` had the opposite meaning (breaking change, callers passing `refract_to_observed` must switch to `alt_is_observed := NOT refract_to_observed`) |
-| `FB_RADEC2HADEC` | ICRS RA/Dec → apparent Hour Angle / Declination |
-| `FB_HADEC2RADEC` | Apparent Hour Angle / Declination → ICRS RA/Dec |
+| `FB_RADEC2HADEC` | ICRS RA/Dec → apparent Hour Angle / Declination; optional `precess`, `nutate`, `aberration` switches (default TRUE). `FB_EQ2HOR` is this block plus `FB_HADEC2ALTAZ` and refraction |
+| `FB_HADEC2RADEC` | Apparent Hour Angle / Declination → ICRS RA/Dec; the same switches. `FB_HOR2EQ` is refraction plus `FB_ALTAZ2HADEC` plus this block |
 | `FB_PRECESS` | Precession between epochs (Capitaine et al. 2003) |
 | `FB_IAU2000B` | IAU 2000B nutation model (~1 mas accuracy) |
 | `FB_SUNPOS` | Apparent solar position from Julian Date |
@@ -62,6 +62,9 @@ AstroBROT/
 | Function | Description |
 |---|---|
 | `JD2LST` | Julian Date (UTC) → Local Sidereal Time; optional `dut1` (UT1−UTC in seconds, default 0) |
+| `LMST2LAST` | Local mean sidereal time (degrees) → local apparent sidereal time, from the nutation in longitude and the true obliquity |
+| `JD2OBLIQUITY` | Julian Date and nutation in obliquity (arcsec) → true obliquity of the ecliptic in radians |
+| `JD2JEPOCH` | Julian Date → Julian epoch (equinox of date, e.g. for precession) |
 | `CT2LST` | Civil Time → Local Mean Sidereal Time |
 | `DateTime2JD` | TwinCAT `TIMESTRUCT` → Julian Date |
 | `ATAN2` | Four-quadrant arctangent |
