@@ -25,6 +25,9 @@
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_DateTime2JD_Tests.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_ATAN2_Tests.TcPOU">
       <SubType>Code</SubType>
     </Compile>

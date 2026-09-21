@@ -13,9 +13,10 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 | `FB_CO_ABERRATION_Tests` | `FB_CO_ABERRATION` | golden `d_ra` / `d_dec` at two epochs, `eps` input not modified |
 | `FB_ALTAZ2HADEC_Tests` | `FB_ALTAZ2HADEC` | an ordinary position, pointing exactly at the celestial poles (the `ASIN` argument rounds to 1 + 2.2E-16, issue #18) |
 | `FB_ATAN2_Tests` | `ATAN2` | the four quadrants, the axes, the origin, values close to the axes |
+| `FB_DateTime2JD_Tests` | `DateTime2JD` | golden dates from `erfa.cal2jd`, leap years (incl. 2000 and 2100), milliseconds, the documented roll-over of out-of-range fields |
 | `FB_TEN_Tests` | `TEN` | positive values, IDLAstro sign convention (a minus on any element negates the whole value), zero |
 
-49 test cases in total.
+53 test cases in total.
 
 The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
 every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The

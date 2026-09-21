@@ -150,7 +150,7 @@ commits directly, and I did not run the workflow.
 - **L5. Custom `ATAN2`** *(#19: kept and tested in `FB_ATAN2_Tests`; TwinCAT's PLC has no `ATAN2` of its own; `POLY` removed, it had no callers after `FB_NUTATE` went)* hand-rolls a quadrant fix-up around `ATAN(y/x)`. A string search of the
   Tc2_Math archive finds no `ATAN2` (it does find `LMOD` and `MODABS`), so there is no name clash. It returns +PI for `y = -0.0, x < 0`; harmless after the
   `MODABS` calls. `POLY` uses `EXPT(X, n)` instead of Horner form.
-- **L6. `DateTime2JD` is Gregorian only** (Julian-calendar branch commented out), has an unused variable
+- **L6. `DateTime2JD` is Gregorian only** *(#20: unused variable and dead code removed, contract documented in the block, `FB_DateTime2JD_Tests` added; no validation by design, a validity flag belongs in `FB_AstroClock`, BROTLib M1)* (Julian-calendar branch commented out), has an unused variable
   `d`, and does no input validation. *Verified (port):* 0 s difference to `erfa` for five test dates.
   It does not say whether the `TIMESTRUCT` must be UTC.
 - **L7. Cost per call is unmeasured.** `FB_IAU2000B` runs 78 sin/cos pairs per call, and HOR2EQ and
