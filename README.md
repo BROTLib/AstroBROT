@@ -33,7 +33,7 @@ AstroBROT/
 │   ├── AstroBROTTests.sln
 │   ├── tools/                     # Install-TcUnit.ps1, Run-Tests.ps1
 │   └── vendor/tcunit.library      # TcUnit 1.2.0.0
-├── testing/BROT_test.ipynb        # Jupyter notebook with algorithm cross-checks
+├── testing/                       # Python port, erfa cross-checks, golden values, check_plc_vs_astropy.py
 ├── testing/                       # Python port, erfa checks, golden_astro.py (source of the test values)
 └── README.md
 ```
@@ -85,19 +85,20 @@ nutation and aberration use `jd` as TT, where the ~69 s offset is negligible.
 
 ## Testing
 
-`testing/BROT_test.ipynb` is a Python (pyads) validation notebook that
-cross-checks the ported algorithms **on the live PLC** against reference
-implementations (astropy, PyAstronomy): it writes test inputs to the `MAIN`
-test harness (which executes `JD2LST`, `EQ2HOR`, `HOR2EQ` and an `EQ2EQ`
-round trip per `E_TestState`), reads back the results and compares them.
-Recorded in the first notebook run (IAG 50 cm telescope, before the fixes of #6, #9, #10 and #12, with
-`dut1` = 0): JD2LST within half a second of astropy; EQ2HOR altitude error below ~2″, azimuth mostly below 5″;
-500 random sky cases for EQ2HOR/HOR2EQ and 100 round-trip cases. The same run noted "azimuth outliers up to
-40″". That is a difference of azimuth angles, not a separation on the sky (near the zenith it is amplified by
-1/cos(alt)), and it has **not been reproduced**: the Python port of the current code is within 0.38″ great-circle
-of erfa for EQ2HOR/HOR2EQ on every case in `testing/` (0.34″ maximum over 2000 random ones). The figure is unresolved until the
-notebook is re-run on the PLC and compares great-circle separations; do not quote it as the accuracy of the library.
-The accuracy is now pinned by the TcUnit tests below.
+`testing/check_plc_vs_astropy.py` cross-checks the blocks **on a live PLC** against astropy over ADS (pyads): it
+writes inputs to the `MAIN` test harness (`JD2LST`, `EQ2HOR`, `HOR2EQ` and an `EQ2HOR` -> `HOR2EQ` round trip per
+`E_TestState`), reads back the results and compares them as great-circle separations on the sky, with thresholds and an
+exit code. It replaces the former notebook `BROT_test.ipynb` (still in the git history); the AmsNetId is an argument
+(`--net-id`), and with `dut1` = 0 on both sides it runs offline. Measured on the TwinCAT user-mode runtime, 500 random
+cases each in 2026: JD2LST within 0.004 s of astropy's mean sidereal time; EQ2HOR and HOR2EQ median 0.35″ and maximum
+0.65″ (astropy's diurnal aberration and polar motion are what remains); round trip maximum 0.08″. The old notebook's
+"azimuth outliers up to 40″" was a difference of azimuth angles, not a separation on the sky (near the zenith or nadir it
+is amplified by 1/cos(alt): in the run above a 0.65″ separation shows up as 11.5″ of azimuth at an altitude of -89.3°);
+it did not reproduce: a re-run of the notebook itself (500 cases, IERS data, sky above the horizon) gave at most 3.8″ of
+raw azimuth difference and 1.1″ of separation. The original figure was recorded before the fixes of #6, #9, #10 and #12,
+so its cause is unknown; do not quote it. Needs `pip install pyads astropy numpy`. The library's own `MAIN` did not enter
+run mode on the user-mode runtime in this check (reason not found), so the runs above used a project with the same
+`MAIN` symbols that calls the installed library.
 
 `AstroBROTTests/` holds TcUnit tests for every block and helper function (`FB_EQ2HOR`, `FB_HOR2EQ`, `FB_RADEC2HADEC`,
 `FB_HADEC2RADEC`, `FB_PRECESS`, `FB_SUNPOS`, `FB_CO_REFRACT`, `FB_CO_ABERRATION`, `FB_CO_NUTATE`, `FB_ALTAZ2HADEC` and
