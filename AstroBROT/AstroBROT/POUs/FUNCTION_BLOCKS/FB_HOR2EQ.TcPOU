@@ -14,7 +14,7 @@ VAR_INPUT
 	aberration		: BOOL := TRUE; 	// Set this to 1 to force aberration correction [default], 0 for no correction.
 	refract			: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
 	altitude		: LREAL := 0.0;
-	refract_to_observed : BOOL := TRUE;
+	alt_is_observed	: BOOL := TRUE;		// TRUE: alt is an observed (refracted) altitude, refraction is removed [default]. FALSE: alt is geometric, refraction is added. Only used if refract is TRUE.
 END_VAR
 VAR_OUTPUT
 	ra				: LREAL;			// Right Ascension of object  (J2000) in degrees (FK5)
@@ -107,7 +107,7 @@ IF refract THEN
 	co_refract(	
 		old_alt := alt, 
 		altitude := altitude, 
-		to_observed := refract_to_observed, 
+		to_observed := NOT alt_is_observed, 
 		new_alt => alt);
 END_IF
 

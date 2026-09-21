@@ -40,7 +40,7 @@ AstroBROT/
 | Function block | Description |
 |---|---|
 | `FB_EQ2HOR` | Equatorial (RA/Dec, J2000) → Horizontal (Alt/Az) conversion |
-| `FB_HOR2EQ` | Horizontal (Alt/Az) → Equatorial (RA/Dec) conversion |
+| `FB_HOR2EQ` | Horizontal (Alt/Az) → Equatorial (RA/Dec) conversion. Input `alt_is_observed` (default TRUE) says whether `alt` is measured, so refraction is removed. It replaces `refract_to_observed`, whose default `TRUE` had the opposite meaning (breaking change, callers passing `refract_to_observed` must switch to `alt_is_observed := NOT refract_to_observed`) |
 | `FB_RADEC2HADEC` | ICRS RA/Dec → apparent Hour Angle / Declination |
 | `FB_HADEC2RADEC` | Apparent Hour Angle / Declination → ICRS RA/Dec |
 | `FB_PRECESS` | Precession between epochs (Capitaine et al. 2003) |

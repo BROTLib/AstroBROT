@@ -167,8 +167,8 @@ def eq2hor(jd,ra,dec,lon,lat,refract=False,altitude=0.0,to_obs=True):
     if refract: alt,_=co_refract(alt,altitude,to_obs=to_obs)
     return alt,az,ha
 
-def hor2eq(jd,alt,az,lon,lat,refract=False,altitude=0.0,to_obs=True):
-    if refract: alt,_=co_refract(alt,altitude,to_obs=to_obs)
+def hor2eq(jd,alt,az,lon,lat,refract=False,altitude=0.0,alt_is_observed=True):
+    if refract: alt,_=co_refract(alt,altitude,to_obs=not alt_is_observed)
     ha,dec=altaz2hadec(alt,az,lat)
     ra,d=hadec2radec(jd,ha,dec,lon)
     return ra,d

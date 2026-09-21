@@ -26,13 +26,14 @@ for e in (0.0,-1.0,1e-12,nan):
 for a in (nan,inf,-inf):
     for to_obs in (True,False):
         r,n=port.co_refract(a,to_obs=to_obs); print(f'alt={a}, to_obs={to_obs} -> returned {r}, iterations {n}'); assert n==0 and (r!=r if a!=a else r==a)
-# 5. HOR2EQ with default refract_to_observed=TRUE doubles refraction
+# 5. HOR2EQ with the default alt_is_observed=TRUE must undo the refraction added by EQ2HOR
 lon,lat=9.9454,51.5593; jd=2461000.3; ra,dec=120.0,35.0
 alt,az,_=port.eq2hor(jd,ra,dec,lon,lat,refract=True,to_obs=True)
-for flag in (True,False):
-    r2,d2=port.hor2eq(jd,alt,az,lon,lat,refract=True,to_obs=flag)
-    e=math.degrees(math.acos(min(1,math.sin(R(d2))*math.sin(R(dec))+math.cos(R(d2))*math.cos(R(dec))*math.cos(R(r2-ra)))))*3600
-    print(f'HOR2EQ round-trip after EQ2HOR(refract) with refract_to_observed={flag}: error {e:.1f}"  (alt={alt:.2f})')
+def sep(r2,d2): return math.degrees(math.acos(min(1,math.sin(R(d2))*math.sin(R(dec))+math.cos(R(d2))*math.cos(R(dec))*math.cos(R(r2-ra)))))*3600
+e_def=sep(*port.hor2eq(jd,alt,az,lon,lat,refract=True))
+e_geo=sep(*port.hor2eq(jd,alt,az,lon,lat,refract=True,alt_is_observed=False))
+print(f'HOR2EQ round-trip after EQ2HOR(refract): default error {e_def:.1f}", alt_is_observed=FALSE error {e_geo:.1f}"  (alt={alt:.2f})')
+assert e_def<0.5 and e_geo>100, 'HOR2EQ default must remove refraction, alt_is_observed=FALSE must add it'
 # 6. wrap: d_ra magnitude from co_nutate near RA=0
 dra,ddec,_,_,_=port.co_nutate(2461000.3,0.001,10.0); print('co_nutate d_ra at ra=0.001 deg:',dra)
 dra,ddec,_,_,_=port.co_nutate(2461000.3,-5.0,10.0); print('co_nutate d_ra at ra=-5 deg (as HADEC2RADEC can pass):',dra)
