@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_DUT1_Tests" Id="{1d677d7f-dbb6-4059-afcb-94be277dc7fb}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for the dut1 input (UT1-UTC in seconds, issue #12) of FB_RADEC2HADEC and FB_HADEC2RADEC.
+//
+// The golden tests for FB_EQ2HOR and FB_HOR2EQ live in their own suites. Here the effect is checked relative to
+// dut1 = 0: only the sidereal time changes, so the hour angle grows by dut1 * 360.98564736629 / 86400 deg and
+// the right ascension shrinks by the same amount.
+FUNCTION_BLOCK FB_DUT1_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[RADEC2HADEC_Hour_Angle_Follows_Dut1();
+HADEC2RADEC_Right_Ascension_Follows_Dut1();
+Round_Trip_With_Dut1();
+Inputs_Are_Not_Modified();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{4ba871bd-0e61-4251-9ecd-7c77a4165728}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckAngle" Id="{d8ad8692-6d34-44be-af5c-c3f986216597}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAngle
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+VAR
+	fDiff	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// angles in degrees, compared modulo 360 so that 359.9999999 and -1.0E-7 are equal
+fDiff := fActual - fExpected;
+WHILE fDiff > 180.0 DO fDiff := fDiff - 360.0; END_WHILE
+WHILE fDiff < -180.0 DO fDiff := fDiff + 360.0; END_WHILE
+AssertEquals_LREAL(Expected := 0.0, Actual := fDiff, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="RADEC2HADEC_Hour_Angle_Follows_Dut1" Id="{7df27f20-cb10-43ca-b7a9-61c5b61901d2}">
+      <Declaration><![CDATA[METHOD PRIVATE RADEC2HADEC_Hour_Angle_Follows_Dut1
+VAR
+	fb0	: AstroBROT.FB_RADEC2HADEC;
+	fbP	: AstroBROT.FB_RADEC2HADEC;
+	fbM	: AstroBROT.FB_RADEC2HADEC;
+	fDelta	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('RADEC2HADEC_Hour_Angle_Follows_Dut1');
+// jd + dut1 / 86400 is quantised to about 40 us (up to 1.7E-7 deg), so the tolerance is 5E-7 deg
+fDelta := 0.9 * 360.98564736629 / 86400.0;
+fb0(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, dut1 := 0.0);
+fbP(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, dut1 := 0.9);
+fbM(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, dut1 := -0.9);
+CheckAngle(fb0.ha_out + fDelta, fbP.ha_out, 5.0E-7, 'ha +0.9 s');
+CheckAngle(fb0.ha_out - fDelta, fbM.ha_out, 5.0E-7, 'ha -0.9 s');
+CheckNear(fb0.dec_out, fbP.dec_out, 1.0E-9, 'dec is independent of dut1');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="HADEC2RADEC_Right_Ascension_Follows_Dut1" Id="{842e8b97-2800-4938-9db3-40efc0568843}">
+      <Declaration><![CDATA[METHOD PRIVATE HADEC2RADEC_Right_Ascension_Follows_Dut1
+VAR
+	fb0	: AstroBROT.FB_HADEC2RADEC;
+	fbP	: AstroBROT.FB_HADEC2RADEC;
+	fbM	: AstroBROT.FB_HADEC2RADEC;
+	fDelta	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('HADEC2RADEC_Right_Ascension_Follows_Dut1');
+// nutation and aberration depend slightly on RA, so the tolerance is 1e-6 deg, far below the 3.8e-3 deg shift
+fDelta := 0.9 * 360.98564736629 / 86400.0;
+fb0(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, dut1 := 0.0);
+fbP(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, dut1 := 0.9);
+fbM(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, dut1 := -0.9);
+CheckAngle(fb0.ra_out + fDelta, fbP.ra_out, 1.0E-6, 'ra +0.9 s');
+CheckAngle(fb0.ra_out - fDelta, fbM.ra_out, 1.0E-6, 'ra -0.9 s');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Round_Trip_With_Dut1" Id="{f9459d7b-9e07-48c4-a1a4-cb9ca7ad848a}">
+      <Declaration><![CDATA[METHOD PRIVATE Round_Trip_With_Dut1
+VAR
+	fbFwd	: AstroBROT.FB_RADEC2HADEC;
+	fbBack	: AstroBROT.FB_HADEC2RADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Round_Trip_With_Dut1');
+// the same dut1 in both directions cancels
+fbFwd(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, dut1 := 0.7);
+fbBack(jd := 2461300.75, ha := fbFwd.ha_out, dec := fbFwd.dec_out, lon := -16.5, dut1 := 0.7);
+CheckAngle(83.63, fbBack.ra_out, 1.0E-6, 'ra');
+CheckNear(22.01, fbBack.dec_out, 1.0E-6, 'dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Inputs_Are_Not_Modified" Id="{8fb8068b-a7c0-436e-a04b-a36245ba3fe1}">
+      <Declaration><![CDATA[METHOD PRIVATE Inputs_Are_Not_Modified
+VAR
+	fbFwd	: AstroBROT.FB_RADEC2HADEC;
+	fbBack	: AstroBROT.FB_HADEC2RADEC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Inputs_Are_Not_Modified');
+fbFwd(jd := 2461300.75, ra := 83.63, dec := 22.01, lon := -16.5, dut1 := 0.7);
+CheckNear(0.7, fbFwd.dut1, 0.0, 'FB_RADEC2HADEC dut1');
+fbBack(jd := 2461300.75, ha := 345.0, dec := 22.01, lon := -16.5, dut1 := 0.7);
+CheckNear(0.7, fbBack.dut1, 0.0, 'FB_HADEC2RADEC dut1');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

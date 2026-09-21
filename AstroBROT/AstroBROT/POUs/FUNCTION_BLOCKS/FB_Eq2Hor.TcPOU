@@ -5,7 +5,8 @@
 VAR_INPUT
 	ra				: LREAL;	// right ascension in degrees
 	dec				: LREAL;	// declination in degrees
-	jd				: LREAL;	// Julian Date
+	jd				: LREAL;	// Julian Date, UTC time scale
+	dut1			: LREAL := 0.0;	// UT1-UTC in seconds (IERS), 0 treats UTC as UT1
 	lon				: LREAL;	// longitude in degrees
 	lat				: LREAL;	// latitude in degrees
 	ws				: BOOL := FALSE; 	// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
@@ -127,7 +128,7 @@ ra_app := ra_pre + d_ra_abr + d_ra_nut;
 dec_app := dec_pre + d_dec_abr + d_dec_nut;
 (***************************************************************************************
 Calculate LOCAL MEAN SIDEREAL TIME *)
-lmst := jd2lst(JD:=jd, lon:=lon);
+lmst := jd2lst(JD:=jd, lon:=lon, dut1:=dut1);
 // calculate local APPARENT sidereal time
 last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 

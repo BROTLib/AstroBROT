@@ -5,7 +5,8 @@
 VAR_INPUT
 	alt				: LREAL;			//altitude (in degrees)  
 	az				: LREAL;			//azimuth angle (in degrees, measured EAST from NORTH, but see keyword WS below.) [scalar or vector]
-	jd				: LREAL;			// Julian Date
+	jd				: LREAL;			// Julian Date, UTC time scale
+	dut1			: LREAL := 0.0;	// UT1-UTC in seconds (IERS), 0 treats UTC as UT1
 	lat				: LREAL;			// observers latitude (degrees)
 	lon				: LREAL;			// observers longitude (degrees)
 	ws				: BOOL := FALSE; 	// Set this to TRUE get the azimuth measured westward FROM south (NOT East of North).
@@ -137,7 +138,7 @@ eps := (eps0 + d_eps)/3600.0*d2r; // TRUE obliquity OF the ecliptic in radians
 // first get local mean sidereal time (lmst)
 // get LST (in hours) - note:this is indep of tzone since giving jd
 // Calculate LOCAL MEAN SIDEREAL TIME 
-lmst := jd2lst(JD:=jd, lon:=lon);
+lmst := jd2lst(JD:=jd, lon:=lon, dut1:=dut1);
 // calculate local APPARENT sidereal time
 last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 

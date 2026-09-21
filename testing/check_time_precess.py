@@ -6,6 +6,9 @@ AS=206264.80624709636
 for jd in [2461000.5,2461123.25]:
     g=erfa.gmst82(jd,0.0)*180/math.pi
     print('JD2LST-gmst82 (arcsec, lon=0):',((port.jd2lst(jd,0.0)-g+180)%360-180)*3600)
+    for dut1 in (-0.9,0.4,0.9):
+        g1=erfa.gmst82(jd+dut1/86400.0,0.0)*180/math.pi
+        print('  dut1=%+.1f s: JD2LST-gmst82 (arcsec):'%dut1,((port.jd2lst(jd,0.0,dut1)-g1+180)%360-180)*3600)
 # --- precess vs erfa bp06 rp
 worst=0
 for _ in range(300):

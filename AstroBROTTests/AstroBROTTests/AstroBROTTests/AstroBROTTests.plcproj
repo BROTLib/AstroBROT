@@ -43,6 +43,12 @@
     <Compile Include="POUs\FB_CO_REFRACT_Tests.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_DUT1_Tests.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\FB_JD2LST_Tests.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\FB_EQ2HOR_Tests.TcPOU">
       <SubType>Code</SubType>
     </Compile>

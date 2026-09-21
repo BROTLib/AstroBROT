@@ -3,10 +3,12 @@
   <POU Name="JD2LST" Id="{2ca40348-e5d3-4dfb-88de-8ef6d66387b0}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION JD2LST : LREAL
 VAR_INPUT
-	jd			: LREAL;	// Julian date
+	jd			: LREAL;	// Julian date, UTC time scale
 	lon			: LREAL;	// longitude in degrees
+	dut1		: LREAL := 0.0;	// UT1-UTC in seconds (IERS, |dut1| < 0.9), 0 treats UTC as UT1
 END_VAR
 VAR
+	ut1			: LREAL;
 	T			: LREAL;
 	theta0		: LREAL;
 END_VAR
@@ -16,8 +18,9 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[// following https://squarewidget.com/astronomical-calculations-sidereal-time/
-T := ((jd - jd2000) / 36525.0);
-theta0 := 280.46061837 + 360.98564736629 * (JD - jd2000) + (0.000387933 * T * T) - (T * T * T / 38710000.0); // (12.4)
+ut1 := jd + dut1 / 86400.0;
+T := ((ut1 - jd2000) / 36525.0);
+theta0 := 280.46061837 + 360.98564736629 * (ut1 - jd2000) + (0.000387933 * T * T) - (T * T * T / 38710000.0); // (12.4)
 
 // LST is only defined from 0 to 360
 JD2LST := MODABS(theta0 + lon, 360.0); // LST in degrees]]></ST>

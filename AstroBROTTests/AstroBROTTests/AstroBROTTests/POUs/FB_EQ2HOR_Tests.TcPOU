@@ -23,6 +23,9 @@ Inputs_Are_Not_Modified();
 Cyclic_Calls_With_Inputs_Set_Once_Are_Stable();
 Refraction_Tenerife_low();
 Refraction_South_2010();
+Golden_Dut1_Tenerife_2026();
+Golden_Dut1_Tenerife_low();
+Golden_Dut1_South_2010();
 ]]></ST>
     </Implementation>
     <Method Name="CheckNear" Id="{ed0f85b5-4330-4a9f-9a54-acb32627980f}">
@@ -241,6 +244,60 @@ CheckAngle(229.80793288979396, fbObs.az, 1.0E-7, 'South_2010 to observed az');
 fbGeo(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := TRUE, refract_to_observed := FALSE, altitude := 2700.0);
 CheckNear(29.958925879892362, fbGeo.alt, 1.0E-7, 'South_2010 to geometric alt');
 CheckAngle(229.80793288979396, fbGeo.az, 1.0E-7, 'South_2010 to geometric az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dut1_Tenerife_2026" Id="{a16a35cb-29a3-4440-92a1-3abf2a17dc95}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dut1_Tenerife_2026
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dut1_Tenerife_2026');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := 0.9);
+CheckNear(75.6015217605425, fb.alt, 1.0E-7, 'Tenerife_2026 dut1 +0.9 alt');
+CheckAngle(112.59731630906032, fb.az, 1.0E-7, 'Tenerife_2026 dut1 +0.9 az');
+fb(ra := 83.63, dec := 22.01, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := -0.9);
+CheckNear(75.5954080544077, fb.alt, 1.0E-7, 'Tenerife_2026 dut1 -0.9 alt');
+CheckAngle(112.58384485334773, fb.az, 1.0E-7, 'Tenerife_2026 dut1 -0.9 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dut1_Tenerife_low" Id="{58c92258-fcbb-4de1-aaa6-a4d48118dcd7}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dut1_Tenerife_low
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dut1_Tenerife_low');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := 0.9);
+CheckNear(20.007872562062794, fb.alt, 1.0E-7, 'Tenerife_low dut1 +0.9 alt');
+CheckAngle(114.07042187844327, fb.az, 1.0E-7, 'Tenerife_low dut1 +0.9 az');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, dut1 := -0.9);
+CheckNear(20.00182647976375, fb.alt, 1.0E-7, 'Tenerife_low dut1 -0.9 alt');
+CheckAngle(114.06587325708954, fb.az, 1.0E-7, 'Tenerife_low dut1 -0.9 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Dut1_South_2010" Id="{84a2e0c7-88e1-4c1b-a34a-3b892a732dea}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Dut1_South_2010
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Dut1_South_2010');
+fb(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, dut1 := 0.9);
+CheckNear(29.97779764757124, fb.alt, 1.0E-7, 'South_2010 dut1 +0.9 alt');
+CheckAngle(229.80725126973925, fb.az, 1.0E-7, 'South_2010 dut1 +0.9 az');
+fb(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, dut1 := -0.9);
+CheckNear(29.982762840100285, fb.alt, 1.0E-7, 'South_2010 dut1 -0.9 alt');
+CheckAngle(229.8086144058053, fb.az, 1.0E-7, 'South_2010 dut1 -0.9 az');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>

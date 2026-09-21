@@ -7,16 +7,18 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 
 | Suite | Tests | What it checks |
 |---|---|---|
-| `FB_EQ2HOR_Tests` | `FB_EQ2HOR` | golden alt/az at three sites, the `nutate` / `aberration` switches, refraction in both directions, inputs left untouched, cyclic calls with inputs set once |
-| `FB_HOR2EQ_Tests` | `FB_HOR2EQ` | the same for the reverse transform, plus `ws` (azimuth west from south) and the round trip through `FB_EQ2HOR` |
+| `FB_EQ2HOR_Tests` | `FB_EQ2HOR` | golden alt/az at three sites (also with `dut1` = ±0.9 s), the `nutate` / `aberration` switches, refraction in both directions, inputs left untouched, cyclic calls with inputs set once |
+| `FB_HOR2EQ_Tests` | `FB_HOR2EQ` | the same for the reverse transform (incl. `dut1`), plus `ws` (azimuth west from south) and the round trip through `FB_EQ2HOR` |
 | `FB_CO_REFRACT_Tests` | `FB_CO_REFRACT` | golden values in both directions, 0.0 degC as a valid temperature, no state kept between calls, out-of-range input, non-positive `epsilon`, `CO_REFRACT_FORWARD` values, no step between the two branches, the `clamped` flag |
 | `FB_CO_ABERRATION_Tests` | `FB_CO_ABERRATION` | golden `d_ra` / `d_dec` at two epochs, `eps` input not modified |
 | `FB_ALTAZ2HADEC_Tests` | `FB_ALTAZ2HADEC` | an ordinary position, pointing exactly at the celestial poles (the `ASIN` argument rounds to 1 + 2.2E-16, issue #18) |
 | `FB_ATAN2_Tests` | `ATAN2` | the four quadrants, the axes, the origin, values close to the axes |
 | `FB_DateTime2JD_Tests` | `DateTime2JD` | golden dates from `erfa.cal2jd`, leap years (incl. 2000 and 2100), milliseconds, the documented roll-over of out-of-range fields |
+| `FB_JD2LST_Tests` | `JD2LST` | golden sidereal times with `dut1` = 0, +0.9, -0.9 s at two epochs and two longitudes, the shift by the sidereal rate, the wrap at 360 deg, `dut1` added to the time argument (issue #12) |
+| `FB_DUT1_Tests` | `FB_RADEC2HADEC`, `FB_HADEC2RADEC` | hour angle / right ascension move by `dut1` * 360.98564736629 / 86400 deg, round trip with the same `dut1`, inputs left untouched |
 | `FB_TEN_Tests` | `TEN` | positive values, IDLAstro sign convention (a minus on any element negates the whole value), zero |
 
-56 test cases in total.
+71 test cases in total.
 
 The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
 every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The

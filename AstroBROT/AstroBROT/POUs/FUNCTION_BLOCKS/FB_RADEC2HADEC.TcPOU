@@ -3,7 +3,8 @@
   <POU Name="FB_RADEC2HADEC" Id="{0862c677-7b7c-46dd-9ea7-b8a7ab9f8ddc}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_RADEC2HADEC
 VAR_INPUT
-	jd				: LREAL;		// Julian date
+	jd				: LREAL;		// Julian date, UTC time scale
+	dut1			: LREAL := 0.0;	// UT1-UTC in seconds (IERS), 0 treats UTC as UT1
 	ra				: LREAL;		// Right Ascension (ICRS) in degrees
 	dec				: LREAL;		// Declination (ICRS) in degrees
 	lon				: LREAL;		// Longitude in degrees
@@ -74,7 +75,7 @@ ra := ra_pre + d_ra_abr + d_ra_nut;
 dec := dec_pre + d_dec_abr + d_dec_nut;
 (***************************************************************************************
 Calculate LOCAL MEAN SIDEREAL TIME *)
-lmst := jd2lst(JD:=jd, lon:=lon);
+lmst := jd2lst(JD:=jd, lon:=lon, dut1:=dut1);
 // calculate local APPARENT sidereal time
 last := lmst + d_psi *COS(eps)/3600.0 ; //add correction in degrees
 

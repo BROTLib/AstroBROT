@@ -61,7 +61,7 @@ AstroBROT/
 
 | Function | Description |
 |---|---|
-| `JD2LST` | Julian Date → Local Sidereal Time |
+| `JD2LST` | Julian Date (UTC) → Local Sidereal Time; optional `dut1` (UT1−UTC in seconds, default 0) |
 | `CT2LST` | Civil Time → Local Mean Sidereal Time |
 | `DateTime2JD` | TwinCAT `TIMESTRUCT` → Julian Date |
 | `ATAN2` | Four-quadrant arctangent |
@@ -76,6 +76,12 @@ The function blocks are pure calculation blocks: instantiate, set the input
 coordinates/epochs/Julian dates, call once per PLC cycle (or on demand) and
 read the outputs. No I/O or hardware dependencies are required, which makes the
 library portable across all TwinCAT targets.
+
+All `jd` inputs are Julian Dates on the UTC time scale. The sidereal time
+(`JD2LST` and the blocks that call it) needs UT1, so the blocks take an optional
+`dut1` input (UT1−UTC in seconds, from IERS bulletins, |dut1| < 0.9). It defaults
+to 0, which treats UTC as UT1 and can be off by up to ~13.5″ of RA. Precession,
+nutation and aberration use `jd` as TT, where the ~69 s offset is negligible.
 
 ## Testing
 

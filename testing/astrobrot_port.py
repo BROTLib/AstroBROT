@@ -108,9 +108,10 @@ def precess(ra,dec,eq1,eq2):
             x=r.T@x if step==0 else r@x     # step 0: eq1 -> J2000, step 1: J2000 -> eq2
     return modabs(math.atan2(x[1],x[0])/d2r,360.0), math.asin(x[2])/d2r, x
 
-def jd2lst(jd,lon):
-    T=(jd-2451545.0)/36525.0
-    th=280.46061837+360.98564736629*(jd-2451545.0)+0.000387933*T*T-T**3/38710000.0
+def jd2lst(jd,lon,dut1=0.0):
+    ut1=jd+dut1/86400.0
+    T=(ut1-2451545.0)/36525.0
+    th=280.46061837+360.98564736629*(ut1-2451545.0)+0.000387933*T*T-T**3/38710000.0
     return modabs(th+lon,360.0)
 
 def hadec2altaz(ha,dec,lat,ws=False):
