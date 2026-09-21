@@ -17,22 +17,41 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 | `FB_JD2LST_Tests` | `JD2LST` | golden sidereal times with `dut1` = 0, +0.9, -0.9 s at two epochs and two longitudes, the shift by the sidereal rate, the wrap at 360 deg, `dut1` added to the time argument (issue #12) |
 | `FB_DUT1_Tests` | `FB_RADEC2HADEC`, `FB_HADEC2RADEC` | hour angle / right ascension move by `dut1` * 360.98564736629 / 86400 deg, round trip with the same `dut1`, inputs left untouched |
 | `FB_TEN_Tests` | `TEN` | positive values, IDLAstro sign convention (a minus on any element negates the whole value), zero |
+| `FB_PRECESS_Tests` | `FB_PRECESS` | golden values (J2000 to date, between two epochs that are both not J2000, back to J2000, RA wrap, poles), the identity, the round trip, two steps equal precessing via J2000 (issue #9), RA normalised to 0..360, inputs untouched, cyclic calls |
+| `FB_RADEC2HADEC_Tests` | `FB_RADEC2HADEC` | golden HA / Dec at three sites, `dut1` = ±0.9 s, RA wrap, exactly at and 0.1 deg from the celestial poles, RA and longitude periodic, outputs stay in range |
+| `FB_HADEC2RADEC_Tests` | `FB_HADEC2RADEC` | the same for the reverse block, plus the round trip through `FB_RADEC2HADEC`, inputs untouched, cyclic calls |
+| `FB_SUNPOS_Tests` | `FB_SUNPOS` | golden `ra` / `dec` / `longmed` / `oblt` at seven dates, a comparison with a position built from erfa, and sanity checks (equinox, solstice, obliquity, RA advances about 1 deg per day) |
+| `FB_EdgeCases_Tests` | `FB_EQ2HOR`, `FB_HOR2EQ` | celestial poles, observers at both poles and on the equator, zenith, nadir, a position below the horizon, RA / azimuth / longitude periodic, outputs in range, and why an azimuth difference is not a sky separation |
 
-71 test cases in total.
+138 test cases in total.
 
 The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
 every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
 cyclic tests set the inputs once and call the block repeatedly, like a PLC program would.
 
-Expected values come from [`testing/golden_astro.py`](../testing/golden_astro.py), which builds on
+The last five suites are **generated** by [`testing/gen_block_tests.py`](../testing/gen_block_tests.py) from
+[`testing/golden_blocks.py`](../testing/golden_blocks.py): run `python gen_block_tests.py` in `testing/` after changing an
+algorithm and look at the diff. Each golden case is checked twice: against the Python port (1e-7 deg, catches any change of
+behaviour) and against **erfa** as a great-circle separation with a hard tolerance (precession 1e-5 deg, everything with
+hour angles and horizon coordinates 2e-4 deg = 0.72 arcsec, `FB_SUNPOS` 1.5e-3 deg = 5.4 arcsec; measured maxima 0.009″,
+0.38″ and 3.2″), so a mistake the port shares with the ST cannot hide. Angles are compared as separations on the sky, never
+as two coordinate differences.
+
+Expected values of the older suites come from [`testing/golden_astro.py`](../testing/golden_astro.py), which builds on
 `testing/astrobrot_port.py` (validated against erfa/SOFA by the `check_*.py` scripts) and adds the `nutate` /
 `aberration` switches. The tolerance is 1e-7 deg (0.36 mas); the port reproduces the ST to about 1e-10 deg. The
 round-trip test uses 1e-6 deg because the two blocks are only approximate inverses (they apply nutation and
 aberration at slightly different positions, up to 0.34 mas). Re-run `golden_astro.py` after changing an algorithm and
 update the numbers in the tests.
 
-`FB_CO_NUTATE` (RA wrap-around, issue #10) has no suite of its own yet. `FB_HOR2EQ` with `ws` or at low altitude feeds
-a negative RA into it, so those cases also need the wrap fix.
+**Known limitations the tests pin down (not fixed):**
+
+- `FB_HADEC2RADEC` at exactly dec = ±90: the corrections are applied in (ra, dec), `d_ra` grows like 1/cos(dec) and `d_dec`
+  is evaluated at a meaningless RA. Neither ra nor dec is reproducible there, and the result is 4.7″ (north) / 39″ (south)
+  away from erfa. `Golden_Exact_Poles` only bounds it at 0.015 deg; 0.1 deg from the pole the error is back at 0.5″.
+- `FB_RADEC2HADEC` writes the precessed and corrected position back into its `ra` and `dec` inputs (issue #8), so its
+  tests assign every input on every call and there is no "cyclic call with inputs set once" test for it.
+- Diurnal aberration (up to 0.32″), polar motion and atmospheric dispersion are not modelled; that is the size of the 0.2 to 0.4″ against erfa.
 
 ## Running the tests
 

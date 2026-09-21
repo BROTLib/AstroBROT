@@ -90,15 +90,21 @@ cross-checks the ported algorithms **on the live PLC** against reference
 implementations (astropy, PyAstronomy): it writes test inputs to the `MAIN`
 test harness (which executes `JD2LST`, `EQ2HOR`, `HOR2EQ` and an `EQ2EQ`
 round trip per `E_TestState`), reads back the results and compares them.
-Recorded accuracy (tested at the IAG 50 cm telescope): JD2LST within half a
-second of astropy; EQ2HOR altitude error below ~2″, azimuth mostly below 5″
-(with systematic outliers up to 40″); 500 random sky cases for EQ2HOR/HOR2EQ
-and 100 round-trip cases.
+Recorded in the first notebook run (IAG 50 cm telescope, before the fixes of #6, #9, #10 and #12, with
+`dut1` = 0): JD2LST within half a second of astropy; EQ2HOR altitude error below ~2″, azimuth mostly below 5″;
+500 random sky cases for EQ2HOR/HOR2EQ and 100 round-trip cases. The same run noted "azimuth outliers up to
+40″". That is a difference of azimuth angles, not a separation on the sky (near the zenith it is amplified by
+1/cos(alt)), and it has **not been reproduced**: the Python port of the current code is within 0.38″ great-circle
+of erfa for EQ2HOR/HOR2EQ on every case in `testing/` (0.34″ maximum over 2000 random ones). The figure is unresolved until the
+notebook is re-run on the PLC and compares great-circle separations; do not quote it as the accuracy of the library.
+The accuracy is now pinned by the TcUnit tests below.
 
-`AstroBROTTests/` holds TcUnit tests for the transform blocks and their helpers (`FB_EQ2HOR`, `FB_HOR2EQ`,
-`FB_CO_REFRACT`, `FB_CO_ABERRATION`, `FB_CO_NUTATE` and the helper functions; 56 test cases). They run the compiled library on the TwinCAT user-mode runtime
-and check the results against golden values from the Python port, plus behaviour the `MAIN` harness cannot show:
-blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
+`AstroBROTTests/` holds TcUnit tests for every block and helper function (`FB_EQ2HOR`, `FB_HOR2EQ`, `FB_RADEC2HADEC`,
+`FB_HADEC2RADEC`, `FB_PRECESS`, `FB_SUNPOS`, `FB_CO_REFRACT`, `FB_CO_ABERRATION`, `FB_CO_NUTATE`, `FB_ALTAZ2HADEC` and
+the helper functions; 138 test cases). They run the compiled library on the TwinCAT user-mode runtime
+and check the results against golden values from the Python port and, with hard tolerances, against erfa (SOFA), including
+the celestial poles, observers at the poles, the zenith, RA / azimuth wrap-around and out-of-range angles, plus behaviour
+the `MAIN` harness cannot show: blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
 [AstroBROTTests/README.md](AstroBROTTests/README.md). Not wired into CI: the runtime needs a trial license that
 cannot be renewed unattended.
 

@@ -72,6 +72,33 @@ def sunpos(jd):
     l=lmod(l+2592000.0,1296000.0)
     return l/3600.0
 
+def sunpos_full(jd):
+    """FB_SUNPOS outputs: ra, dec (of date, degrees), longmed (mean longitude with the perturbations, before aberration and nutation) and oblt."""
+    t=(jd-2415020.0)/36525.0
+    l=(279.696678+lmod(36000.768925*t,360.0))*3600.0
+    me=358.475844+lmod(35999.049750*t,360.0)
+    l+=(6910.1-17.2*t)*math.sin(me*d2r)+72.3*math.sin(2*me*d2r)
+    mv=212.603219+lmod(58517.803875*t,360.0)
+    C=lambda a: math.cos(a*d2r)
+    l+=4.8*C(299.1017+mv-me)+5.5*C(148.3133+2*mv-2*me)+2.5*C(315.9433+2*mv-3*me)+1.6*C(345.2533+3*mv-4*me)+1.0*C(318.15+3*mv-5*me)
+    mm=319.529425+lmod(19139.858500*t,360.0)
+    l+=2.0*C(343.8883-2*mm+2*me)+1.8*C(200.4017-2*mm+me)
+    mj=225.328328+lmod(3034.6920239*t,360.0)
+    l+=7.2*C(179.5317-mj+me)+2.6*C(263.2167-mj)+2.7*C(87.1450-2*mj+2*me)+1.6*C(109.4933-2*mj+me)
+    d=350.7376814+lmod(445267.11422*t,360.0)
+    l+=6.5*math.sin(d*d2r)
+    l+=6.4*math.sin((231.19+20.20*t)*d2r)
+    l=lmod(l+2592000.0,1296000.0)
+    longmed=l/3600.0
+    l-=20.5
+    omega=259.183275-lmod(1934.142008*t,360.0)
+    l-=17.2*math.sin(omega*d2r)
+    oblt=23.452294-0.0130125*t+(9.2*math.cos(omega*d2r))/3600.0
+    l/=3600.0
+    ra=math.atan2(math.sin(l*d2r)*math.cos(oblt*d2r),math.cos(l*d2r))
+    dec=math.asin(math.sin(l*d2r)*math.sin(oblt*d2r))
+    return modabs(ra/d2r,360.0),dec/d2r,longmed,oblt
+
 def co_aberration(jd,ra,dec,eps):
     T=(jd-2451545.0)/36525.0; k=20.49552
     sunlon=sunpos(jd)
@@ -127,7 +154,7 @@ def altaz2hadec(alt,az,lat):
     if ha<0: ha+=360
     ha=modabs(ha,360.0)
     sd=math.sin(l)*math.sin(a)+math.cos(l)*math.cos(a)*math.cos(z)
-    return ha, math.asin(sd)/d2r      # unclamped, like the ST
+    return ha, math.asin(max(-1.0,min(1.0,sd)))/d2r      # clamped like the ST (issue #18)
 
 def refract_clamped(a,P,T):
     return not (0.0<=a<=90.0 and 600.0<=P<=1200.0 and -40.0<=T<=40.0)
@@ -158,17 +185,17 @@ def co_refract(old_alt,altitude=0.0,pressure=0.0,temperature=None,eps=0.25,to_ob
         if abs(last-cur)*3600<eps or n>=maxit: break
     return cur,n
 
-def radec2hadec(jd,ra,dec,lon):
+def radec2hadec(jd,ra,dec,lon,dut1=0.0):
     ra_pre,dec_pre,_=precess(ra,dec,2000.0,(jd-2451545.0)/365.25+2000.0)
     dra,ddec,eps,dpsi,_=co_nutate(jd,ra_pre,dec_pre)
     dra_a,ddec_a=co_aberration(jd,ra_pre,dec_pre,eps)
     r=ra_pre+dra_a+dra; d=dec_pre+ddec_a+ddec
-    last=jd2lst(jd,lon)+dpsi*math.cos(eps)/3600
+    last=jd2lst(jd,lon,dut1)+dpsi*math.cos(eps)/3600
     return modabs(last-r,360.0), d
 
-def hadec2radec(jd,ha,dec,lon):
+def hadec2radec(jd,ha,dec,lon,dut1=0.0):
     dpsi,deps=iau2000b(jd); eps=eps_true(jd,deps)
-    last=jd2lst(jd,lon)+dpsi*math.cos(eps)/3600
+    last=jd2lst(jd,lon,dut1)+dpsi*math.cos(eps)/3600
     ra=last-ha                            # not wrapped in the ST
     dra,ddec,_,_,_=co_nutate(jd,ra,dec)
     dra_a,ddec_a=co_aberration(jd,ra,dec,eps)

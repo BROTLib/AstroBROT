@@ -15,6 +15,11 @@ VAR
 	fbDateTime2JdTests	: FB_DateTime2JD_Tests;
 	fbJd2LstTests	: FB_JD2LST_Tests;
 	fbDut1Tests	: FB_DUT1_Tests;
+	fbPrecessTests	: FB_PRECESS_Tests;
+	fbRadec2HadecTests	: FB_RADEC2HADEC_Tests;
+	fbHadec2RadecTests	: FB_HADEC2RADEC_Tests;
+	fbSunposTests	: FB_SUNPOS_Tests;
+	fbEdgeCasesTests	: FB_EdgeCases_Tests;
 END_VAR
 ]]></Declaration>
     <Implementation>
