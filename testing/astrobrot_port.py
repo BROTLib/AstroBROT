@@ -52,7 +52,7 @@ def co_nutate(jd,ra,dec):
     if xy==0 and z!=0: dec2=math.asin(z2/rad); ra2=0.0
     if xy!=0: ra2=math.atan2(y2,x2); dec2=math.asin(z2/rad)
     ra2=modabs(ra2/d2r,360.0); dec2=dec2/d2r
-    return ra2-ra, dec2-dec, eps, d_psi, d_eps
+    return modabs(ra2-ra+180.0,360.0)-180.0, dec2-dec, eps, d_psi, d_eps
 
 def sunpos(jd):
     t=(jd-2415020.0)/36525.0

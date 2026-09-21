@@ -85,7 +85,8 @@ ra2 := MODABS(ra2, 360.0);
 
 
 // Return changes in ra and dec
-d_ra := (ra2 - ra);
+// wrap to +-180 so that an unwrapped input ra (e.g. -5) or ra2 across 0/360 gives a small difference
+d_ra := MODABS(ra2 - ra + 180.0, 360.0) - 180.0;
 d_dec := (dec2 - dec);
 ]]></ST>
     </Implementation>
