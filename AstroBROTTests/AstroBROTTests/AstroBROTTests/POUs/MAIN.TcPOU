@@ -10,6 +10,7 @@ VAR
 	fbCoAberrationTests	: FB_CO_ABERRATION_Tests;
 	fbCoNutateTests	: FB_CO_NUTATE_Tests;
 	fbTenTests	: FB_TEN_Tests;
+	fbAltaz2HadecTests	: FB_ALTAZ2HADEC_Tests;
 END_VAR
 ]]></Declaration>
     <Implementation>

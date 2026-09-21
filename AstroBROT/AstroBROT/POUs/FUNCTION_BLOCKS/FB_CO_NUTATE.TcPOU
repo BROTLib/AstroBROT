@@ -66,14 +66,14 @@ dec2 := x2 * 0.0;
 // Calculate Ra and Dec in RADIANS (later convert to DEGREES)
 IF (xyproj = 0) AND (z <> 0) THEN
 	// places where xyproj=0 (point at NCP or SCP)
-	dec2 := ASIN(z2/rad);
+	dec2 := ASIN(LIMIT(-1.0, z2/rad, 1.0));
 	ra2 := 0.0;
 END_IF
  
 IF (xyproj <> 0) THEN
 	// places other than NCP or SCP
 	ra2 := ATAN2(y2, x2);
-	dec2 := ASIN(z2/rad);
+	dec2 := ASIN(LIMIT(-1.0, z2/rad, 1.0));
 END_IF
 
 // convert to DEGREES

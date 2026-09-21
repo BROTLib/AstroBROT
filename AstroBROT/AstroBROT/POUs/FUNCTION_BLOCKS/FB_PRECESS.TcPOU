@@ -117,7 +117,7 @@ END_IF
 
 
 ra_rad := atan2(x[1],x[0]);
-dec_rad := ASIN(x[2]);
+dec_rad := ASIN(LIMIT(-1.0, x[2], 1.0));
 
 ra_precessed := ra_rad/d2r;
 ra_precessed := MODABS(ra_precessed, 360.0);            //RA between 0 AND 360 degrees
