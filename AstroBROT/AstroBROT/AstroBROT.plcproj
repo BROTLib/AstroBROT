@@ -78,9 +78,6 @@
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_IAU2000B.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\FUNCTION_BLOCKS\FB_NUTATE.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_PRECESS.TcPOU">
       <SubType>Code</SubType>
     </Compile>

@@ -49,7 +49,6 @@ AstroBROT/
 | `FB_RADEC2HADEC` | ICRS RA/Dec → apparent Hour Angle / Declination |
 | `FB_HADEC2RADEC` | Apparent Hour Angle / Declination → ICRS RA/Dec |
 | `FB_PRECESS` | Precession between epochs (Capitaine et al. 2003) |
-| `FB_NUTATE` | IAU 1980 nutation theory (63 terms) |
 | `FB_IAU2000B` | IAU 2000B nutation model (~1 mas accuracy) |
 | `FB_SUNPOS` | Apparent solar position from Julian Date |
 | `FB_HADEC2ALTAZ` | Hour Angle / Dec → Alt/Az via spherical trigonometry |
