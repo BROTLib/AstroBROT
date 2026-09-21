@@ -87,23 +87,26 @@ def co_aberration(jd,ra,dec,eps):
     return (-k*t1+e*k*t2)/3600,(-k*t3+e*k*t4)/3600
 
 def precess(ra,dec,eq1,eq2):
+    """Precess between any two epochs, in two steps via J2000 like the ST. A step whose epoch is 2000.0 is skipped."""
     sr=d2r/3600
     rr,dr=ra*d2r,dec*d2r
     x=np.array([math.cos(dr)*math.cos(rr),math.cos(dr)*math.sin(rr),math.sin(dr)])
-    t=0.01*(eq2-eq1)
-    if eq2==2000.0: t=-t
-    EPS0=sr*84381.406
-    PSIA=sr*((((-0.0000000951*t+0.000132851)*t-0.00114045)*t-1.0790069)*t+5038.481507)*t
-    OMEGAA=sr*((((0.0000003337*t-0.000000467)*t-0.00772503)*t+0.0512623)*t-0.025754)*t+EPS0
-    CHIA=sr*((((-0.0000000560*t+0.000170663)*t-0.00121197)*t-2.3814292)*t+10.556403)*t
-    SA,CA=math.sin(EPS0),math.cos(EPS0); SB,CB=math.sin(-PSIA),math.cos(-PSIA)
-    SC,CC=math.sin(-OMEGAA),math.cos(-OMEGAA); SD,CD=math.sin(CHIA),math.cos(CHIA)
-    r=np.zeros((3,3))
-    r[0,0]=CD*CB-SB*SD*CC; r[0,1]=CD*SB*CA+SD*CC*CB*CA-SA*SD*SC; r[0,2]=CD*SB*SA+SD*CC*CB*SA+CA*SD*SC
-    r[1,0]=-SD*CB-SB*CD*CC; r[1,1]=-SD*SB*CA+CD*CC*CB*CA-SA*CD*SC; r[1,2]=-SD*SB*SA+CD*CC*CB*SA+CA*CD*SC
-    r[2,0]=SB*SC; r[2,1]=-SC*CB*CA-SA*CC; r[2,2]=-SC*CB*SA+CC*CA
-    x2=r.T@x if eq2==2000.0 else r@x
-    return modabs(math.atan2(x2[1],x2[0])/d2r,360.0), math.asin(x2[2])/d2r, x2
+    if eq1!=eq2:
+        for step,epoch in enumerate((eq1,eq2)):
+            if epoch==2000.0: continue
+            t=0.01*(epoch-2000.0)
+            EPS0=sr*84381.406
+            PSIA=sr*((((-0.0000000951*t+0.000132851)*t-0.00114045)*t-1.0790069)*t+5038.481507)*t
+            OMEGAA=sr*((((0.0000003337*t-0.000000467)*t-0.00772503)*t+0.0512623)*t-0.025754)*t+EPS0
+            CHIA=sr*((((-0.0000000560*t+0.000170663)*t-0.00121197)*t-2.3814292)*t+10.556403)*t
+            SA,CA=math.sin(EPS0),math.cos(EPS0); SB,CB=math.sin(-PSIA),math.cos(-PSIA)
+            SC,CC=math.sin(-OMEGAA),math.cos(-OMEGAA); SD,CD=math.sin(CHIA),math.cos(CHIA)
+            r=np.zeros((3,3))
+            r[0,0]=CD*CB-SB*SD*CC; r[0,1]=CD*SB*CA+SD*CC*CB*CA-SA*SD*SC; r[0,2]=CD*SB*SA+SD*CC*CB*SA+CA*SD*SC
+            r[1,0]=-SD*CB-SB*CD*CC; r[1,1]=-SD*SB*CA+CD*CC*CB*CA-SA*CD*SC; r[1,2]=-SD*SB*SA+CD*CC*CB*SA+CA*CD*SC
+            r[2,0]=SB*SC; r[2,1]=-SC*CB*CA-SA*CC; r[2,2]=-SC*CB*SA+CC*CA
+            x=r.T@x if step==0 else r@x     # step 0: eq1 -> J2000, step 1: J2000 -> eq2
+    return modabs(math.atan2(x[1],x[0])/d2r,360.0), math.asin(x[2])/d2r, x
 
 def jd2lst(jd,lon):
     T=(jd-2451545.0)/36525.0
