@@ -1,6 +1,6 @@
 # Code review of AstroBROT (develop @ b9ea338)
 
-**Status: draft. Review finished; the body below describes `develop` at the review commit. Since then fixes for #4-#6, #8-#10 and #15-#17 landed on `develop` (`d1d51d9`, `6c46444`, `5a6247e`, `2474443`, `691db41`, `53d0c62`, `d9af836`, `d6c2d35`, `e1f0a49`), and `AstroBROTTests` (TcUnit) passed on the user-mode runtime before the #15-#17 changes (not re-run since). Nothing has been verified on a telescope. Open items: GitHub issues.**
+**Status: draft. Review finished; the body below describes `develop` at the review commit. Since then fixes for #4-#6, #8-#10 and #15-#17 landed on `develop` (`d1d51d9`, `6c46444`, `5a6247e`, `2474443`, `691db41`, `53d0c62`, `d9af836`, `d6c2d35`, `e1f0a49`), and `AstroBROTTests` (TcUnit, 56 cases) passes on the user-mode runtime (re-run 2026-09-21 with the #15-#20 fixes and the refraction change #11 in the working tree). Nothing has been verified on a telescope. Open items: GitHub issues.**
 
 Reviewed at `develop` b9ea338. `origin/main` is 3 commits ahead (visualization profile fix to 4024, a
 manual TcBuild workflow, runner labels); those are not part of the review except in the CI section.

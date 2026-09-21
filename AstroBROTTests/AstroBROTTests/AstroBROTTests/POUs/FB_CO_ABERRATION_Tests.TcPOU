@@ -60,11 +60,11 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Golden_Tenerife_2026');
 fbCalc(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 0.0);
-CheckAngle(8.19545501184534e-05, fbCalc.d_ra, 1.0E-9, 'Tenerife_2026 d_ra, eps calculated');
-CheckNear(0.00013148215301148934, fbCalc.d_dec, 1.0E-9, 'Tenerife_2026 d_dec, eps calculated');
-fbGiven(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 0.40907226010781356);
-CheckAngle(8.19545501184534e-05, fbGiven.d_ra, 1.0E-9, 'Tenerife_2026 d_ra, eps given');
-CheckNear(0.00013148215301148934, fbGiven.d_dec, 1.0E-9, 'Tenerife_2026 d_dec, eps given');
+CheckAngle(8.195455011719691e-05, fbCalc.d_ra, 1.0E-9, 'Tenerife_2026 d_ra, eps calculated');
+CheckNear(0.00013148215303962214, fbCalc.d_dec, 1.0E-9, 'Tenerife_2026 d_dec, eps calculated');
+fbGiven(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 0.40907226011280384);
+CheckAngle(8.195455011719691e-05, fbGiven.d_ra, 1.0E-9, 'Tenerife_2026 d_ra, eps given');
+CheckNear(0.00013148215303962214, fbGiven.d_dec, 1.0E-9, 'Tenerife_2026 d_dec, eps given');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -79,11 +79,11 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Golden_South_2010');
 fbCalc(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.0);
-CheckAngle(-0.007132163801610827, fbCalc.d_ra, 1.0E-9, 'South_2010 d_ra, eps calculated');
-CheckNear(-0.00259555630496843, fbCalc.d_dec, 1.0E-9, 'South_2010 d_dec, eps calculated');
-fbGiven(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.4090837545690132);
-CheckAngle(-0.007132163801610827, fbGiven.d_ra, 1.0E-9, 'South_2010 d_ra, eps given');
-CheckNear(-0.00259555630496843, fbGiven.d_dec, 1.0E-9, 'South_2010 d_dec, eps given');
+CheckAngle(-0.007132163801626435, fbCalc.d_ra, 1.0E-9, 'South_2010 d_ra, eps calculated');
+CheckNear(-0.0025955563049355266, fbCalc.d_dec, 1.0E-9, 'South_2010 d_dec, eps calculated');
+fbGiven(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.4090837545317484);
+CheckAngle(-0.007132163801626435, fbGiven.d_ra, 1.0E-9, 'South_2010 d_ra, eps given');
+CheckNear(-0.0025955563049355266, fbGiven.d_dec, 1.0E-9, 'South_2010 d_dec, eps given');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -102,8 +102,8 @@ fb(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 
 CheckNear(0.0, fb.eps, 1.0E-15, 'eps stays 0 after the call');
 fb(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.0);
 CheckNear(0.0, fb.eps, 1.0E-15, 'eps stays 0 after the second call');
-CheckAngle(-0.007132163801610827, fb.d_ra, 1.0E-9, 'second epoch d_ra');
-CheckNear(-0.00259555630496843, fb.d_dec, 1.0E-9, 'second epoch d_dec');
+CheckAngle(-0.007132163801626435, fb.d_ra, 1.0E-9, 'second epoch d_ra');
+CheckNear(-0.0025955563049355266, fb.d_dec, 1.0E-9, 'second epoch d_dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>

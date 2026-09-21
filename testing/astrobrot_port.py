@@ -128,10 +128,21 @@ def altaz2hadec(alt,az,lat):
     sd=math.sin(l)*math.sin(a)+math.cos(l)*math.cos(a)*math.cos(z)
     return ha, math.asin(sd)/d2r      # unclamped, like the ST
 
+def refract_clamped(a,P,T):
+    return not (0.0<=a<=90.0 and 600.0<=P<=1200.0 and -40.0<=T<=40.0)
+
 def refract_forward(a,P=1010.0,T=0.0):
+    """CO_REFRACT_FORWARD: Explanatory Supplement rational formula below 14 deg, eraRefco (dry, 0.55 um) from 16 deg, linear blend between."""
     a=min(max(a,0.0),90.0); P=min(max(P,600.0),1200.0); T=min(max(T,-40.0),40.0)
-    if a>=15.0: return (0.28*P)/(T+273.0)*0.0167/math.tan((a+7.31/(a+4.4))*d2r)
-    return P/(T+273.0)*(0.1594+0.0196*a+0.00002*a*a)/(1.0+0.505*a+0.0845*a*a)
+    lo=hi=0.0
+    if a<16.0: lo=P/(T+273.0)*(0.1594+0.0196*a+0.00002*a*a)/(1.0+0.505*a+0.0845*a*a)
+    if a>14.0:
+        tk=T+273.15; gamma=7.902649953145277E-5*P/tk; beta=4.4474E-6*tk; t=math.tan((90.0-a)*d2r)
+        hi=(gamma*(1.0-beta)*t-gamma*(beta-gamma/2.0)*t**3)/d2r
+    if a<=14.0: return lo
+    if a>=16.0: return hi
+    w=(a-14.0)/2.0
+    return (1.0-w)*lo+w*hi
 
 def co_refract(old_alt,altitude=0.0,pressure=0.0,temperature=None,eps=0.25,to_obs=False,maxit=10):
     # temperature in degC (None = estimate from altitude), like FB_CO_REFRACT with temperature_set

@@ -55,7 +55,7 @@ AstroBROT/
 | `FB_ALTAZ2HADEC` | Alt/Az → Hour Angle / Dec |
 | `FB_CO_NUTATE` | RA/Dec correction due to nutation |
 | `FB_CO_ABERRATION` | RA/Dec correction due to annual aberration |
-| `FB_CO_REFRACT` | Atmospheric refraction correction |
+| `FB_CO_REFRACT` | Atmospheric refraction correction. Output `clamped` is TRUE when altitude, pressure or temperature was outside the model's range and had to be limited |
 
 ## Functions
 
@@ -66,7 +66,7 @@ AstroBROT/
 | `DateTime2JD` | TwinCAT `TIMESTRUCT` → Julian Date |
 | `ATAN2` | Four-quadrant arctangent |
 | `TEN` | DMS (degrees-minutes-seconds) → decimal degrees |
-| `CO_REFRACT_FORWARD` | Forward atmospheric refraction model |
+| `CO_REFRACT_FORWARD` | Forward atmospheric refraction model (dry air, 0.55 um): rational formula below 14 deg, ERFA `eraRefco` constants from 16 deg, blended in between; within 0.7" of a ray trace from 15 deg up, unverified below 10 deg. Output `clamped`. See `NOTICE-erfa.md` |
 
 ---
 
@@ -90,7 +90,7 @@ second of astropy; EQ2HOR altitude error below ~2″, azimuth mostly below 5″
 and 100 round-trip cases.
 
 `AstroBROTTests/` holds TcUnit tests for the transform blocks and their helpers (`FB_EQ2HOR`, `FB_HOR2EQ`,
-`FB_CO_REFRACT`, `FB_CO_ABERRATION`; 29 test cases). They run the compiled library on the TwinCAT user-mode runtime
+`FB_CO_REFRACT`, `FB_CO_ABERRATION`, `FB_CO_NUTATE` and the helper functions; 56 test cases). They run the compiled library on the TwinCAT user-mode runtime
 and check the results against golden values from the Python port, plus behaviour the `MAIN` harness cannot show:
 blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
 [AstroBROTTests/README.md](AstroBROTTests/README.md). Not wired into CI: the runtime needs a trial license that

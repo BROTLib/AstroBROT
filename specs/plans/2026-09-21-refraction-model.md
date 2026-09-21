@@ -1,6 +1,8 @@
 # Plan: fix the refraction model (AstroBROT#11)
 
-**Status: draft plan, nothing implemented.** Issue: [#11](https://github.com/BROTLib/AstroBROT/issues/11)
+**Status: implemented in the working tree; library compiles (0 errors, 0 warnings) and `AstroBROTTests` passes on
+the user-mode runtime (9 suites, 56 cases, 56 passed, 2026-09-21).** Decisions taken: D1 = option c, D2 = linear blend 14 to 16 deg, D3 = (ii); D4 open. See
+section 7. Issue: [#11](https://github.com/BROTLib/AstroBROT/issues/11)
 (code review finding M4). Related: #13 (tests), MONETcommon#18 and IAG50cm#3 (consumers). The comparison
 script is `testing/check_refraction_model.py`; it produced every number below.
 
@@ -131,3 +133,26 @@ telescope access, not on effort.
   branch is off by up to 5.6" at 5 deg in cold air). Out of scope, documented.
 - **Equation numbers.** 7.90 and 7.91 were never checked against the book (step 1).
 - **Nothing has been run on a PLC.** Port results only, until step 5.
+
+## 7. Outcome of the implementation
+
+- **D1, D2.** `testing/check_refraction_model.py` ranks the candidates against the plan's acceptance limits (P 900
+  to 1013 hPa, T -15 to 30 degC). Old code: worst error 5.9", jump 5.7", not monotonic, FAIL. `0.00452` form:
+  worst error 4.0", jump 3.8", FAIL. `erfa.refco` joined at 15 deg: worst error 0.67", jump 0.53", FAIL by 0.03".
+  `erfa.refco` from 16 deg with a linear blend from 14 deg: worst error 0.64" from 15 deg up, 1.9" from 10 to
+  15 deg, no jump, monotonic, PASS. Implemented in `CO_REFRACT_FORWARD`.
+- **Step 1 (book check) was not needed.** The chosen formula is eraRefco's, whose documentation states 62 mas
+  worst case against ray tracing between 15 and 75 deg zenith distance; the `0.00452` form was dropped. The
+  low-altitude rational formula is still the one the code always had, its equation number is still unchecked.
+- **D3.** `CO_REFRACT_FORWARD` and `FB_CO_REFRACT` have a `clamped` output (additive). Clamp limits unchanged.
+- **Licence.** The eraRefco constants are used under ERFA's licence; `NOTICE-erfa.md` carries it.
+- **Goldens.** Regenerated with `testing/golden_astro.py` and mapped onto the tests (97 values in four suites,
+  which also picks up the 77-term `FB_IAU2000B`, #16). Shifts: 1.8" at 45 deg, about 4" at 20 deg, none at or
+  below 10 deg. `FB_CO_NUTATE_Tests` is not covered by `golden_astro.py`; its values moved by at most 3e-8 deg
+  (tolerance 1e-7).
+- **New tests** in `FB_CO_REFRACT_Tests`: `Forward_Values` (18 values), `Continuous_And_Decreasing`, `Clamped_Flag`.
+- **Run:** the library was installed over the installed 0.3.0 copy (backup of the old file kept outside the repo),
+  the tests project built with 0 errors, `Run-Tests.ps1` reported 56 cases, 56 passed. This was also the first run of
+  the suites added for #15 to #20.
+- **Not done:** D4 (release, version), the telescope check (step 7), and informing IAG50cm#3 and MONETcommon#18
+  (step 6).

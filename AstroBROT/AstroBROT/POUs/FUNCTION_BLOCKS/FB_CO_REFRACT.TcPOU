@@ -13,11 +13,13 @@ VAR_INPUT
 END_VAR
 VAR_OUTPUT
 	new_alt			: LREAL;
+	clamped			: BOOL;			// TRUE if altitude, pressure or temperature was outside the model's valid range and has been limited, or old_alt was rejected
 END_VAR
 VAR
 	aout, P, T, dr, cur, last : LREAL;	// P in millibars, T in degrees Celsius
 	eps				: LREAL;			// epsilon after clamping
 	n				: INT;				// iterations of the observed=TRUE loop
+	c				: BOOL;				// clamped flag of one co_refract_forward call
 END_VAR
 VAR CONSTANT
 	alpha 			: LREAL := 0.0065; 	//temp lapse rate [deg C per meter]
@@ -28,10 +30,13 @@ END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[// https://github.com/wlandsman/IDLAstro/blob/master/pro/co_refract.pro
 
+clamped := FALSE;
+
 // Reject NaN/Inf (the comparisons are FALSE for NaN) and pass old_alt through unchanged,
 // otherwise the iteration below could not converge.
 IF NOT (old_alt > -max_abs_alt AND old_alt < max_abs_alt) THEN
 	new_alt := old_alt;
+	clamped := TRUE;
 	RETURN;
 END_IF
 
@@ -53,11 +58,13 @@ ELSE
 END_IF
 
 IF NOT TO_OBSERVED THEN 
-	aout := old_alt - co_refract_forward(old_alt, P:=P, T:=T);
+	aout := old_alt - co_refract_forward(old_alt, P:=P, T:=T, clamped => c);
+	clamped := c;
 ELSE
 	aout := 0.0;
 	//calculate initial refraction guess
-	dr := co_refract_forward(old_alt, P:=P, T:=T);
+	dr := co_refract_forward(old_alt, P:=P, T:=T, clamped => c);
+	clamped := c;
 	cur := old_alt + dr; // guess of observed location
 
 	// epsilon <= 0 (or NaN) would never satisfy the exit condition, so clamp it and cap the iterations
@@ -69,7 +76,8 @@ ELSE
 	n := 0;
 	REPEAT 
 	 	last := cur;
-		dr := co_refract_forward(cur, P:= P, T:=T);
+		dr := co_refract_forward(cur, P:= P, T:=T, clamped => c);
+		clamped := clamped OR c;
 	  	cur := old_alt + dr;
 		n := n + 1;
 	UNTIL ABS(last-cur)*3600.0 < eps OR n >= max_iterations
@@ -80,10 +88,5 @@ END_IF
 new_alt := aout;
 ]]></ST>
     </Implementation>
-    <LineIds Name="FB_CO_REFRACT">
-      <LineId Id="52" Count="0" />
-      <LineId Id="3" Count="56" />
-      <LineId Id="2" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

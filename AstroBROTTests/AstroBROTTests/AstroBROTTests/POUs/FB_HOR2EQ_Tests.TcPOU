@@ -71,8 +71,8 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Golden_All_Corrections_Tenerife_2026');
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE);
-CheckAngle(57.091388635496344, fb.ra, 1.0E-7, 'Tenerife_2026 ra');
-CheckNear(-7.890511507350784, fb.dec, 1.0E-7, 'Tenerife_2026 dec');
+CheckAngle(57.091388637043984, fb.ra, 1.0E-7, 'Tenerife_2026 ra');
+CheckNear(-7.890511514810156, fb.dec, 1.0E-7, 'Tenerife_2026 dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -86,8 +86,8 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Golden_All_Corrections_Tenerife_low');
 fb(alt := 21.0, az := 130.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE);
-CheckAngle(119.40414080961926, fb.ra, 1.0E-7, 'Tenerife_low ra');
-CheckNear(-20.938138209890003, fb.dec, 1.0E-7, 'Tenerife_low dec');
+CheckAngle(119.40414081413125, fb.ra, 1.0E-7, 'Tenerife_low ra');
+CheckNear(-20.938138203483266, fb.dec, 1.0E-7, 'Tenerife_low dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -101,8 +101,8 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Golden_All_Corrections_South_2010');
 fb(alt := 63.5, az := 310.0, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE);
-CheckAngle(9.283740710098387, fb.ra, 1.0E-7, 'South_2010 ra');
-CheckNear(-11.72598666424666, fb.dec, 1.0E-7, 'South_2010 dec');
+CheckAngle(9.28374071008559, fb.ra, 1.0E-7, 'South_2010 ra');
+CheckNear(-11.725986650809487, fb.dec, 1.0E-7, 'South_2010 dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -118,23 +118,23 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Golden_Nutation_And_Aberration_Switches');
 fb10(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := FALSE);
-CheckAngle(57.09380161859932, fb10.ra, 1.0E-7, 'Tenerife_2026 nutate=1 aberration=0 ra');
-CheckNear(-7.88765561731035, fb10.dec, 1.0E-7, 'Tenerife_2026 nutate=1 aberration=0 dec');
+CheckAngle(57.09380162014447, fb10.ra, 1.0E-7, 'Tenerife_2026 nutate=1 aberration=0 ra');
+CheckNear(-7.88765562476953, fb10.dec, 1.0E-7, 'Tenerife_2026 nutate=1 aberration=0 dec');
 fb01(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := TRUE);
-CheckAngle(57.09366963277391, fb01.ra, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=1 ra');
-CheckNear(-7.888051403261481, fb01.dec, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=1 dec');
+CheckAngle(57.093669663716454, fb01.ra, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=1 ra');
+CheckNear(-7.8880514031941455, fb01.dec, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=1 dec');
 fb00(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := FALSE);
-CheckAngle(57.09608261561193, fb00.ra, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=0 ra');
-CheckNear(-7.885195513086186, fb00.dec, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=0 dec');
+CheckAngle(57.096082646551956, fb00.ra, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=0 ra');
+CheckNear(-7.885195513018657, fb00.dec, 1.0E-7, 'Tenerife_2026 nutate=0 aberration=0 dec');
 fb10(alt := 63.5, az := 310.0, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, nutate := TRUE, aberration := FALSE);
-CheckAngle(9.283717099553906, fb10.ra, 1.0E-7, 'South_2010 nutate=1 aberration=0 ra');
-CheckNear(-11.7275651721616, fb10.dec, 1.0E-7, 'South_2010 nutate=1 aberration=0 dec');
+CheckAngle(9.283717099537949, fb10.ra, 1.0E-7, 'South_2010 nutate=1 aberration=0 ra');
+CheckNear(-11.727565158724389, fb10.dec, 1.0E-7, 'South_2010 nutate=1 aberration=0 dec');
 fb01(alt := 63.5, az := 310.0, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, nutate := FALSE, aberration := TRUE);
-CheckAngle(9.288020312357844, fb01.ra, 1.0E-7, 'South_2010 nutate=0 aberration=1 ra');
-CheckNear(-11.724069828117354, fb01.dec, 1.0E-7, 'South_2010 nutate=0 aberration=1 dec');
+CheckAngle(9.288020281756417, fb01.ra, 1.0E-7, 'South_2010 nutate=0 aberration=1 ra');
+CheckNear(-11.724069828122222, fb01.dec, 1.0E-7, 'South_2010 nutate=0 aberration=1 dec');
 fb00(alt := 63.5, az := 310.0, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, nutate := FALSE, aberration := FALSE);
-CheckAngle(9.287996701928508, fb00.ra, 1.0E-7, 'South_2010 nutate=0 aberration=0 ra');
-CheckNear(-11.725648336033984, fb00.dec, 1.0E-7, 'South_2010 nutate=0 aberration=0 dec');
+CheckAngle(9.287996671323913, fb00.ra, 1.0E-7, 'South_2010 nutate=0 aberration=0 ra');
+CheckNear(-11.725648336038814, fb00.dec, 1.0E-7, 'South_2010 nutate=0 aberration=0 dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -149,20 +149,20 @@ END_VAR
         <ST><![CDATA[TEST('Toggling_The_Switches_Keeps_No_Stale_Corrections');
 // the block keeps its correction deltas between calls; switching a flag off must drop that correction
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := TRUE);
-CheckAngle(57.091388635496344, fb.ra, 1.0E-7, 'toggle nutate=1 aberration=1 ra');
-CheckNear(-7.890511507350784, fb.dec, 1.0E-7, 'toggle nutate=1 aberration=1 dec');
+CheckAngle(57.091388637043984, fb.ra, 1.0E-7, 'toggle nutate=1 aberration=1 ra');
+CheckNear(-7.890511514810156, fb.dec, 1.0E-7, 'toggle nutate=1 aberration=1 dec');
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := TRUE);
-CheckAngle(57.09366963277391, fb.ra, 1.0E-7, 'toggle nutate=0 aberration=1 ra');
-CheckNear(-7.888051403261481, fb.dec, 1.0E-7, 'toggle nutate=0 aberration=1 dec');
+CheckAngle(57.093669663716454, fb.ra, 1.0E-7, 'toggle nutate=0 aberration=1 ra');
+CheckNear(-7.8880514031941455, fb.dec, 1.0E-7, 'toggle nutate=0 aberration=1 dec');
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := FALSE);
-CheckAngle(57.09380161859932, fb.ra, 1.0E-7, 'toggle nutate=1 aberration=0 ra');
-CheckNear(-7.88765561731035, fb.dec, 1.0E-7, 'toggle nutate=1 aberration=0 dec');
+CheckAngle(57.09380162014447, fb.ra, 1.0E-7, 'toggle nutate=1 aberration=0 ra');
+CheckNear(-7.88765562476953, fb.dec, 1.0E-7, 'toggle nutate=1 aberration=0 dec');
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := FALSE, aberration := FALSE);
-CheckAngle(57.09608261561193, fb.ra, 1.0E-7, 'toggle nutate=0 aberration=0 ra');
-CheckNear(-7.885195513086186, fb.dec, 1.0E-7, 'toggle nutate=0 aberration=0 dec');
+CheckAngle(57.096082646551956, fb.ra, 1.0E-7, 'toggle nutate=0 aberration=0 ra');
+CheckNear(-7.885195513018657, fb.dec, 1.0E-7, 'toggle nutate=0 aberration=0 dec');
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, nutate := TRUE, aberration := TRUE);
-CheckAngle(57.091388635496344, fb.ra, 1.0E-7, 'toggle nutate=1 aberration=1 ra');
-CheckNear(-7.890511507350784, fb.dec, 1.0E-7, 'toggle nutate=1 aberration=1 dec');
+CheckAngle(57.091388637043984, fb.ra, 1.0E-7, 'toggle nutate=1 aberration=1 ra');
+CheckNear(-7.890511514810156, fb.dec, 1.0E-7, 'toggle nutate=1 aberration=1 dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -176,8 +176,8 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Azimuth_West_From_South');
 fb(alt := 52.0, az := 200.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := FALSE, ws := TRUE);
-CheckAngle(95.72108176048012, fb.ra, 1.0E-7, 'ws = TRUE ra');
-CheckNear(62.01980164957024, fb.dec, 1.0E-7, 'ws = TRUE dec');
+CheckAngle(95.72108173532322, fb.ra, 1.0E-7, 'ws = TRUE ra');
+CheckNear(62.01980165070497, fb.dec, 1.0E-7, 'ws = TRUE dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -217,8 +217,8 @@ fb.altitude := 2400.0;
 FOR i := 1 TO 5 DO
 	// inputs are set once and the block is called cyclically; ws and refraction used to accumulate
 	fb();
-	CheckAngle(95.73500906568552, fb.ra, 1.0E-7, 'cyclic call, ws and refraction ra');
-	CheckNear(62.027700610804, fb.dec, 1.0E-7, 'cyclic call, ws and refraction dec');
+	CheckAngle(95.73459822152847, fb.ra, 1.0E-7, 'cyclic call, ws and refraction ra');
+	CheckNear(62.02746769204616, fb.dec, 1.0E-7, 'cyclic call, ws and refraction dec');
 END_FOR
 TEST_FINISHED();
 ]]></ST>
@@ -234,11 +234,11 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Refraction_Tenerife_low');
 fbObs(alt := 21.0, az := 130.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := TRUE, alt_is_observed := TRUE, altitude := 2400.0);
-CheckAngle(119.43037717178363, fbObs.ra, 1.0E-7, 'Tenerife_low alt is observed ra');
-CheckNear(-20.961464705461918, fbObs.dec, 1.0E-7, 'Tenerife_low alt is observed dec');
+CheckAngle(119.42969440304812, fbObs.ra, 1.0E-7, 'Tenerife_low alt is observed ra');
+CheckNear(-20.96085779496941, fbObs.dec, 1.0E-7, 'Tenerife_low alt is observed dec');
 fbGeo(alt := 21.0, az := 130.0, jd := 2461300.75, lon := -16.5, lat := 28.3, refract := TRUE, alt_is_observed := FALSE, altitude := 2400.0);
-CheckAngle(119.37795780368715, fbGeo.ra, 1.0E-7, 'Tenerife_low alt is geometric ra');
-CheckNear(-20.91484790675566, fbGeo.dec, 1.0E-7, 'Tenerife_low alt is geometric dec');
+CheckAngle(119.37863816777192, fbGeo.ra, 1.0E-7, 'Tenerife_low alt is geometric ra');
+CheckNear(-20.9154532358198, fbGeo.dec, 1.0E-7, 'Tenerife_low alt is geometric dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
@@ -253,11 +253,11 @@ END_VAR
       <Implementation>
         <ST><![CDATA[TEST('Refraction_South_2010');
 fbObs(alt := 63.5, az := 310.0, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := TRUE, alt_is_observed := TRUE, altitude := 2700.0);
-CheckAngle(9.27935971304679, fbObs.ra, 1.0E-7, 'South_2010 alt is observed ra');
-CheckNear(-11.721312592838734, fbObs.dec, 1.0E-7, 'South_2010 alt is observed dec');
+CheckAngle(9.279487019808851, fbObs.ra, 1.0E-7, 'South_2010 alt is observed ra');
+CheckNear(-11.721448405755387, fbObs.dec, 1.0E-7, 'South_2010 alt is observed dec');
 fbGeo(alt := 63.5, az := 310.0, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := TRUE, alt_is_observed := FALSE, altitude := 2700.0);
-CheckAngle(9.288120639101628, fbGeo.ra, 1.0E-7, 'South_2010 alt is geometric ra');
-CheckNear(-11.730659371281028, fbGeo.dec, 1.0E-7, 'South_2010 alt is geometric dec');
+CheckAngle(9.28799339553679, fbGeo.ra, 1.0E-7, 'South_2010 alt is geometric ra');
+CheckNear(-11.730523611820027, fbGeo.dec, 1.0E-7, 'South_2010 alt is geometric dec');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
