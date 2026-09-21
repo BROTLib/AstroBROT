@@ -1,6 +1,6 @@
 # Code review of AstroBROT (develop @ b9ea338)
 
-**Status: draft. Review finished, no fixes applied. Nothing here has been run on a PLC.**
+**Status: draft. Review finished; the body below describes `develop` at the review commit. Since then fixes for #4-#6 and #8-#10 landed on `develop` (`d1d51d9`, `6c46444`, `5a6247e`, `2474443`, `691db41`, `53d0c62`), and `AstroBROTTests` (TcUnit) passes on the user-mode runtime. Nothing has been verified on a telescope. Open items: GitHub issues.**
 
 Reviewed at `develop` b9ea338. `origin/main` is 3 commits ahead (visualization profile fix to 4024, a
 manual TcBuild workflow, runner labels); those are not part of the review except in the CI section.
