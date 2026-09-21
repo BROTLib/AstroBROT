@@ -29,7 +29,12 @@ AstroBROT/
 │   │       ├── FUNCTION_BLOCKS/   # FB_* astronomical algorithms
 │   │       └── FUNCTIONS/         # F_* / utility functions
 │   └── _Boot/                     # Boot projects for TwinCAT RT (x86/x64), CE7 (ARMV7)
+├── AstroBROTTests/                # TcUnit tests (separate solution, see its README)
+│   ├── AstroBROTTests.sln
+│   ├── tools/                     # Install-TcUnit.ps1, Run-Tests.ps1
+│   └── vendor/tcunit.library      # TcUnit 1.2.0.0
 ├── testing/BROT_test.ipynb        # Jupyter notebook with algorithm cross-checks
+├── testing/                       # Python port, erfa checks, golden_astro.py (source of the test values)
 └── README.md
 ```
 
@@ -85,6 +90,13 @@ Recorded accuracy (tested at the IAG 50 cm telescope): JD2LST within half a
 second of astropy; EQ2HOR altitude error below ~2″, azimuth mostly below 5″
 (with systematic outliers up to 40″); 500 random sky cases for EQ2HOR/HOR2EQ
 and 100 round-trip cases.
+
+`AstroBROTTests/` holds TcUnit tests for the transform blocks and their helpers (`FB_EQ2HOR`, `FB_HOR2EQ`,
+`FB_CO_REFRACT`, `FB_CO_ABERRATION`; 29 test cases). They run the compiled library on the TwinCAT user-mode runtime
+and check the results against golden values from the Python port, plus behaviour the `MAIN` harness cannot show:
+blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
+[AstroBROTTests/README.md](AstroBROTTests/README.md). Not wired into CI: the runtime needs a trial license that
+cannot be renewed unattended.
 
 ## Dependencies
 

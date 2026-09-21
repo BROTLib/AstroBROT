@@ -281,3 +281,6 @@ VSSettings/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# The one vendored library: TcUnit, needed to build and run AstroBROTTests (see AstroBROTTests/README.md)
+!AstroBROTTests/vendor/tcunit.library

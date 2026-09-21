@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.15">
+  <POU Name="FB_CO_ABERRATION_Tests" Id="{07c03a9b-649c-433e-abef-29154d3b9e55}" SpecialFunc="None">
+    <Declaration><![CDATA[// Tests for AstroBROT.FB_CO_ABERRATION (annual aberration, Meeus chapter 23).
+//
+// ra/dec are the coordinates precessed to the date, eps = 0 means "calculate the obliquity from jd". Golden values
+// come from AstroBROT/testing/golden_astro.py. Tolerance 1e-9 deg (3.6 uas).
+FUNCTION_BLOCK FB_CO_ABERRATION_Tests EXTENDS TcUnit.FB_TestSuite
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Golden_Tenerife_2026();
+Golden_South_2010();
+Eps_Input_Is_Not_Modified();
+]]></ST>
+    </Implementation>
+    <Method Name="CheckNear" Id="{44a4ce7f-ebcb-4f7e-ac01-e411366a0402}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckNear
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[AssertEquals_LREAL(Expected := fExpected, Actual := fActual, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckAngle" Id="{06ca5810-a236-448b-9efd-df12bc45e634}">
+      <Declaration><![CDATA[METHOD PRIVATE CheckAngle
+VAR_INPUT
+	fExpected	: LREAL;
+	fActual		: LREAL;
+	fDelta		: LREAL;
+	sName		: STRING(255);
+END_VAR
+VAR
+	fDiff	: LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// angles in degrees, compared modulo 360 so that 359.9999999 and -1.0E-7 are equal
+fDiff := fActual - fExpected;
+WHILE fDiff > 180.0 DO fDiff := fDiff - 360.0; END_WHILE
+WHILE fDiff < -180.0 DO fDiff := fDiff + 360.0; END_WHILE
+AssertEquals_LREAL(Expected := 0.0, Actual := fDiff, Delta := fDelta, Message := sName);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_Tenerife_2026" Id="{43dcc293-c6a5-4ee9-9bc8-f5f66b240049}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_Tenerife_2026
+VAR
+	fbCalc	: AstroBROT.FB_CO_ABERRATION;
+	fbGiven	: AstroBROT.FB_CO_ABERRATION;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_Tenerife_2026');
+fbCalc(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 0.0);
+CheckAngle(8.19545501184534e-05, fbCalc.d_ra, 1.0E-9, 'Tenerife_2026 d_ra, eps calculated');
+CheckNear(0.00013148215301148934, fbCalc.d_dec, 1.0E-9, 'Tenerife_2026 d_dec, eps calculated');
+fbGiven(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 0.40907226010781356);
+CheckAngle(8.19545501184534e-05, fbGiven.d_ra, 1.0E-9, 'Tenerife_2026 d_ra, eps given');
+CheckNear(0.00013148215301148934, fbGiven.d_dec, 1.0E-9, 'Tenerife_2026 d_dec, eps given');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Golden_South_2010" Id="{a0f5f4ce-9e80-4003-ab53-98e0baf14bf7}">
+      <Declaration><![CDATA[METHOD PRIVATE Golden_South_2010
+VAR
+	fbCalc	: AstroBROT.FB_CO_ABERRATION;
+	fbGiven	: AstroBROT.FB_CO_ABERRATION;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Golden_South_2010');
+fbCalc(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.0);
+CheckAngle(-0.007132163801610827, fbCalc.d_ra, 1.0E-9, 'South_2010 d_ra, eps calculated');
+CheckNear(-0.00259555630496843, fbCalc.d_dec, 1.0E-9, 'South_2010 d_dec, eps calculated');
+fbGiven(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.4090837545690132);
+CheckAngle(-0.007132163801610827, fbGiven.d_ra, 1.0E-9, 'South_2010 d_ra, eps given');
+CheckNear(-0.00259555630496843, fbGiven.d_dec, 1.0E-9, 'South_2010 d_dec, eps given');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Eps_Input_Is_Not_Modified" Id="{aca7a1e1-ffb1-4d91-8b5d-f3a083ed7d3a}">
+      <Declaration><![CDATA[METHOD PRIVATE Eps_Input_Is_Not_Modified
+VAR
+	fb	: AstroBROT.FB_CO_ABERRATION;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Eps_Input_Is_Not_Modified');
+// with eps = 0 the block calculates the obliquity itself; it used to store the result in its input, so the
+// value of the first jd was reused for every later call
+fb(jd := 2461300.75, ra := 84.03200262159413, dec := 22.025976570150018, eps := 0.0);
+CheckNear(0.0, fb.eps, 1.0E-15, 'eps stays 0 after the call');
+fb(jd := 2455197.5, ra := 312.6725080638107, dec := -47.262327080321406, eps := 0.0);
+CheckNear(0.0, fb.eps, 1.0E-15, 'eps stays 0 after the second call');
+CheckAngle(-0.007132163801610827, fb.d_ra, 1.0E-9, 'second epoch d_ra');
+CheckNear(-0.00259555630496843, fb.d_dec, 1.0E-9, 'second epoch d_dec');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
