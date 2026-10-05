@@ -18,7 +18,7 @@
     <Company>BROT</Company>
     <Released>false</Released>
     <Title>AstroBROT</Title>
-    <ProjectVersion>0.4.1</ProjectVersion>
+    <ProjectVersion>0.4.2</ProjectVersion>
     <AllowChecksForLibrary>false</AllowChecksForLibrary>
     <POUsForPropertyAccessIncluded>false</POUsForPropertyAccessIncluded>
     <GlobalVersionStructureIncluded>false</GlobalVersionStructureIncluded>
