@@ -54,7 +54,7 @@ update the numbers in the tests.
 
 ## Running the tests
 
-TcBuild only compiles. Running needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it.
+TcBuild only compiles, so CI (`tcbuild.yml`, every push) is a compile check, not a test run. Running needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it.
 
 **Windows 11 note.** The TwinCAT 3.1 Build 4024 *real-time* runtime does not run on Windows 11
 ([Beckhoff system requirements](https://infosys.beckhoff.com/content/1033/tc3_overview/6162419083.html)); Run mode
@@ -103,7 +103,7 @@ configuration, log in and start the PLC. TcUnit prints every result to the error
   `RPC_E_SERVERCALL_RETRYLATER` or loads the project as "unmodeled". Point it at a local target (for example
   `192.168.4.1.1.1`) before running `TcBuild install AstroBROT.sln`. `AstroBROTTests.tsproj` already does.
 - **Trial license.** The PLC trial license lasts 7 days and is renewed by hand (captcha). This is why the tests are not
-  wired into CI.
+  run in CI (the compile check is).
 - **TcUnit sizing.** TcUnit's defaults allocate about 78 MB of PLC data, which the user-mode runtime cannot start. The
   project overrides them to 32 / 32 / 256 in the `TcUnit` reference (`AstroBROTTests.plcproj`). TcUnit needs
   tests-per-suite <= suites, or it does not compile. If you add a suite with more than 32 tests or 256 assertions,

@@ -109,7 +109,7 @@ the helper functions; 138 test cases). They run the compiled library on the Twin
 and check the results against golden values from the Python port and, with hard tolerances, against erfa (SOFA), including
 the celestial poles, observers at the poles, the zenith, RA / azimuth wrap-around and out-of-range angles, plus behaviour
 the `MAIN` harness cannot show: blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
-[AstroBROTTests/README.md](AstroBROTTests/README.md). Not wired into CI: the runtime needs a trial license that
+[AstroBROTTests/README.md](AstroBROTTests/README.md). CI (`tcbuild.yml`, every push) compiles the library but does not run these tests: the runtime needs a trial license that
 cannot be renewed unattended.
 
 ## Dependencies
@@ -125,3 +125,5 @@ priority 20, runs the `MAIN` test harness; compiled library v0.3.0, company
 `BROT`, referenced by consumers as `AstroBROT, * (BROT)`). Boot projects for
 `TwinCAT RT (x86)`, `TwinCAT RT (x64)` and `TwinCAT CE7 (ARMV7)` are included
 under `_Boot/`.
+
+**CI.** `.github/workflows/tcbuild.yml` builds `AstroBROT.sln` with TcBuild on every push (self-hosted runner, never on pull requests). A green run means the project compiles; TcBuild exit code 1 (built with warnings) counts as success. The TcUnit tests are not run there (see below).
