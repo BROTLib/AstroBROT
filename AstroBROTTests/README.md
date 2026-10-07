@@ -98,10 +98,10 @@ configuration, log in and start the PLC. TcUnit prints every result to the error
 
 ## Things to know
 
-- **Target of `AstroBROT.tsproj`.** The library's own project targets a remote route (`5.146.183.126.1.1`) that does
-  not exist on other machines. A headless XAE (TcBuild, the automation scripts here) then stalls with
-  `RPC_E_SERVERCALL_RETRYLATER` or loads the project as "unmodeled". Point it at a local target (for example
-  `192.168.4.1.1.1`) before running `TcBuild install AstroBROT.sln`. `AstroBROTTests.tsproj` already does.
+- **Target of `AstroBROT.tsproj`.** Like `AstroBROTTests.tsproj`, it targets the local user-mode runtime
+  (`192.168.4.1.1.1`). It used to point at a remote route that does not exist on other machines, and a headless
+  XAE (TcBuild, the automation scripts here) then stalled with `RPC_E_SERVERCALL_RETRYLATER` or loaded the project
+  as "unmodeled". The library is never deployed from this project, so the target only matters for building.
 - **Trial license.** The PLC trial license lasts 7 days and is renewed by hand (captcha). This is why the tests are not
   run in CI (the compile check is).
 - **TcUnit sizing.** TcUnit's defaults allocate about 78 MB of PLC data, which the user-mode runtime cannot start. The
