@@ -26,8 +26,7 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 
 152 test cases in total.
 
-The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
-every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
+The block tests exist mainly for behaviour that a single call per input cannot show: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
 cyclic tests set the inputs once and call the block repeatedly, like a PLC program would.
 
 The last five suites are **generated** by [`testing/gen_block_tests.py`](../testing/gen_block_tests.py) from
@@ -98,10 +97,6 @@ configuration, log in and start the PLC. TcUnit prints every result to the error
 
 ## Things to know
 
-- **Target of `AstroBROT.tsproj`.** Like `AstroBROTTests.tsproj`, it targets the local user-mode runtime
-  (`192.168.4.1.1.1`). It used to point at a remote route that does not exist on other machines, and a headless
-  XAE (TcBuild, the automation scripts here) then stalled with `RPC_E_SERVERCALL_RETRYLATER` or loaded the project
-  as "unmodeled". The library is never deployed from this project, so the target only matters for building.
 - **Trial license.** The PLC trial license lasts 7 days and is renewed by hand (captcha). This is why the tests are not
   run in CI (the compile check is).
 - **TcUnit sizing.** TcUnit's defaults allocate about 78 MB of PLC data, which the user-mode runtime cannot start. The
