@@ -24,12 +24,6 @@
     <GlobalVersionStructureIncluded>false</GlobalVersionStructureIncluded>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DUTs\E_TestState.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PlcTask.TcTTO">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\FUNCTIONS\ATAN2.TcPOU">
       <SubType>Code</SubType>
     </Compile>
@@ -93,16 +87,12 @@
     <Compile Include="POUs\FUNCTION_BLOCKS\FB_SUNPOS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\MAIN.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="GVLs\Global_Version.TcGVL">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="DUTs" />
     <Folder Include="GVLs" />
     <Folder Include="POUs\FUNCTION_BLOCKS" />
     <Folder Include="POUs\FUNCTIONS" />
