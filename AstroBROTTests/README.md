@@ -26,8 +26,7 @@ the *installed* AstroBROT (`AstroBROT, * (BROT)`), exactly like a telescope proj
 
 152 test cases in total.
 
-The block tests exist mainly for behaviour that `MAIN` of the library cannot show, because `MAIN` assigns every input on
-every call: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
+The block tests exist mainly for behaviour that a single call per input cannot show: the blocks must not modify their inputs and must not keep correction deltas between calls (issue #8). The
 cyclic tests set the inputs once and call the block repeatedly, like a PLC program would.
 
 The last five suites are **generated** by [`testing/gen_block_tests.py`](../testing/gen_block_tests.py) from
@@ -54,7 +53,7 @@ update the numbers in the tests.
 
 ## Running the tests
 
-TcBuild only compiles. Running needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it.
+TcBuild only compiles, so running the tests needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it. CI runs these tests: `tests.yml` (every push) installs the library with TcBuild, builds the tests and runs the suites on the self-hosted runner's user-mode runtime. `tcbuild.yml` (every push) is only a compile check. The 7-day trial license is renewed by hand; the run fails with a clear message when it has expired.
 
 **Windows 11 note.** The TwinCAT 3.1 Build 4024 *real-time* runtime does not run on Windows 11
 ([Beckhoff system requirements](https://infosys.beckhoff.com/content/1033/tc3_overview/6162419083.html)); Run mode
@@ -98,12 +97,8 @@ configuration, log in and start the PLC. TcUnit prints every result to the error
 
 ## Things to know
 
-- **Target of `AstroBROT.tsproj`.** The library's own project targets a remote route (`5.146.183.126.1.1`) that does
-  not exist on other machines. A headless XAE (TcBuild, the automation scripts here) then stalls with
-  `RPC_E_SERVERCALL_RETRYLATER` or loads the project as "unmodeled". Point it at a local target (for example
-  `192.168.4.1.1.1`) before running `TcBuild install AstroBROT.sln`. `AstroBROTTests.tsproj` already does.
 - **Trial license.** The PLC trial license lasts 7 days and is renewed by hand (captcha). This is why the tests are not
-  wired into CI.
+  run in CI (the compile check is).
 - **TcUnit sizing.** TcUnit's defaults allocate about 78 MB of PLC data, which the user-mode runtime cannot start. The
   project overrides them to 32 / 32 / 256 in the `TcUnit` reference (`AstroBROTTests.plcproj`). TcUnit needs
   tests-per-suite <= suites, or it does not compile. If you add a suite with more than 32 tests or 256 assertions,

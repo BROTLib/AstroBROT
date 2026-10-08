@@ -284,3 +284,6 @@ VSSettings/
 
 # The one vendored library: TcUnit, needed to build and run AstroBROTTests (see AstroBROTTests/README.md)
 !AstroBROTTests/vendor/tcunit.library
+
+# IntelliJ/PyCharm module files
+*.iml
