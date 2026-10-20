@@ -99,7 +99,7 @@ the helper functions; 138 test cases). They run the compiled library on the Twin
 and check the results against golden values from the Python port and, with hard tolerances, against erfa (SOFA), including
 the celestial poles, observers at the poles, the zenith, RA / azimuth wrap-around and out-of-range angles, plus behaviour
 that only repeated calls show: blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
-[AstroBROTTests/README.md](AstroBROTTests/README.md). CI (`tests.yml`, every push) installs the library, builds `AstroBROTTests` and runs the suites on the self-hosted runner's
+[AstroBROTTests/README.md](AstroBROTTests/README.md). CI (`tcbuild.yml`, every push) installs the library, builds `AstroBROTTests` and runs the suites on the self-hosted runner's
 user-mode runtime; `tcbuild.yml` (every push) is only a compile check. The 7-day trial license is renewed by hand, and the
 run fails with a clear message once it has expired.
 
