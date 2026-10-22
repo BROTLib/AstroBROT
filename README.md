@@ -116,4 +116,4 @@ target; compiled library v0.3.0, company
 `BROT`, referenced by consumers as `AstroBROT, * (BROT)`). It is never deployed
 from this project; there are no boot projects.
 
-**CI.** `.github/workflows/tcbuild.yml` builds `AstroBROT.sln` with TcBuild on every push (self-hosted runner, never on pull requests). A green run means the project compiles; TcBuild exit code 1 (built with warnings) counts as success. The TcUnit tests are not run there (see below).
+**CI.** `.github/workflows/tcbuild.yml` builds `AstroBROT.sln` with [`tctool`](https://github.com/BROTLib/TcTool) on every push (self-hosted runner, never on pull requests) and runs the TcUnit tests of `AstroBROTTests` on the user-mode runtime (see `AstroBROTTests/README.md`). A green run means the project compiles and the tests passed, or that they were skipped with a warning because the TwinCAT license or runtime is missing; `tctool` exit code 1 (built with warnings) counts as success.

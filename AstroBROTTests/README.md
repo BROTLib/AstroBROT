@@ -53,11 +53,11 @@ update the numbers in the tests.
 
 ## Running the tests
 
-TcBuild only compiles, so running the tests needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it. CI runs these tests: `tcbuild.yml` (every push) installs the library with TcBuild (this is the compile check), builds the tests and runs the suites on the self-hosted runner's user-mode runtime. The 7-day trial license is renewed by hand; when it has expired the tests are skipped with a warning and the build stays green.
+A build only compiles, so running the tests needs a TwinCAT runtime that executes the PLC, plus a (trial) license for it. CI runs these tests: `tcbuild.yml` (every push) installs the library with `tctool` (this is the compile check), then builds the tests and runs the suites on the self-hosted runner's user-mode runtime in one `tctool` call. The 7-day trial license is renewed by hand; when it has expired (or the runtime is not running) `tctool` returns 13, the tests are skipped with a warning and the build stays green.
 
 **Windows 11 note.** The TwinCAT 3.1 Build 4024 *real-time* runtime does not run on Windows 11
 ([Beckhoff system requirements](https://infosys.beckhoff.com/content/1033/tc3_overview/6162419083.html)); Run mode
-fails with `Init4\RTime: Start Interrupt: Ticker started >> AdsError: 6 (port 200)`. XAE and TcBuild are fine. Use the
+fails with `Init4\RTime: Start Interrupt: Ticker started >> AdsError: 6 (port 200)`. XAE and tctool are fine. Use the
 beta **user-mode runtime** that ships with TwinCAT instead (`C:\TwinCAT\3.1\Runtimes\UmRT_Default`, see the
 `Readme.txt` there for its terms of use).
 
@@ -71,7 +71,7 @@ One-time setup on a machine:
 2. Install the current AstroBROT (the tests use the *installed* copy, not the source tree; repeat after every change
    to the library):
    ```powershell
-   & "C:\Program Files\Industrial Brains B.V\TcBuild\TcBuild.exe" install AstroBROT.sln -x AstroBROT -p AstroBROT -l AstroBROT.library
+   tctool AstroBROT.sln library --xae AstroBROT --plc AstroBROT --out AstroBROT.library --install
    ```
    This replaces the installed library of the same version, so other projects on the machine pick it up.
 
@@ -83,11 +83,10 @@ Every run:
    ```
 2. Build, deploy and run. Exit code 0 = all passed, 1 = a test failed, 2 = no result (timeout, or no test case ran):
    ```powershell
-   & "C:\Program Files\Industrial Brains B.V\TcBuild\TcBuild.exe" build AstroBROTTests.sln
-   .\AstroBROTTests\tools\Run-Tests.ps1
+   tctool AstroBROTTests.sln build run --require-valid-license
    ```
    It overwrites whatever boot project is on the target runtime (default `192.168.4.1.1.1`, override with
-   `-TargetNetId`). Only one run can use the runtime at a time.
+   `--target`). Only one run can use the runtime at a time.
 
 Which test failed: the counters are printed, the individual assertions go to the TwinCAT ADS log (XAE error list).
 Over ADS every suite instance also exposes `MAIN.<suite>.Tests[i].TestName`, `.TestIsFailed` and `.AssertionMessage`.
