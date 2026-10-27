@@ -15,12 +15,16 @@ VAR_INPUT
 	aberration		: BOOL := TRUE; 	// Set this to 1 to force aberration correction [default], 0 for no correction.
 	refract			: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
 	altitude		: LREAL := 0.0;
+	pressure		: LREAL := 0.0;		// atmospheric pressure in hPa (= mbar) for the refraction, 0.0 = estimate from altitude
+	temperature		: LREAL := 0.0;		// ground temperature in degrees Celsius for the refraction, only used if temperature_set is TRUE
+	temperature_set	: BOOL := FALSE;	// TRUE: use temperature (0.0 C is valid), FALSE: estimate it from altitude. Retained between calls, pass it every call.
 	alt_is_observed	: BOOL := TRUE;		// TRUE: alt is an observed (refracted) altitude, refraction is removed [default]. FALSE: alt is geometric, refraction is added. Only used if refract is TRUE.
 END_VAR
 VAR_OUTPUT
 	ra				: LREAL;			// Right Ascension of object  (J2000) in degrees (FK5)
 	dec				: LREAL;			// Declination of object (J2000) in degrees (FK5)
 	ha				: LREAL;			// hour angle (in degrees) (optional)
+	refraction_clamped	: BOOL;			// TRUE if the refraction model limited altitude, pressure or temperature (see FB_CO_REFRACT.clamped)
 END_VAR
 VAR
 	co_refract		: FB_CO_REFRACT;
@@ -93,12 +97,17 @@ END_IF
  (use this for visible and radio wavelengths; author is unsure about other wavelengths.
   See the comments in CO_REFRACT for more details.) *)
 alt_loc := alt;
-IF refract THEN 
-	co_refract(	
-		old_alt := alt, 
-		altitude := altitude, 
-		to_observed := NOT alt_is_observed, 
-		new_alt => alt_loc);
+refraction_clamped := FALSE;
+IF refract THEN
+	co_refract(
+		old_alt := alt,
+		altitude := altitude,
+		pressure := pressure,
+		temperature := temperature,
+		temperature_set := temperature_set,
+		to_observed := NOT alt_is_observed,
+		new_alt => alt_loc,
+		clamped => refraction_clamped);
 END_IF
 
 
