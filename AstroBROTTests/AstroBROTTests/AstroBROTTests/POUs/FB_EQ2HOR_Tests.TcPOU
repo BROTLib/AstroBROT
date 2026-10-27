@@ -26,6 +26,11 @@ Refraction_South_2010();
 Golden_Dut1_Tenerife_2026();
 Golden_Dut1_Tenerife_low();
 Golden_Dut1_South_2010();
+Weather_Defaults_Unchanged();
+Weather_Passed_To_Refraction();
+Weather_Zero_Celsius_Is_Used();
+Weather_Temperature_Ignored_Without_Set();
+Weather_Refraction_Clamped_Output();
 ]]></ST>
     </Implementation>
     <Method Name="CheckNear" Id="{ed0f85b5-4330-4a9f-9a54-acb32627980f}">
@@ -298,6 +303,102 @@ CheckAngle(229.80725126973925, fb.az, 1.0E-7, 'South_2010 dut1 +0.9 az');
 fb(ra := 312.5, dec := -47.3, jd := 2455197.5, lon := -70.7, lat := -30.2, refract := FALSE, dut1 := -0.9);
 CheckNear(29.982762840100285, fb.alt, 1.0E-7, 'South_2010 dut1 -0.9 alt');
 CheckAngle(229.8086144058053, fb.az, 1.0E-7, 'South_2010 dut1 -0.9 az');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Weather_Defaults_Unchanged" Id="{6fbadcd6-3702-4acc-b261-f15bc91af5e0}">
+      <Declaration><![CDATA[METHOD PRIVATE Weather_Defaults_Unchanged
+VAR
+	fbDef	: AstroBROT.FB_EQ2HOR;
+	fbExp	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Weather_Defaults_Unchanged');
+fbDef(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE);
+fbExp(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE, pressure := 0.0, temperature := 0.0, temperature_set := FALSE);
+// same as the Refraction_Tenerife_low golden: the new inputs do not change the result when left at their defaults
+CheckNear(20.039496339721794, fbDef.alt, 1.0E-7, 'default alt');
+CheckNear(fbDef.alt, fbExp.alt, 1.0E-12, 'explicit defaults alt');
+AssertFalse(Condition := fbDef.refraction_clamped, Message := 'default not clamped');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Weather_Passed_To_Refraction" Id="{31e5380d-f1f3-41e4-82d7-fc340a03c76f}">
+      <Declaration><![CDATA[METHOD PRIVATE Weather_Passed_To_Refraction
+VAR
+	fbGeo	: AstroBROT.FB_EQ2HOR;
+	fbObs	: AstroBROT.FB_EQ2HOR;
+	fbRef	: AstroBROT.FB_CO_REFRACT;
+	fbEst	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Weather_Passed_To_Refraction');
+fbGeo(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := FALSE);
+fbRef(old_alt := fbGeo.alt, altitude := 2400.0, pressure := 780.0, temperature := 12.0, temperature_set := TRUE, TO_OBSERVED := TRUE);
+fbObs(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE, pressure := 780.0, temperature := 12.0, temperature_set := TRUE);
+CheckNear(fbRef.new_alt, fbObs.alt, 1.0E-9, 'alt equals a direct FB_CO_REFRACT call');
+fbEst(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE);
+// 780 hPa and 12 C against the estimate for 2400 m (about 763 hPa, -5.6 C) must give a different altitude
+AssertTrue(Condition := ABS(fbObs.alt - fbEst.alt) > 1.0E-6, Message := 'live weather differs from the estimate');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Weather_Zero_Celsius_Is_Used" Id="{bc1e386d-b774-4ab2-983d-89b8d799fe46}">
+      <Declaration><![CDATA[METHOD PRIVATE Weather_Zero_Celsius_Is_Used
+VAR
+	fbGeo	: AstroBROT.FB_EQ2HOR;
+	fbObs	: AstroBROT.FB_EQ2HOR;
+	fbRef	: AstroBROT.FB_CO_REFRACT;
+	fbEst	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Weather_Zero_Celsius_Is_Used');
+fbGeo(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := FALSE);
+fbRef(old_alt := fbGeo.alt, altitude := 2400.0, temperature := 0.0, temperature_set := TRUE, TO_OBSERVED := TRUE);
+fbObs(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE, temperature := 0.0, temperature_set := TRUE);
+fbEst(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE);
+CheckNear(fbRef.new_alt, fbObs.alt, 1.0E-9, '0 C alt equals a direct FB_CO_REFRACT call');
+AssertTrue(Condition := ABS(fbObs.alt - fbEst.alt) > 1.0E-7, Message := '0 C is a value, not the estimate');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Weather_Temperature_Ignored_Without_Set" Id="{0152f614-c294-4b61-aa70-8f4c146aaf54}">
+      <Declaration><![CDATA[METHOD PRIVATE Weather_Temperature_Ignored_Without_Set
+VAR
+	fbDef	: AstroBROT.FB_EQ2HOR;
+	fbT		: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Weather_Temperature_Ignored_Without_Set');
+fbDef(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE);
+fbT(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE, temperature := 30.0, temperature_set := FALSE);
+CheckNear(fbDef.alt, fbT.alt, 1.0E-12, 'temperature without temperature_set is ignored');
+TEST_FINISHED();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Weather_Refraction_Clamped_Output" Id="{1933d671-cadf-4265-b97a-657c3a948470}">
+      <Declaration><![CDATA[METHOD PRIVATE Weather_Refraction_Clamped_Output
+VAR
+	fb	: AstroBROT.FB_EQ2HOR;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[TEST('Weather_Refraction_Clamped_Output');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE, temperature := 45.0, temperature_set := TRUE);
+AssertTrue(Condition := fb.refraction_clamped, Message := 'T 45 C is above the model range');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := TRUE, refract_to_observed := TRUE, temperature := 10.0, temperature_set := TRUE);
+AssertFalse(Condition := fb.refraction_clamped, Message := 'T 10 C is inside the model range');
+fb(ra := 130.0, dec := -10.0, jd := 2461300.75, lon := -16.5, lat := 28.3, altitude := 2400.0, refract := FALSE, temperature := 45.0, temperature_set := TRUE);
+AssertFalse(Condition := fb.refraction_clamped, Message := 'no refraction, nothing clamped');
 TEST_FINISHED();
 ]]></ST>
       </Implementation>
