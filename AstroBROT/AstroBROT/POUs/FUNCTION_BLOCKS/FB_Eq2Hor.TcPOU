@@ -16,11 +16,15 @@ VAR_INPUT
 	refract 		: BOOL := TRUE; 	// Set to 1 to force refraction correction[default] (for actual sky coord), 0 for no correction (for theoretical coord).
 	refract_to_observed : BOOL := TRUE;
 	altitude		: LREAL := 0.0;
+	pressure		: LREAL := 0.0;		// atmospheric pressure in hPa (= mbar) for the refraction, 0.0 = estimate from altitude
+	temperature		: LREAL := 0.0;		// ground temperature in degrees Celsius for the refraction, only used if temperature_set is TRUE
+	temperature_set	: BOOL := FALSE;	// TRUE: use temperature (0.0 C is valid), FALSE: estimate it from altitude. Retained between calls, pass it every call.
 END_VAR
 VAR_OUTPUT
 	alt				: LREAL;		// altitude in degrees
 	az				: LREAL;		// azimuth in degrees
 	ha				: LREAL;		// hour angle in degrees
+	refraction_clamped	: BOOL;		// TRUE if the refraction model limited altitude, pressure or temperature (see FB_CO_REFRACT.clamped)
 END_VAR
 VAR
 	radec2hadec		: FB_RADEC2HADEC;
@@ -70,12 +74,17 @@ hadec2altaz(
  Make Correction for ATMOSPHERIC REFRACTION
  (use this for visible and radio wavelengths; author is unsure about other wavelengths.
   See the comments in CO_REFRACT for more details.) *)
-IF refract THEN 
-	co_refract(	
-		old_alt := alt, 
-		altitude := altitude, 
-		to_observed := refract_to_observed, 
-		new_alt => alt);
+refraction_clamped := FALSE;
+IF refract THEN
+	co_refract(
+		old_alt := alt,
+		altitude := altitude,
+		pressure := pressure,
+		temperature := temperature,
+		temperature_set := temperature_set,
+		to_observed := refract_to_observed,
+		new_alt => alt,
+		clamped => refraction_clamped);
 END_IF
 ]]></ST>
     </Implementation>

@@ -99,7 +99,7 @@ the helper functions; 138 test cases). They run the compiled library on the Twin
 and check the results against golden values from the Python port and, with hard tolerances, against erfa (SOFA), including
 the celestial poles, observers at the poles, the zenith, RA / azimuth wrap-around and out-of-range angles, plus behaviour
 that only repeated calls show: blocks must not modify their inputs or keep state between calls. Setup, how to run and the known gaps are in
-[AstroBROTTests/README.md](AstroBROTTests/README.md). CI (`tests.yml`, every push) installs the library, builds `AstroBROTTests` and runs the suites on the self-hosted runner's
+[AstroBROTTests/README.md](AstroBROTTests/README.md). CI (`tcbuild.yml`, every push) installs the library, builds `AstroBROTTests` and runs the suites on the self-hosted runner's
 user-mode runtime; `tcbuild.yml` (every push) is only a compile check. The 7-day trial license is renewed by hand, and the
 run fails with a clear message once it has expired.
 
@@ -116,4 +116,4 @@ target; compiled library v0.3.0, company
 `BROT`, referenced by consumers as `AstroBROT, * (BROT)`). It is never deployed
 from this project; there are no boot projects.
 
-**CI.** `.github/workflows/tcbuild.yml` builds `AstroBROT.sln` with TcBuild on every push (self-hosted runner, never on pull requests). A green run means the project compiles; TcBuild exit code 1 (built with warnings) counts as success. The TcUnit tests are not run there (see below).
+**CI.** `.github/workflows/tcbuild.yml` builds `AstroBROT.sln` with [`tctool`](https://github.com/BROTLib/TcTool) on every push (self-hosted runner, never on pull requests) and runs the TcUnit tests of `AstroBROTTests` on the user-mode runtime (see `AstroBROTTests/README.md`). A green run means the project compiles and the tests passed, or that they were skipped with a warning because the TwinCAT license or runtime is missing; `tctool` exit code 1 (built with warnings) counts as success.
